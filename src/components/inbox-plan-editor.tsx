@@ -1,0 +1,156 @@
+"use client";
+
+import { CheckCircle2, Sparkles } from "lucide-react";
+import { confirmInboxPlan } from "@/app/actions";
+import { SubmitButton } from "@/components/submit-button";
+import type { InboxPlan } from "@/lib/ai";
+
+const inputClass =
+  "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm leading-6 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/20";
+
+export function InboxPlanEditor({
+  itemId,
+  plan,
+}: {
+  itemId: string;
+  plan: InboxPlan;
+}) {
+  const showProjectFields =
+    plan.action !== "single_task" || Boolean(plan.projectName);
+
+  return (
+    <form action={confirmInboxPlan} className="mt-3 space-y-3">
+      <input type="hidden" name="id" value={itemId} />
+
+      {showProjectFields ? (
+        <div className="rounded-lg border border-accent/20 bg-accent-soft/50 p-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="block sm:col-span-1">
+              <span className="mb-1.5 block text-xs font-medium text-accent-strong">
+                项目名称
+              </span>
+              <input
+                name="projectName"
+                defaultValue={plan.projectName ?? ""}
+                placeholder="项目名称"
+                className={inputClass}
+              />
+            </label>
+            <label className="block sm:col-span-2">
+              <span className="mb-1.5 block text-xs font-medium text-accent-strong">
+                项目目标
+              </span>
+              <input
+                name="projectObjective"
+                defaultValue={plan.projectObjective ?? ""}
+                placeholder="希望达到什么结果"
+                className={inputClass}
+              />
+            </label>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="space-y-3">
+        {plan.tasks.map((task, index) => (
+          <div
+            key={`${task.title}-${index}`}
+            className="rounded-lg border border-border bg-surface p-3"
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-accent text-xs font-medium text-white">
+                  {index + 1}
+                </span>
+                <span className="text-sm font-semibold text-ink">
+                  任务 {index + 1}
+                </span>
+              </div>
+              <span className="text-xs text-ink-muted">可执行步骤</span>
+            </div>
+
+            <label className="mt-3 block">
+              <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
+                标题
+              </span>
+              <input
+                name={`tasks[${index}].title`}
+                defaultValue={task.title}
+                className={`${inputClass} font-medium text-ink`}
+              />
+            </label>
+
+            <label className="mt-3 block">
+              <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
+                执行说明
+              </span>
+              <textarea
+                name={`tasks[${index}].notes`}
+                defaultValue={task.notes ?? ""}
+                rows={2}
+                className={inputClass}
+              />
+            </label>
+
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
+                  优先级
+                </span>
+                <select
+                  name={`tasks[${index}].priority`}
+                  defaultValue={task.priority}
+                  className={inputClass}
+                >
+                  <option value="low">低</option>
+                  <option value="medium">中</option>
+                  <option value="high">高</option>
+                  <option value="urgent">紧急</option>
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
+                  计划日期
+                </span>
+                <input
+                  name={`tasks[${index}].scheduledDate`}
+                  type="date"
+                  defaultValue={task.scheduledDate ?? ""}
+                  className={inputClass}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
+                  截止日期
+                </span>
+                <input
+                  name={`tasks[${index}].dueDate`}
+                  type="date"
+                  defaultValue={task.dueDate ?? ""}
+                  className={inputClass}
+                />
+              </label>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-lg bg-accent-soft/60 p-3 text-sm leading-6 text-ink-secondary">
+        <div className="flex items-start gap-2">
+          <Sparkles className="mt-1 size-4 shrink-0 text-accent" />
+          <span>{plan.reason}</span>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <SubmitButton
+          pendingText="生成中..."
+          className="inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <CheckCircle2 className="size-4" />
+          下一步：生成任务
+        </SubmitButton>
+      </div>
+    </form>
+  );
+}

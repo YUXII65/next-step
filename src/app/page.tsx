@@ -1,0 +1,296 @@
+import Link from "next/link";
+import {
+  ArrowRight,
+  Clock3,
+  Focus,
+  ListTodo,
+  NotebookPen,
+  Sparkles,
+} from "lucide-react";
+import { CalendarDatePanel } from "@/components/calendar-date-panel";
+import { Panel, PanelHeader } from "@/components/panel";
+import { EmptyState } from "@/components/empty-state";
+import { StatusBadge } from "@/components/status-badge";
+import { TodayTaskActions } from "@/components/today-task-actions";
+import { TodayBrief } from "@/components/today-brief";
+import { AiTaskPlanner } from "@/components/ai-task-planner";
+import { prisma } from "@/lib/prisma";
+import type { TodaySuggestion } from "@/lib/ai";
+import {
+  endOfDay,
+  formatDate,
+  isSameDay,
+  startOfDay,
+} from "@/lib/date";
+
+const priorityOrder: Record<string, number> = {
+  urgent: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+};
+
+type AgendaTask = {
+  id: string;
+  title: string;
+  notes: string | null;
+  priority: string;
+  status: string;
+  dueDate: Date | null;
+  scheduledDate: Date | null;
+  focusDate: Date | null;
+  project: { name: string } | null;
+  inboxItem: { id: string } | null;
+  reviewNextAction: {
+    review: { reviewDate: Date };
+  } | null;
+};
+
+function taskSource(task: AgendaTask) {
+  if (task.reviewNextAction) {
+    return `来自复盘 · ${formatDate(task.reviewNextAction.review.reviewDate)}`;
+  }
+  if (task.inboxItem) {
+    return "来自 AI";
+  }
+  return task.project?.name ?? "未关联项目";
+}
+
+export const dynamic = "force-dynamic";
+
+export default async function TodayPage() {
+  const now = new Date();
+  const dayStart = startOfDay(now);
+  const dayEnd = endOfDay(now);
+  const [tasks, pendingInbox] = await Promise.all([
+    prisma.task.findMany({
+      include: {
+        project: { select: { name: true } },
+        inboxItem: { select: { id: true } },
+        reviewNextAction: {
+          select: {
+            review: { select: { reviewDate: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.inboxItem.findMany({
+      where: { status: "inbox" },
+      select: {
+        id: true,
+        content: true,
+        aiPlanJson: true,
+        aiSuggestionJson: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+  ]);
+
+  const openTasks = tasks.filter(
+    (task) => task.status !== "done" && task.status !== "cancelled",
+  );
+  const completedToday = tasks.filter(
+    (task) =>
+      task.status === "done" &&
+      task.completedAt &&
+      task.completedAt >= dayStart &&
+      task.completedAt <= dayEnd,
+  ).length;
+  const totalToday = completedToday + openTasks.length;
+
+  const agenda = [...openTasks].sort((a, b) => {
+    function rank(task: AgendaTask) {
+      if (task.focusDate && isSameDay(task.focusDate, now)) return 0;
+      if (task.dueDate && task.dueDate < dayStart) return 1;
+      if (
+        task.scheduledDate &&
+        task.scheduledDate >= dayStart &&
+        task.scheduledDate <= dayEnd
+      ) {
+        return 2;
+      }
+      return 3;
+    }
+
+    const rankDiff = rank(a) - rank(b);
+    if (rankDiff !== 0) return rankDiff;
+    return (
+      (priorityOrder[a.priority] ?? 9) - (priorityOrder[b.priority] ?? 9)
+    );
+  });
+
+  const todayRelevant = agenda.filter((task) => {
+    if (task.focusDate && isSameDay(task.focusDate, now)) return true;
+    if (task.dueDate && task.dueDate < dayStart) return true;
+    if (
+      task.scheduledDate &&
+      task.scheduledDate >= dayStart &&
+      task.scheduledDate <= dayEnd
+    ) {
+      return true;
+    }
+    return false;
+  });
+
+  const todayTasks = (todayRelevant.length ? todayRelevant : agenda).slice(0, 3);
+  const initialSuggestions: TodaySuggestion[] = todayTasks.map((task) => ({
+    taskId: task.id,
+    title: task.title,
+    projectName: task.project?.name ?? null,
+    priority: task.priority as TodaySuggestion["priority"],
+    reason: suggestionReason(task, now, dayStart),
+  }));
+
+  return (
+    <>
+      <CalendarDatePanel
+        now={now}
+        completedToday={completedToday}
+        totalToday={totalToday}
+      />
+
+      <Panel>
+        <PanelHeader
+          title="AI 今日助手"
+          icon={Sparkles}
+          action={
+            <span className="text-xs font-medium text-ink-muted">
+              {pendingInbox.length} 条待整理
+            </span>
+          }
+        />
+        <AiTaskPlanner pending={pendingInbox} />
+        <div className="border-t border-border p-4">
+          <TodayBrief initialSuggestions={initialSuggestions} />
+        </div>
+      </Panel>
+
+      <Panel className="mt-6">
+        <PanelHeader
+          title="今天要做"
+          icon={ListTodo}
+          action={
+            <span className="text-xs font-medium text-ink-muted">
+              {todayTasks.length} 条
+            </span>
+          }
+        />
+        {todayTasks.length ? (
+          <div className="divide-y divide-border">
+            {todayTasks.map((task) => (
+              <AgendaTaskRow
+                key={task.id}
+                task={task}
+                now={now}
+                dayStart={dayStart}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Focus}
+            title="今天还没有重点"
+            hint="先记录一个想法，AI 会帮你整理成今天能做的事。"
+          />
+        )}
+      </Panel>
+
+      <div className="mt-6 flex justify-end">
+        <Link
+          href="/review"
+          className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+        >
+          下一步：去复盘
+          <ArrowRight className="size-4" />
+        </Link>
+      </div>
+    </>
+  );
+}
+
+function suggestionReason(task: AgendaTask, now: Date, dayStart: Date) {
+  if (task.focusDate && isSameDay(task.focusDate, now)) {
+    return "今天被标记为重点，建议优先完成。";
+  }
+  if (task.dueDate && task.dueDate < dayStart) {
+    return "已逾期，继续推迟会增加压力。";
+  }
+  if (
+    task.scheduledDate &&
+    task.scheduledDate >= dayStart &&
+    task.scheduledDate <= endOfDay(now)
+  ) {
+    return "今天计划内，适合现在推进。";
+  }
+  return "当前优先级较高，建议今天完成。";
+}
+
+function AgendaTaskRow({
+  task,
+  now,
+  dayStart,
+}: {
+  task: AgendaTask;
+  now: Date;
+  dayStart: Date;
+}) {
+  const isFocused = task.focusDate && isSameDay(task.focusDate, now);
+  const isOverdue = task.dueDate && task.dueDate < dayStart;
+  const isScheduled =
+    task.scheduledDate &&
+    task.scheduledDate >= dayStart &&
+    task.scheduledDate <= endOfDay(now);
+
+  return (
+    <div className="flex flex-col gap-3 px-4 py-3 lg:flex-row lg:items-center">
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-2">
+          {task.reviewNextAction ? (
+            <span className="inline-flex h-5 items-center gap-1 rounded bg-accent-soft px-1.5 text-[11px] font-medium text-accent-strong">
+              <NotebookPen className="size-3" />
+              来自复盘
+            </span>
+          ) : null}
+          {isFocused ? (
+            <span className="inline-flex h-5 items-center gap-1 rounded bg-accent-soft px-1.5 text-[11px] font-medium text-accent-strong">
+              <Focus className="size-3" />
+              重点
+            </span>
+          ) : null}
+          {isOverdue ? (
+            <span className="inline-flex h-5 items-center gap-1 rounded bg-danger/10 px-1.5 text-[11px] font-medium text-danger">
+              <Clock3 className="size-3" />
+              逾期
+            </span>
+          ) : null}
+          {isScheduled ? (
+            <span className="inline-flex h-5 items-center gap-1 rounded bg-surface-muted px-1.5 text-[11px] font-medium text-ink-secondary">
+              <ListTodo className="size-3" />
+              计划
+            </span>
+          ) : null}
+          <p className="truncate text-sm font-medium text-ink">{task.title}</p>
+        </div>
+        <p className="mt-1 truncate text-xs text-ink-secondary">
+          {taskSource(task)}
+        </p>
+        {task.dueDate ? (
+          <p className="mt-1 text-xs text-danger">截止 {formatDate(task.dueDate)}</p>
+        ) : null}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <StatusBadge status={task.priority} />
+        <TodayTaskActions
+          taskId={task.id}
+          status={task.status}
+          focused={Boolean(isFocused)}
+          title={task.title}
+          notes={task.notes}
+          projectName={task.project?.name ?? null}
+        />
+      </div>
+    </div>
+  );
+}

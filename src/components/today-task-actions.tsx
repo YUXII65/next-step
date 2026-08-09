@@ -1,0 +1,165 @@
+"use client";
+
+import Link from "next/link";
+import {
+  CalendarOff,
+  CalendarPlus,
+  CheckCircle2,
+  Loader2,
+  PencilLine,
+  Play,
+  RotateCcw,
+  Settings2,
+  Trash2,
+} from "lucide-react";
+import {
+  clearTodayFocus,
+  deleteTask,
+  markTodayFocus,
+  setTaskStatus,
+} from "@/app/actions";
+import { SubmitButton } from "@/components/submit-button";
+import { ConfirmActionButton } from "@/components/confirm-action-button";
+import { AiTaskCoach } from "@/components/ai-task-coach";
+import { AiTaskSticky } from "@/components/ai-task-sticky";
+import { trackEvent } from "@/lib/track";
+import { useClickOutside } from "@/lib/use-click-outside";
+
+function nextStatus(status: string) {
+  if (status === "in_progress") return "done";
+  if (status === "done" || status === "cancelled") return "todo";
+  return "in_progress";
+}
+
+function actionLabel(status: string) {
+  if (status === "in_progress") return "下一步";
+  if (status === "done") return "重新开始";
+  if (status === "cancelled") return "重新开始";
+  return "下一步";
+}
+
+function statusButtonClass(status: string) {
+  if (status === "in_progress") {
+    return "inline-flex h-8 min-w-16 items-center justify-center gap-1.5 rounded-md border border-accent bg-accent-soft px-2.5 text-xs font-medium text-accent-strong transition-colors hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-60";
+  }
+  if (status === "done") {
+    return "inline-flex h-8 min-w-16 items-center justify-center gap-1.5 rounded-md border border-success/30 bg-success/10 px-2.5 text-xs font-medium text-success transition-colors hover:bg-success/20 disabled:cursor-not-allowed disabled:opacity-60";
+  }
+  return "inline-flex h-8 min-w-16 items-center justify-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-60";
+}
+
+function statusIcon(status: string) {
+  if (status === "in_progress") {
+    return <Loader2 className="size-3.5" />;
+  }
+  if (status === "done") {
+    return <CheckCircle2 className="size-3.5" />;
+  }
+  if (status === "cancelled") {
+    return <RotateCcw className="size-3.5" />;
+  }
+  return <Play className="size-3.5" />;
+}
+
+export function TodayTaskActions({
+  taskId,
+  status,
+  focused = false,
+  title,
+  notes,
+  projectName,
+}: {
+  taskId: string;
+  status: string;
+  focused?: boolean;
+  title: string;
+  notes?: string | null;
+  projectName?: string | null;
+}) {
+  const { ref, open, setOpen } = useClickOutside<HTMLDivElement>();
+
+  return (
+    <div className="flex items-center gap-2">
+      <form
+        action={setTaskStatus}
+        onSubmit={() =>
+          trackEvent("home_task_status", { status: nextStatus(status) })
+        }
+      >
+        <input type="hidden" name="id" value={taskId} />
+        <input type="hidden" name="status" value={nextStatus(status)} />
+        <SubmitButton pendingText="..." className={statusButtonClass(status)}>
+          {statusIcon(status)}
+          {actionLabel(status)}
+        </SubmitButton>
+      </form>
+
+      <AiTaskSticky
+        taskId={taskId}
+        title={title}
+        notes={notes}
+        projectName={projectName}
+        status={status}
+      />
+
+      <div className="relative" ref={ref}>
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          aria-label="任务设置"
+          title="任务设置"
+          className="flex size-8 items-center justify-center rounded-md border border-border bg-surface text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+        >
+          <Settings2 className="size-3.5" />
+        </button>
+        {open ? (
+          <div className="absolute right-0 top-10 z-30 w-48 rounded-lg border border-border bg-surface p-1.5 shadow-lg">
+            <form action={focused ? clearTodayFocus : markTodayFocus}>
+              <input type="hidden" name="id" value={taskId} />
+              <SubmitButton
+                pendingText="..."
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm text-ink-secondary transition-colors hover:bg-surface-muted hover:text-ink"
+              >
+                {focused ? (
+                  <>
+                    <CalendarOff className="size-3.5" />
+                    取消今日重点
+                  </>
+                ) : (
+                  <>
+                    <CalendarPlus className="size-3.5" />
+                    下一步：设为今日重点
+                  </>
+                )}
+              </SubmitButton>
+            </form>
+            <Link
+              href={`/workspace?edit=${taskId}`}
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-ink-secondary transition-colors hover:bg-surface-muted hover:text-ink"
+            >
+              <PencilLine className="size-3.5" />
+              编辑
+            </Link>
+            <ConfirmActionButton
+              action={deleteTask}
+              id={taskId}
+              confirmText="确定删除这个任务？"
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-danger transition-colors hover:bg-danger/10"
+            >
+              <Trash2 className="size-3.5" />
+              删除
+            </ConfirmActionButton>
+          </div>
+        ) : null}
+      </div>
+
+      <AiTaskCoach
+        taskId={taskId}
+        title={title}
+        notes={notes}
+        projectName={projectName}
+        status={status}
+      />
+    </div>
+  );
+}

@@ -1,0 +1,209 @@
+"use client";
+
+import Link from "next/link";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Focus,
+  ListTodo,
+  NotebookPen,
+  Sparkles,
+  Target,
+} from "lucide-react";
+import { LandingDemo } from "./landing-demo";
+
+const outcomes = [
+  {
+    icon: Sparkles,
+    title: "不用自己整理",
+    body: "倒出想法，AI 自动归类到项目，生成可执行任务。",
+  },
+  {
+    icon: Focus,
+    title: "不用纠结今天做什么",
+    body: "每天打开，先看到今天最该推进的 1-3 件事。",
+  },
+  {
+    icon: NotebookPen,
+    title: "不用害怕半途而废",
+    body: "每晚轻量复盘，AI 自动生成明天计划，形成持续闭环。",
+  },
+];
+
+const comparisons = [
+  {
+    name: "ChatGPT",
+    gap: "会帮你整理，但不会持续记住你的目标和复盘。",
+  },
+  {
+    name: "Todoist",
+    gap: "帮你管理任务，但不知道你为什么做。",
+  },
+  {
+    name: "Notion",
+    gap: "给你一堆模板，但不知道哪个适合你。",
+  },
+  {
+    name: "WorkBuddy",
+    gap: "替你执行任务，但不会帮你决定该做什么。",
+  },
+  {
+    name: "下一步",
+    gap: "帮你把想法变成可持续推进的个人项目。",
+  },
+];
+
+const audiences = [
+  "学习者：备考、学英语、学技能，一直开始不了。",
+  "创作者：自媒体、写作、作品集，想法多但输出少。",
+  "自由职业者：项目杂、优先级乱，需要每天聚焦。",
+  "知识工作者：会议和琐事多，需要把重要目标拉回日常。",
+];
+
+export function LandingPage() {
+  return (
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-background">
+      <div className="mx-auto min-h-dvh w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+        <header className="mb-12 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-accent text-white">
+              <Sparkles className="size-4" />
+            </span>
+            <span className="text-sm font-semibold text-ink">
+              下一步
+            </span>
+          </div>
+          <Link
+            href="/"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+          >
+            返回下一步
+          </Link>
+        </header>
+
+        <section className="mb-12">
+          <p className="mb-3 text-sm font-medium text-accent">
+            不是另一个 Todo，也不是又一个 AI 聊天框
+          </p>
+          <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-ink sm:text-5xl">
+            把脑子里的一堆想法，
+            <br />
+            变成今天能做的 1-3 件事。
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-ink-secondary">
+            你不用先学 Notion，也不用自己拆任务。AI
+            帮你整理、规划、复盘，让你把精力留给真正重要的事。
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/"
+              className="inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+            >
+              进入下一步
+              <ArrowRight className="size-4" />
+            </Link>
+            <Link
+              href="/onboarding"
+              className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+            >
+              查看首次交互
+            </Link>
+          </div>
+        </section>
+
+        <section className="mb-12 grid gap-4 sm:grid-cols-3">
+          {outcomes.map((outcome) => {
+            const Icon = outcome.icon;
+            return (
+              <div
+                key={outcome.title}
+                className="rounded-lg border border-border bg-surface p-5"
+              >
+                <span className="flex size-9 items-center justify-center rounded-lg bg-accent-soft text-accent-strong">
+                  <Icon className="size-4" />
+                </span>
+                <p className="mt-3 text-sm font-semibold text-ink">
+                  {outcome.title}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-ink-secondary">
+                  {outcome.body}
+                </p>
+              </div>
+            );
+          })}
+        </section>
+
+        <section className="mb-12 rounded-lg border border-border bg-surface p-5 sm:p-8">
+          <p className="text-xs font-medium text-accent">交互演示</p>
+          <h2 className="mt-2 text-2xl font-semibold text-ink">
+            试试看，AI 怎么把你的想法变轻。
+          </h2>
+          <LandingDemo />
+        </section>
+
+        <section className="mb-12 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <div className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+            <h2 className="text-lg font-semibold text-ink">我们和它们有什么不同</h2>
+            <div className="mt-4 space-y-3">
+              {comparisons.map((item) => (
+                <div
+                  key={item.name}
+                  className="flex items-start gap-3 rounded-lg bg-surface-muted p-3"
+                >
+                  <span className="mt-1 shrink-0">
+                    {item.name === "下一步" ? (
+                      <CheckCircle2 className="size-4 text-success" />
+                    ) : (
+                      <Target className="size-4 text-ink-muted" />
+                    )}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-ink">{item.name}</p>
+                    <p className="mt-0.5 text-sm leading-6 text-ink-secondary">
+                      {item.gap}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+            <h2 className="text-lg font-semibold text-ink">适合谁</h2>
+            <div className="mt-4 space-y-3">
+              {audiences.map((audience) => (
+                <p
+                  key={audience}
+                  className="flex items-start gap-2 text-sm leading-6 text-ink-secondary"
+                >
+                  <ListTodo className="mt-0.5 size-4 shrink-0 text-accent" />
+                  {audience}
+                </p>
+              ))}
+            </div>
+            <div className="mt-5 rounded-lg bg-accent-soft p-3 text-xs leading-5 text-accent-strong">
+              如果你已经有一套稳定的 GTD 流程，或者只想要 AI
+              替你干活，下一步暂时不适合你。
+            </div>
+          </div>
+        </section>
+
+        <section className="rounded-lg bg-ink p-6 text-center text-background sm:p-10">
+          <h2 className="text-2xl font-semibold">
+            现在从一句真实想法开始。
+          </h2>
+          <p className="mt-2 text-sm leading-6 opacity-70">
+            不用整理，不用选模板，先把你脑子里转的东西说出来。
+          </p>
+          <Link
+            href="/"
+            className="mt-6 inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+          >
+            进入下一步
+            <ArrowRight className="size-4" />
+          </Link>
+        </section>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStatus {
+  active
+  paused
+  completed
+  archived
+}
+
+enum TaskStatus {
+  todo
+  in_progress
+  done
+  cancelled
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+}
+
+enum InboxStatus {
+  inbox
+  processed
+  ignored
+}
+
+enum InboxCategory {
+  task
+  project_note
+  reference
+  ignore
+}
+
+enum ReviewStatus {
+  draft
+  final
+}
+
+enum ReviewNextActionStatus {
+  pending
+  done
+  cancelled
+}
+
+model Project {
+  id                     String            @id @default(cuid())
+  name                   String
+  objective              String
+  status                 ProjectStatus     @default(active)
+  currentMilestone       String?
+  notes                  String?
+  createdFromInboxItemId String?           @unique
+  createdFromInboxItem   InboxItem?        @relation("ProjectFromInbox", fields: [createdFromInboxItemId], references: [id], onDelete: SetNull)
+  lastReviewedAt         DateTime?
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+  tasks                  Task[]
+  inboxItems             InboxItem[]
+  reviewTasks            ReviewTask[]
+  aiFeedbackEvents       AiFeedbackEvent[]
+
+  @@map("projects")
+}
+
+model Task {
+  id               String            @id @default(cuid())
+  title            String
+  notes            String?
+  projectId        String?
+  project          Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  status           TaskStatus        @default(todo)
+  priority         Priority          @default(medium)
+  scheduledDate    DateTime?
+  dueDate          DateTime?
+  focusDate        DateTime?
+  completedAt      DateTime?
+  planOrder        Int?
+  inboxItemId      String?
+  inboxItem        InboxItem?        @relation(fields: [inboxItemId], references: [id], onDelete: SetNull)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  reviewTasks      ReviewTask[]
+  reviewNextAction ReviewNextAction?
+  aiFeedbackEvents AiFeedbackEvent[]
+
+  @@map("tasks")
+}
+
+model InboxItem {
+  id               String            @id @default(cuid())
+  content          String
+  source           String            @default("manual")
+  status           InboxStatus       @default(inbox)
+  category         InboxCategory?
+  title            String?
+  projectId        String?
+  project          Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  priority         Priority?
+  dueDate          DateTime?
+  aiSuggestionJson String?
+  aiPlanJson       String?
+  aiAnalyzedAt     DateTime?
+  confirmedAt      DateTime?
+  processedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  tasks            Task[]
+  createdProject   Project?          @relation("ProjectFromInbox")
+  aiPlanFeedbacks  AiPlanFeedback[]
+  aiFeedbackEvents AiFeedbackEvent[]
+
+  @@map("inbox_items")
+}
+
+model AiPlanFeedback {
+  id          String     @id @default(cuid())
+  inboxItemId String?
+  inboxItem   InboxItem? @relation(fields: [inboxItemId], references: [id], onDelete: SetNull)
+  action      String
+  planJson    String
+  editedJson  String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("ai_plan_feedbacks")
+}
+
+model UserPreference {
+  id        String   @id @default(cuid())
+  key       String
+  value     String
+  source    String   @default("manual")
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([key, source])
+  @@map("user_preferences")
+}
+
+model AiFeedbackEvent {
+  id          String     @id @default(cuid())
+  source      String
+  action      String
+  inboxItemId String?
+  inboxItem   InboxItem? @relation(fields: [inboxItemId], references: [id], onDelete: SetNull)
+  taskId      String?
+  task        Task?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  beforeJson  String?
+  afterJson   String?
+  detail      String?
+  createdAt   DateTime   @default(now())
+
+  @@map("ai_feedback_events")
+}
+
+model Review {
+  id              String             @id @default(cuid())
+  reviewDate      DateTime           @unique
+  summary         String
+  nextActions     String?
+  status          ReviewStatus       @default(draft)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  tasks           ReviewTask[]
+  nextActionTasks ReviewNextAction[]
+
+  @@map("reviews")
+}
+
+model ReviewTask {
+  id               String   @id @default(cuid())
+  reviewId         String
+  review           Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  taskId           String
+  task             Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  projectId        String?
+  project          Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  titleAtReview    String
+  statusAtReview   String
+  priorityAtReview String
+  createdAt        DateTime @default(now())
+
+  @@unique([reviewId, taskId])
+  @@map("review_tasks")
+}
+
+model ReviewNextAction {
+  id        String                 @id @default(cuid())
+  reviewId  String
+  review    Review                 @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  title     String
+  status    ReviewNextActionStatus @default(pending)
+  sortOrder Int                    @default(0)
+  taskId    String?                @unique
+  task      Task?                  @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  @@map("review_next_actions")
+}

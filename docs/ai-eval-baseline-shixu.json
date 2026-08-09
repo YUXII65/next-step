@@ -1,0 +1,96 @@
+{
+  "generatedAt": "2026-08-08T07:18:03.380Z",
+  "model": "deepseek-chat",
+  "rows": [
+    {
+      "id": "college-ai-plan",
+      "title": "大学 AI 方向规划",
+      "action": "create_project",
+      "taskCount": 4,
+      "reason": "用户面临大学入学，专业与市场营销和大数据相关，但AI学习方向不明确。计划通过先梳理方向、体验AI工具、学习编程基础、再做迷你项目的顺序，逐步建立清晰路径。首条任务安排在今天即可启动，帮助用户快速消除迷茫感。",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "content-account",
+      "title": "深度内容账号启动",
+      "action": "create_project",
+      "taskCount": 4,
+      "reason": "用户想创建深度分析账号，但不确定先做定位还是先做视频。根据计划原则，应先明确内容定位，因为定位是后续所有内容的基础，且首条任务安排在今天即可启动，符合最小动作要求。任务顺序从定位到素材拆解、脚本、制作，逐步推进，确保第一期视频有清晰方向。",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "multi-goal-priority",
+      "title": "多个目标并行",
+      "action": "create_project",
+      "taskCount": 3,
+      "reason": "根据记忆，您当前未完成任务 8 个且近期忽略过 AI 计划，说明多目标并行导致推进困难。因此计划聚焦于减少任务数量、优先启动最小动作，并通过复盘建立持续执行机制，以打破停滞状态。",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "english-habit",
+      "title": "长期学习习惯",
+      "action": "create_project",
+      "taskCount": 3,
+      "reason": "用户长期想学英语但未开始，核心问题是缺乏明确的第一步和可执行的最小动作。计划从今天开始，先通过水平测试明确起点，再制定极简的每日15分钟计划降低启动门槛，最后用一周日志建立反馈循环，确保可持续推进。",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "freelancer-overload",
+      "title": "自由职业者项目过载",
+      "action": "create_project",
+      "taskCount": 3,
+      "reason": "用户被杂事淹没且重要目标拖延，核心需求是重新安排并砍掉低价值任务。首日先盘点现状，次日做优先级打分，第三天制定可执行计划，三步递进，符合maxTasks限制，且首条任务今天即可启动。",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "personal-site",
+      "title": "个人网站",
+      "action": "create_project",
+      "taskCount": 4,
+      "reason": "用户希望尽快有可展示的成果，但方向未定，因此首条任务安排今天即可完成的方向决策，后续按选型、搭建、上线的顺序推进，确保一周内能看到初版。",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "writing-output",
+      "title": "写作输出",
+      "action": "create_project",
+      "taskCount": 3,
+      "reason": "用户因追求大文章而迟迟未发布，计划通过拆分小任务降低启动门槛，首日即确定主题并列出要点，次日完成初稿，第三天发布，形成快速闭环，打破拖延循环。",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "fitness-routine",
+      "title": "健身习惯",
+      "action": "create_project",
+      "taskCount": 3,
+      "reason": "用户因上班疲劳而放弃去健身房，计划将健身场景改为居家，降低启动成本；首条任务设定为今天即可完成的10分钟轻活动，确保最小可执行动作能立即启动，逐步建立习惯。",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "career-transition",
+      "title": "转行数据分析",
+      "action": "create_project",
+      "taskCount": 3,
+      "reason": "用户因学习内容多而焦虑，需要先明确学习顺序，避免盲目。首条任务帮助用户快速决策，降低焦虑；第二条任务启动SQL学习，是数据分析的基础；第三条任务规划作品集，确保长期目标不丢失。",
+      "failures": [],
+      "pass": true
+    },
+    {
+      "id": "stalled-project-restart",
+      "title": "停滞项目重启",
+      "action": "create_project",
+      "taskCount": 3,
+      "reason": "根据上下文证据，拾序已停14天，复盘要求继续推进AI记忆与反馈闭环，因此首条任务设定为今天启动的最小动作（列出卡点），帮助打破停滞状态；后续任务逐步恢复开发并聚焦核心里程碑，符合记忆摘要中的规划提示。",
+      "failures": [],
+      "pass": true
+    }
+  ]
+}

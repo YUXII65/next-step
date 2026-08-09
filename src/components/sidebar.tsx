@@ -1,0 +1,119 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  Archive,
+  Blocks,
+  BookOpen,
+  CalendarDays,
+  Sparkles,
+} from "lucide-react";
+import { cx } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
+
+const navItems = [
+  { href: "/", label: "日历", icon: CalendarDays },
+  { href: "/workspace", label: "书桌", icon: BookOpen },
+  { href: "/review", label: "抽屉", icon: Archive },
+];
+
+export function Sidebar() {
+  const pathname = usePathname();
+
+  function isActive(href: string) {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
+  }
+
+  return (
+    <>
+      <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-border bg-surface px-4 lg:hidden">
+        <div className="flex items-center gap-2">
+          <span className="flex size-7 items-center justify-center rounded-md bg-accent text-white">
+            <Sparkles className="size-3.5" />
+          </span>
+          <span className="text-sm font-semibold">下一步</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Link
+            href="/tools"
+            aria-label="工具匣"
+            title="工具匣"
+            className="flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+          >
+            <Blocks className="size-4" />
+          </Link>
+          <ThemeToggle />
+        </div>
+      </header>
+
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-16 flex-col items-center border-r border-border bg-surface py-4 lg:flex">
+        <Link
+          href="/"
+          aria-label="下一步"
+          className="flex size-9 items-center justify-center rounded-lg bg-accent text-white"
+        >
+          <Sparkles className="size-4" />
+        </Link>
+
+        <nav className="mt-5 flex flex-1 flex-col items-center gap-1">
+          {navItems.map((item) => {
+            const active = isActive(item.href);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-label={item.label}
+                title={item.label}
+                aria-current={active ? "page" : undefined}
+                className={cx(
+                  "flex size-9 items-center justify-center rounded-lg transition-colors",
+                  active
+                    ? "bg-accent-soft text-accent-strong"
+                    : "text-ink-muted hover:bg-surface-hover hover:text-ink",
+                )}
+              >
+                <Icon className="size-4" />
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex flex-col items-center gap-1">
+          <Link
+            href="/tools"
+            aria-label="工具匣"
+            title="工具匣"
+            className="flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+          >
+            <Blocks className="size-4" />
+          </Link>
+          <ThemeToggle />
+        </div>
+      </aside>
+
+      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border bg-surface lg:hidden">
+        {navItems.map((item) => {
+          const active = isActive(item.href);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={active ? "page" : undefined}
+              className={cx(
+                "flex min-h-14 flex-col items-center justify-center gap-1 px-1 text-[11px] font-medium",
+                active ? "text-accent" : "text-ink-muted",
+              )}
+            >
+              <Icon className="size-4" />
+              <span className="truncate">{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
+  );
+}
