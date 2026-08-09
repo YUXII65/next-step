@@ -9,6 +9,13 @@ export const metadata: Metadata = {
     template: "%s | 下一步",
   },
   description: "把零散想法变成可持续推进的个人项目",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png", sizes: "256x256" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+  },
 };
 
 export default function RootLayout({
