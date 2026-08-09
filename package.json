@@ -6,6 +6,7 @@
     "dev": "node node_modules/next/dist/bin/next dev",
     "build": "node node_modules/next/dist/bin/next build",
     "build:vercel": "prisma generate && prisma migrate deploy && node node_modules/next/dist/bin/next build",
+    "build:edgeone": "prisma generate && prisma migrate deploy && node node_modules/next/dist/bin/next build",
     "start": "node node_modules/next/dist/bin/next start",
     "lint": "node node_modules/eslint/bin/eslint.js .",
     "db:generate": "node node_modules/prisma/build/index.js generate",

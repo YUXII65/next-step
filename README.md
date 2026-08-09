@@ -1,19 +1,34 @@
 # 下一步
 
-下一步是一个 AI 个人项目推进系统，核心闭环为：
+下一步是一个公开可用的 AI 个人项目推进系统，核心闭环为：
 
 `输入 → 目标 → 行动 → 复盘`
+
+公开版功能：
+
+- 注册 / 登录账号。
+- 每个账号只能看到自己的项目、任务、收件箱和复盘。
+- AI 由服务端统一调用 DeepSeek，不需要用户自己填 API Key。
+- 每天每用户和全站都有用量限制，避免单个用户产生过高费用。
 
 ## 技术栈
 
 - Next.js 16 + TypeScript
 - Tailwind CSS
-- Prisma 6 + SQLite
+- Prisma 6 + PostgreSQL
 - lucide-react 图标
 
-## 本地运行
+## 公开展示部署
 
-需要 Node.js 20+ 和 pnpm。
+面向中国大陆用户的部署说明见 [docs/deploy-edgeone.md](docs/deploy-edgeone.md)。
+
+EdgeOne 部署分支：`codex/edgeone-deploy`。
+
+Vercel 部署说明仍保留在 [docs/vercel-neon-deploy.md](docs/vercel-neon-deploy.md)，适合不依赖中国大陆访问的场景。
+
+## 本地个人版
+
+`main` 分支保留 SQLite 本地个人版。需要 Node.js 20+ 和 pnpm。
 
 ```bash
 pnpm install
@@ -23,67 +38,8 @@ pnpm dev
 
 打开 [http://localhost:3000](http://localhost:3000)。
 
-## 常用命令
+## 维护
 
-```bash
-pnpm db:migrate
-pnpm db:generate
-pnpm db:backup
-pnpm db:studio
-pnpm build
-pnpm lint
-```
-
-## 数据备份
-
-- 页面左侧边栏的“导出数据备份”可直接下载 `prisma/dev.db`。
-- 命令行备份：`pnpm db:backup`，备份文件写入 `backups/`。
-
-## 生产运行
-
-```bash
-pnpm build
-pnpm start
-```
-
-部署注意：本项目使用 SQLite 本地文件，需要持久化保存 `prisma/dev.db` 和 `backups/`。该架构适合单机或单实例部署，不适合 Serverless 或多实例共享写入。
-
-## 数据
-
-本地数据库文件位于 `prisma/dev.db`，已被 `.gitignore` 忽略。AI API Key 通过本地环境变量配置，不在浏览器中保存。
-
-## AI 能力
-
-可选配置 DeepSeek API Key：
-
-```bash
-DEEPSEEK_API_KEY="sk-..."
-DEEPSEEK_MODEL="deepseek-v4-flash"
-DEEPSEEK_BASE_URL="https://api.deepseek.com"
-```
-
-未配置 Key 或 AI 调用失败时，系统会自动使用本地规则生成任务拆分、今日建议和复盘草稿。
-
-## 中心托管模式
-
-如果要由你提供 DeepSeek API Key 并限制成本，可以开启服务端配额：
-
-```env
-AI_QUOTA_ENABLED=true
-AI_QUOTA_DAILY_CALLS=500
-AI_QUOTA_DAILY_TOKENS=1000000
-AI_QUOTA_VISITOR_DAILY_CALLS=20
-AI_QUOTA_VISITOR_DAILY_TOKENS=50000
-```
-
-开启后，浏览器里填写的 API Key 会被忽略，AI 调用统一走服务端配置，并把真实 token 用量写入 `ai_usage_logs`。详细部署说明见 [docs/deployment-guide.md](docs/deployment-guide.md)。
-
-## 当前阶段
-
-- Stage 1：项目骨架、数据库表、三个一级页面。
-- Stage 2：项目树、项目详情、项目 CRUD、任务 CRUD。
-- Stage 3：收件箱快捷输入、原内容直接转为任务、忽略记录。
-- Stage 4：今日页展示逾期、计划任务、今日重点，并支持设为重点和完成任务。
-- Stage 5：收件箱 AI 归类建议、今日重点建议、复盘草稿生成，均支持手动降级。
-- Stage 6：复盘编辑、保存、历史、数据备份、生产运行与部署说明。
-- 下一步：继续真实使用，验证核心闭环和 AI 记忆反馈闭环。
+- 公开版数据库、AI Key、会话密钥只配置在托管平台环境变量中。
+- 推送 `codex/edgeone-deploy` 会自动触发 EdgeOne 部署。
+- 配额环境变量可调整，但注意提高额度会直接提高 DeepSeek 费用风险。
