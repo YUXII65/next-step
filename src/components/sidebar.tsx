@@ -7,10 +7,12 @@ import {
   Blocks,
   BookOpen,
   CalendarDays,
+  LogOut,
   Sparkles,
 } from "lucide-react";
 import { cx } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { logoutUser } from "@/app/actions";
 
 const navItems = [
   { href: "/", label: "日历", icon: CalendarDays },
@@ -45,6 +47,16 @@ export function Sidebar() {
             <Blocks className="size-4" />
           </Link>
           <ThemeToggle />
+          <form action={logoutUser}>
+            <button
+              type="submit"
+              aria-label="退出登录"
+              title="退出登录"
+              className="flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </form>
         </div>
       </header>
 
@@ -91,6 +103,16 @@ export function Sidebar() {
             <Blocks className="size-4" />
           </Link>
           <ThemeToggle />
+          <form action={logoutUser}>
+            <button
+              type="submit"
+              aria-label="退出登录"
+              title="退出登录"
+              className="flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+            >
+              <LogOut className="size-4" />
+            </button>
+          </form>
         </div>
       </aside>
 

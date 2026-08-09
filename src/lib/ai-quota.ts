@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 const VISITOR_COOKIE = "visitor_id";
 const quotaStorage = new AsyncLocalStorage<{
@@ -29,6 +30,9 @@ export function getAiQuotaContext() {
 }
 
 export async function getVisitorId() {
+  const user = await getCurrentUser();
+  if (user) return `user:${user.id}`;
+
   const cookieStore = await cookies();
   const existing = cookieStore.get(VISITOR_COOKIE)?.value;
   if (existing) return existing;
@@ -63,8 +67,8 @@ export async function hasAiQuota() {
   const context = getAiQuotaContext();
   if (!context) return true;
 
-  const visitorDailyCalls = intEnv("AI_QUOTA_VISITOR_DAILY_CALLS", 20);
-  const visitorDailyTokens = intEnv("AI_QUOTA_VISITOR_DAILY_TOKENS", 50000);
+  const visitorDailyCalls = intEnv("AI_QUOTA_VISITOR_DAILY_CALLS", 50);
+  const visitorDailyTokens = intEnv("AI_QUOTA_VISITOR_DAILY_TOKENS", 200000);
   const dailyCalls = intEnv("AI_QUOTA_DAILY_CALLS", 500);
   const dailyTokens = intEnv("AI_QUOTA_DAILY_TOKENS", 1000000);
 
@@ -102,8 +106,11 @@ export async function recordAiUsage(usage: AiUsageInput) {
   if (!context || !isAiQuotaEnabled()) return;
 
   try {
+    const user = await getCurrentUser();
+    if (!user) return;
     await prisma.aiUsageLog.create({
       data: {
+        userId: user.id,
         visitorId: context.visitorId,
         feature: context.feature,
         status: "ok",

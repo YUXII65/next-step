@@ -2,13 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import type {
   Priority,
   ProjectStatus,
   TaskStatus,
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import {
+  createUserSession,
+  destroyUserSession,
+  hashPassword,
+  requireUser,
+  verifyPassword,
+} from "@/lib/auth";
 import { endOfDay, startOfDay, toDateInputValue } from "@/lib/date";
 import { buildAiContext } from "@/lib/ai-context";
 import { recordAiFeedback } from "@/lib/feedback";
@@ -144,13 +150,88 @@ function parseInboxPlan(item: { aiPlanJson: string | null }): InboxPlan | null {
   }
 }
 
+function safeNext(value: string | null) {
+  if (value && value.startsWith("/") && !value.startsWith("//")) {
+    return value;
+  }
+  return "/";
+}
+
+async function ownedProjectId(projectId: string | null, userId: string) {
+  if (!projectId) return null;
+  const project = await prisma.project.findFirst({
+    where: { id: projectId, userId },
+    select: { id: true },
+  });
+  return project?.id ?? null;
+}
+
+export async function registerUser(formData: FormData) {
+  const username = String(formData.get("username") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const confirmPassword = String(formData.get("confirmPassword") ?? "");
+  const next = safeNext(String(formData.get("next") ?? "/"));
+
+  if (
+    username.length < 2 ||
+    username.length > 20 ||
+    password.length < 6 ||
+    password !== confirmPassword
+  ) {
+    redirect(`/login?error=register&next=${encodeURIComponent(next)}`);
+  }
+
+  const existing = await prisma.user.findUnique({
+    where: { username },
+    select: { id: true },
+  });
+  if (existing) {
+    redirect(`/login?error=register&next=${encodeURIComponent(next)}`);
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      username,
+      passwordHash: hashPassword(password),
+    },
+    select: { id: true },
+  });
+  await createUserSession(user.id);
+
+  redirect(next);
+}
+
+export async function loginUser(formData: FormData) {
+  const username = String(formData.get("username") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const next = safeNext(String(formData.get("next") ?? "/"));
+
+  const user = await prisma.user.findUnique({
+    where: { username },
+    select: { id: true, passwordHash: true },
+  });
+  if (!user || !verifyPassword(password, user.passwordHash)) {
+    redirect(`/login?error=login&next=${encodeURIComponent(next)}`);
+  }
+
+  await createUserSession(user.id);
+  redirect(next);
+}
+
+export async function logoutUser() {
+  await destroyUserSession();
+  redirect("/login");
+}
+
 export async function addInboxItem(formData: FormData) {
   const content = String(formData.get("content") ?? "").trim();
 
   if (!content) return;
+  const user = await requireUser();
 
   await prisma.inboxItem.create({
     data: {
+      userId: user.id,
       content,
       source: "manual",
     },
@@ -160,45 +241,22 @@ export async function addInboxItem(formData: FormData) {
   revalidatePath("/workspace");
 }
 
-export async function loginWithPassword(formData: FormData) {
-  const password = String(formData.get("password") ?? "");
-  const nextValue = String(formData.get("next") ?? "/");
-  const next =
-    nextValue.startsWith("/") && !nextValue.startsWith("//")
-      ? nextValue
-      : "/";
-  const expected = process.env.APP_ACCESS_PASSWORD || "123456";
-
-  if (password !== expected) {
-    redirect(
-      `/login?error=1&next=${encodeURIComponent(next)}`,
-    );
-  }
-
-  const cookieStore = await cookies();
-  cookieStore.set("workbench_access", expected, {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-
-  redirect(next);
-}
-
 export async function addInboxItemAndClarify(formData: FormData) {
   const content = String(formData.get("content") ?? "").trim();
   if (!content) return;
+  const user = await requireUser();
   const { apiKey, model, baseUrl } = clientAiOverrides(formData);
 
   const item = await prisma.inboxItem.create({
     data: {
+      userId: user.id,
       content,
       source: "manual",
     },
   });
 
   const projects = await prisma.project.findMany({
+    where: { userId: user.id },
     select: {
       name: true,
       objective: true,
@@ -214,6 +272,7 @@ export async function addInboxItemAndClarify(formData: FormData) {
   const aiContext = await buildAiContext({
     kind: "inbox_plan",
     inboxItemId: item.id,
+    userId: user.id,
   });
 
   const clarification = await withAiQuota("inbox_clarify", () =>
@@ -230,7 +289,7 @@ export async function addInboxItemAndClarify(formData: FormData) {
   );
 
   await prisma.inboxItem.update({
-    where: { id: item.id },
+    where: { id: item.id, userId: user.id },
     data: {
       aiSuggestionJson: JSON.stringify(clarification),
       aiAnalyzedAt: new Date(),
@@ -251,9 +310,11 @@ export async function getTaskEditSuggestion(input: {
   focusDate?: string | null;
   idea: string;
 }): Promise<TaskEditSuggestion> {
+  const user = await requireUser();
   const aiContext = await buildAiContext({
     kind: "task_edit",
     taskId: input.taskId,
+    userId: user.id,
   });
   const { taskId: _taskId, ...suggestionInput } = input;
   void _taskId;
@@ -275,9 +336,11 @@ export async function getProjectEditSuggestion(input: {
   notes?: string | null;
   idea: string;
 }): Promise<ProjectEditSuggestion> {
+  const user = await requireUser();
   const aiContext = await buildAiContext({
     kind: "project_edit",
     projectId: input.projectId,
+    userId: user.id,
   });
   const { projectId: _projectId, ...suggestionInput } = input;
   void _projectId;
@@ -298,9 +361,11 @@ export async function getTaskCoachAdvice(input: {
   status?: string;
   message: string;
 }): Promise<TaskCoachAdvice> {
+  const user = await requireUser();
   const aiContext = await buildAiContext({
     kind: "task_coach",
     taskId: input.taskId,
+    userId: user.id,
   });
   return withAiQuota("task_coach", () =>
     generateTaskCoachAdvice(
@@ -314,16 +379,19 @@ export async function getTaskCoachAdvice(input: {
 export async function addInboxItemAndPlan(formData: FormData) {
   const content = String(formData.get("content") ?? "").trim();
   if (!content) return;
+  const user = await requireUser();
   const { apiKey, model, baseUrl } = clientAiOverrides(formData);
 
   const item = await prisma.inboxItem.create({
     data: {
+      userId: user.id,
       content,
       source: "manual",
     },
   });
 
   const projects = await prisma.project.findMany({
+    where: { userId: user.id },
     select: {
       name: true,
       objective: true,
@@ -339,6 +407,7 @@ export async function addInboxItemAndPlan(formData: FormData) {
   const aiContext = await buildAiContext({
     kind: "inbox_plan",
     inboxItemId: item.id,
+    userId: user.id,
   });
   const plan = await withAiQuota("inbox_plan", () =>
     planInbox(
@@ -358,7 +427,7 @@ export async function addInboxItemAndPlan(formData: FormData) {
   );
 
   await prisma.inboxItem.update({
-    where: { id: item.id },
+    where: { id: item.id, userId: user.id },
     data: {
       aiPlanJson: JSON.stringify(plan),
       aiAnalyzedAt: new Date(),
@@ -372,21 +441,22 @@ export async function addInboxItemAndPlan(formData: FormData) {
 export async function convertInboxItemToTask(formData: FormData) {
   const id = text(formData, "id");
   if (!id) return;
+  const user = await requireUser();
 
   const item = await prisma.inboxItem.findUnique({
-    where: { id },
+    where: { id, userId: user.id },
   });
 
   if (!item || item.status !== "inbox") return;
 
   const title = item.title ?? item.content;
-  const projectId = text(formData, "projectId");
+  const projectId = await ownedProjectId(text(formData, "projectId"), user.id);
   const priorityValue = priority(String(formData.get("priority") ?? "medium"));
   const dueDate = dateInput(formData, "dueDate");
 
   await prisma.$transaction([
     prisma.inboxItem.update({
-      where: { id },
+      where: { id, userId: user.id },
       data: {
         status: "processed",
         category: "task",
@@ -399,6 +469,7 @@ export async function convertInboxItemToTask(formData: FormData) {
     }),
     prisma.task.create({
       data: {
+        userId: user.id,
         title,
         notes: title === item.content ? null : item.content,
         projectId,
@@ -417,9 +488,10 @@ export async function convertInboxItemToTask(formData: FormData) {
 export async function ignoreInboxItem(formData: FormData) {
   const id = text(formData, "id");
   if (!id) return;
+  const user = await requireUser();
 
   const item = await prisma.inboxItem.findUnique({
-    where: { id },
+    where: { id, userId: user.id },
     select: {
       status: true,
       aiSuggestionJson: true,
@@ -430,7 +502,7 @@ export async function ignoreInboxItem(formData: FormData) {
   if (!item || item.status !== "inbox") return;
 
   await prisma.inboxItem.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: {
       status: "ignored",
       category: "ignore",
@@ -440,6 +512,7 @@ export async function ignoreInboxItem(formData: FormData) {
 
   await prisma.aiPlanFeedback.create({
     data: {
+      userId: user.id,
       inboxItemId: id,
       action: "ignored",
       planJson:
@@ -447,6 +520,7 @@ export async function ignoreInboxItem(formData: FormData) {
     },
   });
   await recordAiFeedback({
+    userId: user.id,
     source: "inbox_plan",
     action: "plan_ignored",
     inboxItemId: id,
@@ -460,16 +534,18 @@ export async function ignoreInboxItem(formData: FormData) {
 export async function suggestInboxItem(formData: FormData) {
   const id = text(formData, "id");
   if (!id) return;
+  const user = await requireUser();
   const { apiKey, model, baseUrl } = clientAiOverrides(formData);
 
   const item = await prisma.inboxItem.findUnique({
-    where: { id },
+    where: { id, userId: user.id },
     select: { id: true, content: true, status: true },
   });
 
   if (!item || item.status !== "inbox") return;
 
   const projects = await prisma.project.findMany({
+    where: { userId: user.id },
     select: {
       name: true,
       objective: true,
@@ -480,6 +556,7 @@ export async function suggestInboxItem(formData: FormData) {
   const aiContext = await buildAiContext({
     kind: "inbox_plan",
     inboxItemId: id,
+    userId: user.id,
   });
   const plan = await withAiQuota("inbox_plan", () =>
     planInbox(
@@ -503,7 +580,7 @@ export async function suggestInboxItem(formData: FormData) {
   );
 
   await prisma.inboxItem.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: {
       aiPlanJson: JSON.stringify(plan),
       aiAnalyzedAt: new Date(),
@@ -516,6 +593,7 @@ export async function suggestInboxItem(formData: FormData) {
 export async function generateInboxPlan(formData: FormData) {
   const id = text(formData, "id");
   if (!id) return;
+  const user = await requireUser();
   const option = text(formData, "option");
   const supplement = text(formData, "supplement");
   const dimensionChoices = [0, 1, 2, 3]
@@ -524,13 +602,14 @@ export async function generateInboxPlan(formData: FormData) {
   const { apiKey, model, baseUrl } = clientAiOverrides(formData);
 
   const item = await prisma.inboxItem.findUnique({
-    where: { id },
+    where: { id, userId: user.id },
     select: { id: true, content: true, status: true },
   });
 
   if (!item || item.status !== "inbox") return;
 
   const projects = await prisma.project.findMany({
+    where: { userId: user.id },
     select: {
       name: true,
       objective: true,
@@ -541,6 +620,7 @@ export async function generateInboxPlan(formData: FormData) {
   const aiContext = await buildAiContext({
     kind: "inbox_plan",
     inboxItemId: item.id,
+    userId: user.id,
   });
   const plan = await withAiQuota("inbox_plan", () =>
     planInbox(
@@ -564,7 +644,7 @@ export async function generateInboxPlan(formData: FormData) {
   );
 
   await prisma.inboxItem.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: {
       aiPlanJson: JSON.stringify(plan),
       aiAnalyzedAt: new Date(),
@@ -578,9 +658,10 @@ export async function generateInboxPlan(formData: FormData) {
 export async function confirmInboxPlan(formData: FormData) {
   const id = text(formData, "id");
   if (!id) return;
+  const user = await requireUser();
 
   const item = await prisma.inboxItem.findUnique({
-    where: { id },
+    where: { id, userId: user.id },
   });
 
   if (!item || item.status !== "inbox" || !item.aiPlanJson) return;
@@ -628,6 +709,7 @@ export async function confirmInboxPlan(formData: FormData) {
     if (plan.action === "create_project" && projectName) {
       const project = await tx.project.create({
         data: {
+          userId: user.id,
           name: projectName,
           objective: projectObjective ?? "由收件箱想法创建的项目",
           currentMilestone: projectMilestone,
@@ -637,7 +719,7 @@ export async function confirmInboxPlan(formData: FormData) {
       projectId = project.id;
     } else if (plan.action === "existing_project" && projectName) {
       const project = await tx.project.findFirst({
-        where: { name: projectName },
+        where: { name: projectName, userId: user.id },
         select: { id: true },
       });
       projectId = project?.id ?? projectId;
@@ -647,6 +729,7 @@ export async function confirmInboxPlan(formData: FormData) {
     for (const [index, plannedTask] of tasks.entries()) {
       await tx.task.create({
         data: {
+          userId: user.id,
           title: plannedTask.title,
           notes: plannedTask.notes,
           projectId,
@@ -660,7 +743,7 @@ export async function confirmInboxPlan(formData: FormData) {
     }
 
     await tx.inboxItem.update({
-      where: { id: item.id },
+      where: { id: item.id, userId: user.id },
       data: {
         status: "processed",
         category: "task",
@@ -677,6 +760,7 @@ export async function confirmInboxPlan(formData: FormData) {
 
   await prisma.aiPlanFeedback.create({
     data: {
+      userId: user.id,
       inboxItemId: item.id,
       action: "accepted",
       planJson: item.aiPlanJson,
@@ -684,6 +768,7 @@ export async function confirmInboxPlan(formData: FormData) {
     },
   });
   await recordAiFeedback({
+    userId: user.id,
     source: "inbox_plan",
     action: edited ? "plan_edited" : "plan_accepted",
     inboxItemId: item.id,
@@ -703,10 +788,12 @@ export async function generateTodaySuggestion(
 ) {
   void _prevState;
   void _formData;
+  const user = await requireUser();
 
   const [tasks, latestReview, activeProjects] = await Promise.all([
     prisma.task.findMany({
       where: {
+        userId: user.id,
         status: { in: ["todo", "in_progress"] },
       },
       include: { project: true },
@@ -714,11 +801,12 @@ export async function generateTodaySuggestion(
       take: 50,
     }),
     prisma.review.findFirst({
+      where: { userId: user.id },
       select: { summary: true },
       orderBy: { reviewDate: "desc" },
     }),
     prisma.project.findMany({
-      where: { status: "active" },
+      where: { status: "active", userId: user.id },
       select: {
         name: true,
         objective: true,
@@ -729,7 +817,10 @@ export async function generateTodaySuggestion(
     }),
   ]);
 
-  const aiContext = await buildAiContext({ kind: "today_focus" });
+  const aiContext = await buildAiContext({
+    kind: "today_focus",
+    userId: user.id,
+  });
   const suggestions = await withAiQuota("today_focus", () =>
     suggestTodayFocus(
       tasks.map((task) => ({
@@ -754,13 +845,16 @@ export async function generateTodaySuggestion(
 }
 
 export async function getUserPreferences() {
+  const user = await requireUser();
   return prisma.userPreference.findMany({
+    where: { userId: user.id },
     select: { key: true, value: true },
     orderBy: { key: "asc" },
   });
 }
 
 export async function saveUserPreferences(formData: FormData) {
+  const user = await requireUser();
   const preferenceKeys = [
     "plan_scale",
     "default_start_action",
@@ -773,18 +867,20 @@ export async function saveUserPreferences(formData: FormData) {
       const value = String(formData.get(key) ?? "").trim();
       if (!value) {
         return prisma.userPreference.deleteMany({
-          where: { key, source: "manual" },
+          where: { key, source: "manual", userId: user.id },
         });
       }
       return prisma.userPreference.upsert({
         where: {
-          key_source: {
+          userId_key_source: {
+            userId: user.id,
             key,
             source: "manual",
           },
         },
         update: { value },
         create: {
+          userId: user.id,
           key,
           value,
           source: "manual",
@@ -802,10 +898,12 @@ export async function recordSuggestionFeedback(input: {
   action: "useful" | "useless";
   detail?: string;
 }) {
+  const user = await requireUser();
   if (!input.taskId && input.source !== "review_draft") return;
   if (input.action !== "useful" && input.action !== "useless") return;
 
   await recordAiFeedback({
+    userId: user.id,
     source: input.source ?? "today_suggestion",
     action:
       input.action === "useful"
@@ -824,7 +922,9 @@ export async function recordEditSuggestionApplied(input: {
   afterJson?: string;
   detail?: string;
 }) {
+  const user = await requireUser();
   await recordAiFeedback({
+    userId: user.id,
     source: input.source,
     action: "suggestion_applied",
     taskId: input.taskId ?? null,
@@ -836,6 +936,7 @@ export async function recordEditSuggestionApplied(input: {
 }
 
 export async function generateReviewDraftAction(formData: FormData) {
+  const user = await requireUser();
   const today = startOfDay();
   const reviewDate = dateInput(formData, "reviewDate") ?? today;
   const dayStart = startOfDay(reviewDate);
@@ -845,6 +946,7 @@ export async function generateReviewDraftAction(formData: FormData) {
     await Promise.all([
     prisma.task.findMany({
       where: {
+        userId: user.id,
         completedAt: { gte: dayStart, lte: dayEnd },
         status: "done",
       },
@@ -852,13 +954,14 @@ export async function generateReviewDraftAction(formData: FormData) {
       orderBy: { completedAt: "desc" },
     }),
     prisma.task.findMany({
-      where: { status: { in: ["todo", "in_progress"] } },
+      where: { status: { in: ["todo", "in_progress"] }, userId: user.id },
       select: { title: true, project: { select: { name: true } } },
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
     prisma.task.findMany({
       where: {
+        userId: user.id,
         status: { in: ["todo", "in_progress"] },
         OR: [
           { scheduledDate: { gte: dayStart, lte: dayEnd } },
@@ -871,7 +974,7 @@ export async function generateReviewDraftAction(formData: FormData) {
       take: 20,
     }),
     prisma.project.findMany({
-      where: { status: "active" },
+      where: { status: "active", userId: user.id },
       select: {
         name: true,
         currentMilestone: true,
@@ -881,7 +984,7 @@ export async function generateReviewDraftAction(formData: FormData) {
     }),
   ]);
 
-  const aiContext = await buildAiContext({ kind: "review" });
+  const aiContext = await buildAiContext({ kind: "review", userId: user.id });
   const draft = await withAiQuota("review_draft", () =>
     generateReviewDraft(
       {
@@ -905,13 +1008,14 @@ export async function generateReviewDraftAction(formData: FormData) {
   );
 
   await prisma.review.upsert({
-    where: { reviewDate },
+    where: { userId_reviewDate: { userId: user.id, reviewDate } },
     update: {
       summary: draft.summary,
       nextActions: draft.nextActions,
       status: "draft",
     },
     create: {
+      userId: user.id,
       reviewDate,
       summary: draft.summary,
       nextActions: draft.nextActions,
@@ -926,12 +1030,14 @@ export async function generateReviewDraftAction(formData: FormData) {
 async function syncReviewRelations(
   review: { id: string; reviewDate: Date },
   nextActionTitles: string[],
+  userId: string,
 ) {
   const dayStart = startOfDay(review.reviewDate);
   const dayEnd = endOfDay(review.reviewDate);
 
   const tasks = await prisma.task.findMany({
     where: {
+      userId,
       OR: [
         { completedAt: { gte: dayStart, lte: dayEnd } },
         { scheduledDate: { gte: dayStart, lte: dayEnd } },
@@ -960,6 +1066,7 @@ async function syncReviewRelations(
         projectId: task.project?.id ?? null,
       },
       create: {
+        userId,
         reviewId: review.id,
         taskId: task.id,
         titleAtReview: task.title,
@@ -971,7 +1078,7 @@ async function syncReviewRelations(
   }
 
   const existingActions = await prisma.reviewNextAction.findMany({
-    where: { reviewId: review.id },
+    where: { reviewId: review.id, userId },
     orderBy: { sortOrder: "asc" },
   });
 
@@ -980,12 +1087,12 @@ async function syncReviewRelations(
       const existing = existingActions[index];
       if (existing) {
         await tx.reviewNextAction.update({
-          where: { id: existing.id },
+          where: { id: existing.id, userId },
           data: { title, status: "pending", sortOrder: index },
         });
         if (existing.taskId) {
           await tx.task.update({
-            where: { id: existing.taskId },
+            where: { id: existing.taskId, userId },
             data: { title },
           });
         }
@@ -994,6 +1101,7 @@ async function syncReviewRelations(
         scheduledDate.setDate(scheduledDate.getDate() + 1);
         const task = await tx.task.create({
           data: {
+            userId,
             title,
             priority: "medium",
             scheduledDate,
@@ -1001,6 +1109,7 @@ async function syncReviewRelations(
         });
         await tx.reviewNextAction.create({
           data: {
+            userId,
             reviewId: review.id,
             title,
             sortOrder: index,
@@ -1013,7 +1122,7 @@ async function syncReviewRelations(
     for (let index = nextActionTitles.length; index < existingActions.length; index++) {
       const extra = existingActions[index];
       await tx.reviewNextAction.update({
-        where: { id: extra.id },
+        where: { id: extra.id, userId },
         data: { status: "cancelled" },
       });
     }
@@ -1021,13 +1130,14 @@ async function syncReviewRelations(
 }
 
 export async function saveReview(formData: FormData) {
+  const user = await requireUser();
   const id = text(formData, "id");
   const summary = text(formData, "summary");
 
   if (!id || !summary) return;
 
   const review = await prisma.review.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: {
       summary,
       nextActions: text(formData, "nextActions"),
@@ -1040,7 +1150,7 @@ export async function saveReview(formData: FormData) {
     .map((line) => line.replace(/^[-*]\s*/, "").trim())
     .filter(Boolean);
 
-  await syncReviewRelations(review, nextActionTitles);
+  await syncReviewRelations(review, nextActionTitles, user.id);
 
   revalidatePath("/");
   revalidatePath("/review");
@@ -1048,6 +1158,7 @@ export async function saveReview(formData: FormData) {
 }
 
 export async function createProject(formData: FormData) {
+  const user = await requireUser();
   const name = text(formData, "name");
   const objective = text(formData, "objective");
 
@@ -1055,6 +1166,7 @@ export async function createProject(formData: FormData) {
 
   const project = await prisma.project.create({
     data: {
+      userId: user.id,
       name,
       objective,
       status: projectStatus(String(formData.get("status") ?? "active")),
@@ -1069,6 +1181,7 @@ export async function createProject(formData: FormData) {
 }
 
 export async function updateProject(formData: FormData) {
+  const user = await requireUser();
   const id = text(formData, "id");
   const name = text(formData, "name");
   const objective = text(formData, "objective");
@@ -1076,7 +1189,7 @@ export async function updateProject(formData: FormData) {
   if (!id || !name || !objective) return;
 
   await prisma.project.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: {
       name,
       objective,
@@ -1091,11 +1204,12 @@ export async function updateProject(formData: FormData) {
 }
 
 export async function deleteProject(formData: FormData) {
+  const user = await requireUser();
   const id = text(formData, "id");
 
   if (!id) return;
 
-  await prisma.project.delete({ where: { id } });
+  await prisma.project.delete({ where: { id, userId: user.id } });
 
   revalidatePath("/");
   revalidatePath("/workspace");
@@ -1103,6 +1217,7 @@ export async function deleteProject(formData: FormData) {
 }
 
 export async function createTask(formData: FormData) {
+  const user = await requireUser();
   const title = text(formData, "title");
 
   if (!title) return;
@@ -1111,9 +1226,10 @@ export async function createTask(formData: FormData) {
 
   await prisma.task.create({
     data: {
+      userId: user.id,
       title,
       notes: text(formData, "notes"),
-      projectId: text(formData, "projectId"),
+      projectId: await ownedProjectId(text(formData, "projectId"), user.id),
       status,
       priority: priority(String(formData.get("priority") ?? "medium")),
       scheduledDate: dateInput(formData, "scheduledDate"),
@@ -1131,13 +1247,14 @@ export async function createTask(formData: FormData) {
 }
 
 export async function updateTask(formData: FormData) {
+  const user = await requireUser();
   const id = text(formData, "id");
   const title = text(formData, "title");
 
   if (!id || !title) return;
 
   const existing = await prisma.task.findUnique({
-    where: { id },
+    where: { id, userId: user.id },
     select: {
       title: true,
       status: true,
@@ -1154,7 +1271,7 @@ export async function updateTask(formData: FormData) {
 
   const status = taskStatus(String(formData.get("status") ?? "todo"));
   const priorityValue = priority(String(formData.get("priority") ?? "medium"));
-  const projectId = text(formData, "projectId");
+  const projectId = await ownedProjectId(text(formData, "projectId"), user.id);
   const scheduledDate = dateInput(formData, "scheduledDate");
   const dueDate = dateInput(formData, "dueDate");
   const focusDate = dateInput(formData, "focusDate");
@@ -1166,7 +1283,7 @@ export async function updateTask(formData: FormData) {
         : existing.completedAt;
 
   await prisma.task.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: {
       title,
       notes: text(formData, "notes"),
@@ -1191,6 +1308,7 @@ export async function updateTask(formData: FormData) {
   });
   if (status === "done" && existing.status !== "done") {
     await recordAiFeedback({
+      userId: user.id,
       source: "task",
       action: "task_completed",
       taskId: id,
@@ -1200,6 +1318,7 @@ export async function updateTask(formData: FormData) {
     });
   } else if (status === "cancelled" && existing.status !== "cancelled") {
     await recordAiFeedback({
+      userId: user.id,
       source: "task",
       action: "task_cancelled",
       taskId: id,
@@ -1213,6 +1332,7 @@ export async function updateTask(formData: FormData) {
     dueDate.getTime() > existing.dueDate.getTime()
   ) {
     await recordAiFeedback({
+      userId: user.id,
       source: "task",
       action: "task_delayed",
       taskId: id,
@@ -1225,7 +1345,7 @@ export async function updateTask(formData: FormData) {
 
   if (existing.reviewNextAction?.id) {
     await prisma.reviewNextAction.update({
-      where: { id: existing.reviewNextAction.id },
+      where: { id: existing.reviewNextAction.id, userId: user.id },
       data: {
         status:
           status === "done"
@@ -1245,13 +1365,14 @@ export async function updateTask(formData: FormData) {
 }
 
 export async function setTaskStatus(formData: FormData) {
+  const user = await requireUser();
   const id = text(formData, "id");
   const status = taskStatus(String(formData.get("status") ?? "todo"));
 
   if (!id) return;
 
   const existing = await prisma.task.findUnique({
-    where: { id },
+    where: { id, userId: user.id },
     select: {
       title: true,
       status: true,
@@ -1267,7 +1388,7 @@ export async function setTaskStatus(formData: FormData) {
   if (!existing) return;
 
   await prisma.task.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: {
       status,
       completedAt:
@@ -1290,6 +1411,7 @@ export async function setTaskStatus(formData: FormData) {
   });
   if (status === "done" && existing.status !== "done") {
     await recordAiFeedback({
+      userId: user.id,
       source: "task",
       action: "task_completed",
       taskId: id,
@@ -1299,6 +1421,7 @@ export async function setTaskStatus(formData: FormData) {
     });
   } else if (status === "cancelled" && existing.status !== "cancelled") {
     await recordAiFeedback({
+      userId: user.id,
       source: "task",
       action: "task_cancelled",
       taskId: id,
@@ -1310,7 +1433,7 @@ export async function setTaskStatus(formData: FormData) {
 
   if (existing.reviewNextAction?.id) {
     await prisma.reviewNextAction.update({
-      where: { id: existing.reviewNextAction.id },
+      where: { id: existing.reviewNextAction.id, userId: user.id },
       data: {
         status:
           status === "done"
@@ -1327,18 +1450,19 @@ export async function setTaskStatus(formData: FormData) {
 }
 
 export async function markTodayFocus(formData: FormData) {
+  const user = await requireUser();
   const id = text(formData, "id");
   if (!id) return;
 
   const task = await prisma.task.findUnique({
-    where: { id },
+    where: { id, userId: user.id },
     select: { id: true },
   });
 
   if (!task) return;
 
   await prisma.task.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: { focusDate: startOfDay() },
   });
 
@@ -1347,18 +1471,19 @@ export async function markTodayFocus(formData: FormData) {
 }
 
 export async function clearTodayFocus(formData: FormData) {
+  const user = await requireUser();
   const id = text(formData, "id");
   if (!id) return;
 
   const task = await prisma.task.findUnique({
-    where: { id },
+    where: { id, userId: user.id },
     select: { id: true },
   });
 
   if (!task) return;
 
   await prisma.task.update({
-    where: { id },
+    where: { id, userId: user.id },
     data: { focusDate: null },
   });
 
@@ -1367,11 +1492,12 @@ export async function clearTodayFocus(formData: FormData) {
 }
 
 export async function deleteTask(formData: FormData) {
+  const user = await requireUser();
   const id = text(formData, "id");
 
   if (!id) return;
 
-  await prisma.task.delete({ where: { id } });
+  await prisma.task.delete({ where: { id, userId: user.id } });
 
   revalidatePath("/");
   revalidatePath("/workspace");

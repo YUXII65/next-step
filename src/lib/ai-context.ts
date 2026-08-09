@@ -10,6 +10,7 @@ export type AiContextKind =
   | "project_edit";
 
 export type AiContextInput = {
+  userId: string;
   kind: AiContextKind;
   inboxItemId?: string;
   taskId?: string;
@@ -50,13 +51,16 @@ function truncate(value: string, max = 100) {
 export async function buildAiContext(
   input: AiContextInput,
 ): Promise<AiContext> {
+  const { userId } = input;
   const [preferences, feedbackEvents, reviews, activeProjects, focusedTask] =
     await Promise.all([
       prisma.userPreference.findMany({
+        where: { userId },
         orderBy: { updatedAt: "desc" },
         take: 20,
       }),
       prisma.aiFeedbackEvent.findMany({
+        where: { userId },
         orderBy: { createdAt: "desc" },
         take: 50,
         include: {
@@ -65,6 +69,7 @@ export async function buildAiContext(
         },
       }),
       prisma.review.findMany({
+        where: { userId },
         orderBy: { reviewDate: "desc" },
         take: 3,
         select: {
@@ -74,7 +79,7 @@ export async function buildAiContext(
         },
       }),
       prisma.project.findMany({
-        where: { status: "active" },
+        where: { status: "active", userId },
         select: {
           id: true,
           name: true,
@@ -101,7 +106,7 @@ export async function buildAiContext(
       }),
       input.taskId
         ? prisma.task.findUnique({
-            where: { id: input.taskId },
+            where: { id: input.taskId, userId },
             select: {
               title: true,
               status: true,

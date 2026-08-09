@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  const user = await requireUser();
   const [projects, tasks, inboxItems, reviews] = await Promise.all([
     prisma.project.findMany({
+      where: { userId: user.id },
       include: {
         tasks: true,
       },
       orderBy: { updatedAt: "desc" },
     }),
     prisma.task.findMany({
+      where: { userId: user.id },
       include: {
         project: true,
         inboxItem: true,
@@ -19,9 +23,11 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.inboxItem.findMany({
+      where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     }),
     prisma.review.findMany({
+      where: { userId: user.id },
       include: {
         tasks: true,
         nextActionTasks: true,

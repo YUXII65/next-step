@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ToolboxDemo } from "./toolbox-demo";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "工具匣",
@@ -20,12 +21,16 @@ function startOfWeek(date: Date) {
 }
 
 export default async function ToolsPage() {
+  const user = await requireUser();
   const now = new Date();
   const [tasks, activeProjects, reviews, pendingInbox, feedbackCount] =
     await Promise.all([
-      prisma.task.findMany({ select: { status: true } }),
+      prisma.task.findMany({
+        where: { userId: user.id },
+        select: { status: true },
+      }),
       prisma.project.findMany({
-        where: { status: "active" },
+        where: { status: "active", userId: user.id },
         select: {
           name: true,
           currentMilestone: true,
@@ -42,6 +47,7 @@ export default async function ToolsPage() {
         orderBy: { updatedAt: "desc" },
       }),
       prisma.review.findMany({
+        where: { userId: user.id },
         include: {
           tasks: {
             select: {
@@ -53,8 +59,10 @@ export default async function ToolsPage() {
         orderBy: { reviewDate: "desc" },
         take: 14,
       }),
-      prisma.inboxItem.count({ where: { status: "inbox" } }),
-      prisma.aiFeedbackEvent.count(),
+      prisma.inboxItem.count({
+        where: { userId: user.id, status: "inbox" },
+      }),
+      prisma.aiFeedbackEvent.count({ where: { userId: user.id } }),
     ]);
 
   const openTasks = tasks.filter(

@@ -15,6 +15,7 @@ import { TodayTaskActions } from "@/components/today-task-actions";
 import { TodayBrief } from "@/components/today-brief";
 import { AiTaskPlanner } from "@/components/ai-task-planner";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 import type { TodaySuggestion } from "@/lib/ai";
 import {
   endOfDay,
@@ -59,11 +60,13 @@ function taskSource(task: AgendaTask) {
 export const dynamic = "force-dynamic";
 
 export default async function TodayPage() {
+  const user = await requireUser();
   const now = new Date();
   const dayStart = startOfDay(now);
   const dayEnd = endOfDay(now);
   const [tasks, pendingInbox] = await Promise.all([
     prisma.task.findMany({
+      where: { userId: user.id },
       include: {
         project: { select: { name: true } },
         inboxItem: { select: { id: true } },
@@ -76,7 +79,7 @@ export default async function TodayPage() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.inboxItem.findMany({
-      where: { status: "inbox" },
+      where: { userId: user.id, status: "inbox" },
       select: {
         id: true,
         content: true,

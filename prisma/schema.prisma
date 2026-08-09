@@ -53,8 +53,30 @@ enum ReviewNextActionStatus {
   cancelled
 }
 
+model User {
+  id                String              @id @default(cuid())
+  username          String              @unique
+  passwordHash      String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  projects          Project[]
+  tasks             Task[]
+  inboxItems        InboxItem[]
+  aiPlanFeedbacks   AiPlanFeedback[]
+  userPreferences   UserPreference[]
+  aiFeedbackEvents  AiFeedbackEvent[]
+  reviews           Review[]
+  reviewTasks       ReviewTask[]
+  reviewNextActions ReviewNextAction[]
+  aiUsageLogs       AiUsageLog[]
+
+  @@map("users")
+}
+
 model Project {
   id                     String            @id @default(cuid())
+  userId                 String
+  user                   User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   name                   String
   objective              String
   status                 ProjectStatus     @default(active)
@@ -70,11 +92,14 @@ model Project {
   reviewTasks            ReviewTask[]
   aiFeedbackEvents       AiFeedbackEvent[]
 
+  @@index([userId])
   @@map("projects")
 }
 
 model Task {
   id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   title            String
   notes            String?
   projectId        String?
@@ -94,11 +119,14 @@ model Task {
   reviewNextAction ReviewNextAction?
   aiFeedbackEvents AiFeedbackEvent[]
 
+  @@index([userId])
   @@map("tasks")
 }
 
 model InboxItem {
   id               String            @id @default(cuid())
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   content          String
   source           String            @default("manual")
   status           InboxStatus       @default(inbox)
@@ -120,11 +148,14 @@ model InboxItem {
   aiPlanFeedbacks  AiPlanFeedback[]
   aiFeedbackEvents AiFeedbackEvent[]
 
+  @@index([userId])
   @@map("inbox_items")
 }
 
 model AiPlanFeedback {
   id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   inboxItemId String?
   inboxItem   InboxItem? @relation(fields: [inboxItemId], references: [id], onDelete: SetNull)
   action      String
@@ -133,11 +164,14 @@ model AiPlanFeedback {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
+  @@index([userId])
   @@map("ai_plan_feedbacks")
 }
 
 model UserPreference {
   id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   key       String
   value     String
   source    String   @default("manual")
@@ -145,12 +179,15 @@ model UserPreference {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([key, source])
+  @@unique([userId, key, source])
+  @@index([userId])
   @@map("user_preferences")
 }
 
 model AiFeedbackEvent {
   id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   source      String
   action      String
   inboxItemId String?
@@ -164,12 +201,15 @@ model AiFeedbackEvent {
   detail      String?
   createdAt   DateTime   @default(now())
 
+  @@index([userId])
   @@map("ai_feedback_events")
 }
 
 model Review {
   id              String             @id @default(cuid())
-  reviewDate      DateTime           @unique
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  reviewDate      DateTime
   summary         String
   nextActions     String?
   status          ReviewStatus       @default(draft)
@@ -178,11 +218,15 @@ model Review {
   tasks           ReviewTask[]
   nextActionTasks ReviewNextAction[]
 
+  @@unique([userId, reviewDate])
+  @@index([userId])
   @@map("reviews")
 }
 
 model ReviewTask {
   id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   reviewId         String
   review           Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   taskId           String
@@ -195,11 +239,14 @@ model ReviewTask {
   createdAt        DateTime @default(now())
 
   @@unique([reviewId, taskId])
+  @@index([userId])
   @@map("review_tasks")
 }
 
 model ReviewNextAction {
   id        String                 @id @default(cuid())
+  userId    String
+  user      User                   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   reviewId  String
   review    Review                 @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   title     String
@@ -210,11 +257,14 @@ model ReviewNextAction {
   createdAt DateTime               @default(now())
   updatedAt DateTime               @updatedAt
 
+  @@index([userId])
   @@map("review_next_actions")
 }
 
 model AiUsageLog {
   id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   visitorId        String
   feature          String
   status           String   @default("ok")
@@ -225,5 +275,6 @@ model AiUsageLog {
 
   @@index([visitorId, createdAt])
   @@index([createdAt])
+  @@index([userId])
   @@map("ai_usage_logs")
 }

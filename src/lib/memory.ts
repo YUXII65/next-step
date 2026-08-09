@@ -1,20 +1,23 @@
 import { prisma } from "@/lib/prisma";
 
-export async function buildUserMemorySummary() {
+export async function buildUserMemorySummary(userId: string) {
   const [feedback, tasks, latestReview, activeProjects] = await Promise.all([
     prisma.aiPlanFeedback.findMany({
+      where: { userId },
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
     prisma.task.findMany({
+      where: { userId },
       select: { status: true },
     }),
     prisma.review.findFirst({
+      where: { userId },
       select: { summary: true },
       orderBy: { reviewDate: "desc" },
     }),
     prisma.project.findMany({
-      where: { status: "active" },
+      where: { status: "active", userId },
       select: {
         name: true,
         currentMilestone: true,

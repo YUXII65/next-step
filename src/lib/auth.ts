@@ -1,0 +1,63 @@
+import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import {
+  issueSessionToken,
+  readSessionToken,
+  SESSION_COOKIE,
+  SESSION_MAX_AGE_SECONDS,
+} from "@/lib/session";
+
+export function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const hash = scryptSync(password, salt, 64).toString("hex");
+  return `${salt}:${hash}`;
+}
+
+export function verifyPassword(password: string, stored: string) {
+  const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
+
+  const candidate = scryptSync(password, salt, 64);
+  const expected = Buffer.from(hash, "hex");
+  return (
+    candidate.length === expected.length &&
+    timingSafeEqual(candidate, expected)
+  );
+}
+
+export async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+
+  const userId = readSessionToken(token);
+  if (!userId) return null;
+
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, username: true, createdAt: true },
+  });
+}
+
+export async function requireUser() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  return user;
+}
+
+export async function createUserSession(userId: string) {
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE, issueSessionToken(userId), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+  });
+}
+
+export async function destroyUserSession() {
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE);
+}

@@ -14,6 +14,7 @@ import { ReviewDraftFeedback } from "@/components/review-draft-feedback";
 import { SubmitButton } from "@/components/submit-button";
 import { generateReviewDraftAction, saveReview } from "@/app/actions";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 import { cx } from "@/lib/utils";
 import { formatDate, toDateInputValue } from "@/lib/date";
 
@@ -35,6 +36,7 @@ export default async function ReviewPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const user = await requireUser();
   const params = await searchParams;
   const dateParam =
     typeof params.date === "string" &&
@@ -43,6 +45,7 @@ export default async function ReviewPage({
       : toDateInputValue(new Date());
 
   const reviews = await prisma.review.findMany({
+    where: { userId: user.id },
     include: {
       tasks: {
         include: {

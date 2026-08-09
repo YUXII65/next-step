@@ -17,6 +17,7 @@ import {
 } from "@/app/actions";
 import { cx } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
+import { requireUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export default async function ProjectsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const user = await requireUser();
   const params = await searchParams;
   const projectParam =
     typeof params.project === "string" ? params.project : "";
@@ -55,6 +57,7 @@ export default async function ProjectsPage({
 
   const [projects, tasks] = await Promise.all([
     prisma.project.findMany({
+      where: { userId: user.id },
       include: {
         tasks: {
           orderBy: [{ planOrder: "asc" }, { createdAt: "desc" }],
@@ -63,6 +66,7 @@ export default async function ProjectsPage({
       orderBy: { updatedAt: "desc" },
     }),
     prisma.task.findMany({
+      where: { userId: user.id },
       include: { project: true },
       orderBy: { createdAt: "desc" },
     }),

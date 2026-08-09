@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const ACCESS_PASSWORD = process.env.APP_ACCESS_PASSWORD || "123456";
-const ACCESS_COOKIE = "workbench_access";
+const ACCESS_COOKIE = "next_step_session";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -12,7 +11,7 @@ export function proxy(request: NextRequest) {
   }
 
   const cookie = request.cookies.get(ACCESS_COOKIE)?.value;
-  if (cookie === ACCESS_PASSWORD) {
+  if (cookie) {
     return NextResponse.next();
   }
 
@@ -25,5 +24,7 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|icon.png).*)",
+  ],
 };

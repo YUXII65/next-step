@@ -56,13 +56,6 @@ const actions = [
     href: "/api/export",
     icon: Download,
   },
-  {
-    id: "backup",
-    label: "导出数据备份",
-    description: "下载 SQLite 数据库备份",
-    href: "/api/backup",
-    icon: Download,
-  },
 ] as const;
 
 export function CommandPalette() {
