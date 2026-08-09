@@ -3,27 +3,5 @@
   "buildCommand": "pnpm build:edgeone",
   "installCommand": "pnpm install",
   "outputDirectory": ".next",
-  "nodeVersion": "22.11.0",
-  "redirects": [
-    {
-      "source": "/inbox",
-      "destination": "/workspace?tab=inbox",
-      "statusCode": 301
-    },
-    {
-      "source": "/projects",
-      "destination": "/workspace?tab=projects",
-      "statusCode": 301
-    },
-    {
-      "source": "/tasks",
-      "destination": "/workspace?tab=projects",
-      "statusCode": 301
-    },
-    {
-      "source": "/projects/:id",
-      "destination": "/workspace?tab=projects&project=:id",
-      "statusCode": 301
-    }
-  ]
+  "nodeVersion": "22.11.0"
 }
