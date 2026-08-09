@@ -31,7 +31,7 @@ EdgeOne Pages 的项目域名默认带访问保护：
 6. 构建配置保持仓库默认即可，仓库里的 `edgeone.json` 会自动使用：
 
 ```bash
-pnpm build:edgeone
+npm run build:edgeone
 ```
 
 也就是依次执行：
