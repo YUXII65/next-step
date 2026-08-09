@@ -77,6 +77,10 @@ AI_QUOTA_VISITOR_DAILY_TOKENS=200000
 3. 使用 AI 功能，确认能正常生成计划。
 4. 检查 Neon 控制台里的 `ai_usage_logs`，确认用量在每天限额内。
 
+## 常见问题
+
+如果部署后访问页面提示 `Middleware execution failed`，通常是 EdgeOne 边缘运行时与 Next.js `proxy.ts` 的兼容问题。公开版已经把所有页面和服务端操作都放在 `requireUser()` 后面校验，不依赖 `proxy.ts`，出现这个问题时移除 `src/proxy.ts` 再重新部署即可。
+
 ## 维护
 
 - 以后更新公开版，把修改推送到 `codex/edgeone-deploy`，EdgeOne 会自动部署。
