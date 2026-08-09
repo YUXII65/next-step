@@ -13,7 +13,7 @@
 
 ## 技术栈
 
-- Next.js 16 + TypeScript
+- Next.js 15 + TypeScript
 - Tailwind CSS
 - Prisma 6 + PostgreSQL
 - lucide-react 图标
