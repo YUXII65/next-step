@@ -173,7 +173,7 @@ async function callModel(
     modelOverride ||
     process.env.DEEPSEEK_MODEL ||
     process.env.OPENAI_MODEL ||
-    "deepseek-chat";
+    "deepseek-v4-flash";
   const baseUrl = (
     baseUrlOverride ||
     process.env.DEEPSEEK_BASE_URL ||

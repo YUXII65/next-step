@@ -9,14 +9,14 @@ const BASE_URL_STORAGE = "ai-base-url";
 
 export function AiSettings() {
   const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("deepseek-chat");
+  const [model, setModel] = useState("deepseek-v4-flash");
   const [baseUrl, setBaseUrl] = useState("https://api.deepseek.com");
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
     function readStorage() {
       setApiKey(localStorage.getItem(KEY_STORAGE) ?? "");
-      setModel(localStorage.getItem(MODEL_STORAGE) ?? "deepseek-chat");
+      setModel(localStorage.getItem(MODEL_STORAGE) ?? "deepseek-v4-flash");
       setBaseUrl(
         localStorage.getItem(BASE_URL_STORAGE) ?? "https://api.deepseek.com",
       );
@@ -39,7 +39,7 @@ export function AiSettings() {
     const key = apiKey.trim();
     if (key) {
       localStorage.setItem(KEY_STORAGE, key);
-      localStorage.setItem(MODEL_STORAGE, model.trim() || "deepseek-chat");
+      localStorage.setItem(MODEL_STORAGE, model.trim() || "deepseek-v4-flash");
       localStorage.setItem(
         BASE_URL_STORAGE,
         baseUrl.trim() || "https://api.deepseek.com",
@@ -100,7 +100,7 @@ export function AiSettings() {
           <input
             value={model}
             onChange={(event) => setModel(event.target.value)}
-            placeholder="deepseek-chat"
+            placeholder="deepseek-v4-flash"
             className="w-full rounded-md border border-border bg-surface-muted px-3 py-2 text-sm text-ink outline-none focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20"
           />
         </label>

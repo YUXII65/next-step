@@ -15,7 +15,7 @@
 ```env
 DATABASE_URL="file:./dev.db"
 DEEPSEEK_API_KEY="sk-..."
-DEEPSEEK_MODEL="deepseek-chat"
+DEEPSEEK_MODEL="deepseek-v4-flash"
 DEEPSEEK_BASE_URL="https://api.deepseek.com"
 APP_ACCESS_PASSWORD="请改成你自己的访问密码"
 

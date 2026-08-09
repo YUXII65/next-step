@@ -29,13 +29,13 @@ export function QuickCapture({ compact = false }: { compact?: boolean }) {
   const [content, setContent] = useState("");
   const [samples, setSamples] = useState(samplesForDate);
   const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("deepseek-chat");
+  const [model, setModel] = useState("deepseek-v4-flash");
   const [baseUrl, setBaseUrl] = useState("https://api.deepseek.com");
 
   useEffect(() => {
     function readStorage() {
       setApiKey(localStorage.getItem("ai-api-key") ?? "");
-      setModel(localStorage.getItem("ai-model") ?? "deepseek-chat");
+      setModel(localStorage.getItem("ai-model") ?? "deepseek-v4-flash");
       setBaseUrl(
         localStorage.getItem("ai-base-url") ?? "https://api.deepseek.com",
       );

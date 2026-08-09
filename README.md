@@ -58,7 +58,7 @@ pnpm start
 
 ```bash
 DEEPSEEK_API_KEY="sk-..."
-DEEPSEEK_MODEL="deepseek-chat"
+DEEPSEEK_MODEL="deepseek-v4-flash"
 DEEPSEEK_BASE_URL="https://api.deepseek.com"
 ```
 

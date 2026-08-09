@@ -10,7 +10,7 @@ const apiKey = process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY;
 const model =
   process.env.DEEPSEEK_MODEL ||
   process.env.OPENAI_MODEL ||
-  "deepseek-chat";
+  "deepseek-v4-flash";
 const baseUrl = (
   process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com"
 ).replace(/\/$/, "");
