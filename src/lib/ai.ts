@@ -1,4 +1,10 @@
 import { toDateInputValue } from "@/lib/date";
+import {
+  estimateAiUsage,
+  hasAiQuota,
+  isAiQuotaEnabled,
+  recordAiUsage,
+} from "@/lib/ai-quota";
 
 export type InboxPlanTask = {
   title: string;
@@ -175,6 +181,8 @@ async function callModel(
   ).replace(/\/$/, "");
 
   try {
+    if (isAiQuotaEnabled() && !(await hasAiQuota())) return null;
+
     const response = await fetch(`${baseUrl}/chat/completions`, {
       method: "POST",
       headers: {
@@ -196,8 +204,26 @@ async function callModel(
 
     const data = (await response.json()) as {
       choices?: Array<{ message?: { content?: string } }>;
+      usage?: {
+        prompt_tokens?: number;
+        completion_tokens?: number;
+        total_tokens?: number;
+      };
     };
-    return data.choices?.[0]?.message?.content ?? null;
+    const content = data.choices?.[0]?.message?.content ?? null;
+
+    if (isAiQuotaEnabled()) {
+      const usage = data.usage
+        ? {
+            promptTokens: data.usage.prompt_tokens ?? 0,
+            completionTokens: data.usage.completion_tokens ?? 0,
+            totalTokens: data.usage.total_tokens ?? 0,
+          }
+        : await estimateAiUsage({ system, user }, content);
+      await recordAiUsage(usage);
+    }
+
+    return content;
   } catch {
     return null;
   }

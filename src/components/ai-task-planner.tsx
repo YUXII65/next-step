@@ -63,6 +63,7 @@ function parseClarification(item: {
 
 export function AiTaskPlanner({
   pending,
+  quotaManaged = false,
 }: {
   pending: Array<{
     id: string;
@@ -70,10 +71,11 @@ export function AiTaskPlanner({
     aiPlanJson: string | null;
     aiSuggestionJson: string | null;
   }>;
+  quotaManaged?: boolean;
 }) {
   return (
     <div className="space-y-4">
-      <AiSettings />
+      {quotaManaged ? null : <AiSettings />}
       <AiPreferences />
       <QuickCapture />
 

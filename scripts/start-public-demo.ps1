@@ -19,6 +19,11 @@ $tunnelUrlFile = Join-Path $logDir "tunnel.url"
 $demoDb = Join-Path $root "prisma\public-demo.db"
 $demoPassword = if ($env:PUBLIC_DEMO_PASSWORD) { $env:PUBLIC_DEMO_PASSWORD } else { "123456" }
 $demoPort = 3001
+$env:AI_QUOTA_ENABLED = if ($env:AI_QUOTA_ENABLED) { $env:AI_QUOTA_ENABLED } else { "true" }
+$env:AI_QUOTA_DAILY_CALLS = if ($env:AI_QUOTA_DAILY_CALLS) { $env:AI_QUOTA_DAILY_CALLS } else { "200" }
+$env:AI_QUOTA_DAILY_TOKENS = if ($env:AI_QUOTA_DAILY_TOKENS) { $env:AI_QUOTA_DAILY_TOKENS } else { "100000" }
+$env:AI_QUOTA_VISITOR_DAILY_CALLS = if ($env:AI_QUOTA_VISITOR_DAILY_CALLS) { $env:AI_QUOTA_VISITOR_DAILY_CALLS } else { "10" }
+$env:AI_QUOTA_VISITOR_DAILY_TOKENS = if ($env:AI_QUOTA_VISITOR_DAILY_TOKENS) { $env:AI_QUOTA_VISITOR_DAILY_TOKENS } else { "20000" }
 
 New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
@@ -32,20 +37,22 @@ function Ensure-DemoDatabase {
     Remove-Item -LiteralPath $demoDb -Force
   }
 
-  if (Test-Path -LiteralPath $demoDb) {
-    return
+  $isNew = -not (Test-Path -LiteralPath $demoDb)
+  if ($isNew) {
+    New-Item -ItemType File -Path $demoDb -Force | Out-Null
   }
 
-  New-Item -ItemType File -Path $demoDb -Force | Out-Null
   $env:DATABASE_URL = "file:./public-demo.db"
   & $node (Join-Path $root "node_modules\prisma\build\index.js") db push --skip-generate
   if ($LASTEXITCODE -ne 0) {
     throw "demo database sync failed"
   }
 
-  & $node (Join-Path $root "scripts\seed-demo-data.mjs") --force
-  if ($LASTEXITCODE -ne 0) {
-    throw "demo database seed failed"
+  if ($isNew) {
+    & $node (Join-Path $root "scripts\seed-demo-data.mjs") --force
+    if ($LASTEXITCODE -ne 0) {
+      throw "demo database seed failed"
+    }
   }
 }
 

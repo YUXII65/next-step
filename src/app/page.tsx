@@ -161,7 +161,10 @@ export default async function TodayPage() {
             </span>
           }
         />
-        <AiTaskPlanner pending={pendingInbox} />
+        <AiTaskPlanner
+          pending={pendingInbox}
+          quotaManaged={process.env.AI_QUOTA_ENABLED === "true"}
+        />
         <div className="border-t border-border p-4">
           <TodayBrief initialSuggestions={initialSuggestions} />
         </div>

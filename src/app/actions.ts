@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { endOfDay, startOfDay, toDateInputValue } from "@/lib/date";
 import { buildAiContext } from "@/lib/ai-context";
 import { recordAiFeedback } from "@/lib/feedback";
+import { isAiQuotaEnabled, withAiQuota } from "@/lib/ai-quota";
 import {
   clarifyInbox,
   generateReviewDraft,
@@ -46,6 +47,22 @@ const priorities: Priority[] = ["low", "medium", "high", "urgent"];
 function text(formData: FormData, key: string) {
   const value = String(formData.get(key) ?? "").trim();
   return value || null;
+}
+
+function clientAiOverrides(formData: FormData) {
+  if (isAiQuotaEnabled()) {
+    return {
+      apiKey: undefined,
+      model: undefined,
+      baseUrl: undefined,
+    };
+  }
+
+  return {
+    apiKey: String(formData.get("apiKey") ?? "").trim() || undefined,
+    model: String(formData.get("model") ?? "").trim() || undefined,
+    baseUrl: String(formData.get("baseUrl") ?? "").trim() || undefined,
+  };
 }
 
 function dateInput(formData: FormData, key: string) {
@@ -172,9 +189,7 @@ export async function loginWithPassword(formData: FormData) {
 export async function addInboxItemAndClarify(formData: FormData) {
   const content = String(formData.get("content") ?? "").trim();
   if (!content) return;
-  const apiKey = String(formData.get("apiKey") ?? "").trim() || undefined;
-  const model = String(formData.get("model") ?? "").trim() || undefined;
-  const baseUrl = String(formData.get("baseUrl") ?? "").trim() || undefined;
+  const { apiKey, model, baseUrl } = clientAiOverrides(formData);
 
   const item = await prisma.inboxItem.create({
     data: {
@@ -201,15 +216,17 @@ export async function addInboxItemAndClarify(formData: FormData) {
     inboxItemId: item.id,
   });
 
-  const clarification = await clarifyInbox(
-    content,
-    projects.map((project) => project.name),
-    apiKey,
-    model,
-    baseUrl,
-    projectContext,
-    aiContext.summary,
-    aiContext.evidence,
+  const clarification = await withAiQuota("inbox_clarify", () =>
+    clarifyInbox(
+      content,
+      projects.map((project) => project.name),
+      apiKey,
+      model,
+      baseUrl,
+      projectContext,
+      aiContext.summary,
+      aiContext.evidence,
+    ),
   );
 
   await prisma.inboxItem.update({
@@ -240,10 +257,12 @@ export async function getTaskEditSuggestion(input: {
   });
   const { taskId: _taskId, ...suggestionInput } = input;
   void _taskId;
-  return generateTaskEditSuggestion(
-    suggestionInput,
-    aiContext.summary,
-    aiContext.evidence,
+  return withAiQuota("task_edit", () =>
+    generateTaskEditSuggestion(
+      suggestionInput,
+      aiContext.summary,
+      aiContext.evidence,
+    ),
   );
 }
 
@@ -262,10 +281,12 @@ export async function getProjectEditSuggestion(input: {
   });
   const { projectId: _projectId, ...suggestionInput } = input;
   void _projectId;
-  return generateProjectEditSuggestion(
-    suggestionInput,
-    aiContext.summary,
-    aiContext.evidence,
+  return withAiQuota("project_edit", () =>
+    generateProjectEditSuggestion(
+      suggestionInput,
+      aiContext.summary,
+      aiContext.evidence,
+    ),
   );
 }
 
@@ -281,19 +302,19 @@ export async function getTaskCoachAdvice(input: {
     kind: "task_coach",
     taskId: input.taskId,
   });
-  return generateTaskCoachAdvice(
-    input,
-    aiContext.summary,
-    aiContext.evidence,
+  return withAiQuota("task_coach", () =>
+    generateTaskCoachAdvice(
+      input,
+      aiContext.summary,
+      aiContext.evidence,
+    ),
   );
 }
 
 export async function addInboxItemAndPlan(formData: FormData) {
   const content = String(formData.get("content") ?? "").trim();
   if (!content) return;
-  const apiKey = String(formData.get("apiKey") ?? "").trim() || undefined;
-  const model = String(formData.get("model") ?? "").trim() || undefined;
-  const baseUrl = String(formData.get("baseUrl") ?? "").trim() || undefined;
+  const { apiKey, model, baseUrl } = clientAiOverrides(formData);
 
   const item = await prisma.inboxItem.create({
     data: {
@@ -319,19 +340,21 @@ export async function addInboxItemAndPlan(formData: FormData) {
     kind: "inbox_plan",
     inboxItemId: item.id,
   });
-  const plan = await planInbox(
-    content,
-    projects.map((project) => project.name),
-    apiKey,
-    model,
-    baseUrl,
-    undefined,
-    undefined,
-    projectContext,
-    aiContext.summary,
-    undefined,
-    aiContext.evidence,
-    aiContext.maxPlanTasks,
+  const plan = await withAiQuota("inbox_plan", () =>
+    planInbox(
+      content,
+      projects.map((project) => project.name),
+      apiKey,
+      model,
+      baseUrl,
+      undefined,
+      undefined,
+      projectContext,
+      aiContext.summary,
+      undefined,
+      aiContext.evidence,
+      aiContext.maxPlanTasks,
+    ),
   );
 
   await prisma.inboxItem.update({
@@ -437,9 +460,7 @@ export async function ignoreInboxItem(formData: FormData) {
 export async function suggestInboxItem(formData: FormData) {
   const id = text(formData, "id");
   if (!id) return;
-  const apiKey = String(formData.get("apiKey") ?? "").trim() || undefined;
-  const model = String(formData.get("model") ?? "").trim() || undefined;
-  const baseUrl = String(formData.get("baseUrl") ?? "").trim() || undefined;
+  const { apiKey, model, baseUrl } = clientAiOverrides(formData);
 
   const item = await prisma.inboxItem.findUnique({
     where: { id },
@@ -460,23 +481,25 @@ export async function suggestInboxItem(formData: FormData) {
     kind: "inbox_plan",
     inboxItemId: id,
   });
-  const plan = await planInbox(
-    item.content,
-    projects.map((project) => project.name),
-    apiKey,
-    model,
-    baseUrl,
-    undefined,
-    undefined,
-    projects.map((project) => ({
-      name: project.name,
-      objective: project.objective,
-      currentMilestone: project.currentMilestone,
-    })),
-    aiContext.summary,
-    undefined,
-    aiContext.evidence,
-    aiContext.maxPlanTasks,
+  const plan = await withAiQuota("inbox_plan", () =>
+    planInbox(
+      item.content,
+      projects.map((project) => project.name),
+      apiKey,
+      model,
+      baseUrl,
+      undefined,
+      undefined,
+      projects.map((project) => ({
+        name: project.name,
+        objective: project.objective,
+        currentMilestone: project.currentMilestone,
+      })),
+      aiContext.summary,
+      undefined,
+      aiContext.evidence,
+      aiContext.maxPlanTasks,
+    ),
   );
 
   await prisma.inboxItem.update({
@@ -498,9 +521,7 @@ export async function generateInboxPlan(formData: FormData) {
   const dimensionChoices = [0, 1, 2, 3]
     .map((index) => text(formData, `choice_${index}`))
     .filter((choice): choice is string => Boolean(choice));
-  const apiKey = String(formData.get("apiKey") ?? "").trim() || undefined;
-  const model = String(formData.get("model") ?? "").trim() || undefined;
-  const baseUrl = String(formData.get("baseUrl") ?? "").trim() || undefined;
+  const { apiKey, model, baseUrl } = clientAiOverrides(formData);
 
   const item = await prisma.inboxItem.findUnique({
     where: { id },
@@ -521,23 +542,25 @@ export async function generateInboxPlan(formData: FormData) {
     kind: "inbox_plan",
     inboxItemId: item.id,
   });
-  const plan = await planInbox(
-    item.content,
-    projects.map((project) => project.name),
-    apiKey,
-    model,
-    baseUrl,
-    option ?? undefined,
-    supplement ?? undefined,
-    projects.map((project) => ({
-      name: project.name,
-      objective: project.objective,
-      currentMilestone: project.currentMilestone,
-    })),
-    aiContext.summary,
-    dimensionChoices,
-    aiContext.evidence,
-    aiContext.maxPlanTasks,
+  const plan = await withAiQuota("inbox_plan", () =>
+    planInbox(
+      item.content,
+      projects.map((project) => project.name),
+      apiKey,
+      model,
+      baseUrl,
+      option ?? undefined,
+      supplement ?? undefined,
+      projects.map((project) => ({
+        name: project.name,
+        objective: project.objective,
+        currentMilestone: project.currentMilestone,
+      })),
+      aiContext.summary,
+      dimensionChoices,
+      aiContext.evidence,
+      aiContext.maxPlanTasks,
+    ),
   );
 
   await prisma.inboxItem.update({
@@ -707,21 +730,23 @@ export async function generateTodaySuggestion(
   ]);
 
   const aiContext = await buildAiContext({ kind: "today_focus" });
-  const suggestions = await suggestTodayFocus(
-    tasks.map((task) => ({
-      id: task.id,
-      title: task.title,
-      projectName: task.project?.name ?? null,
-      priority: task.priority,
-      dueDate: task.dueDate,
-      scheduledDate: task.scheduledDate,
-    })),
-    {
-      reviewSummary: latestReview?.summary ?? undefined,
-      projects: activeProjects,
-    },
-    aiContext.summary,
-    aiContext.evidence,
+  const suggestions = await withAiQuota("today_focus", () =>
+    suggestTodayFocus(
+      tasks.map((task) => ({
+        id: task.id,
+        title: task.title,
+        projectName: task.project?.name ?? null,
+        priority: task.priority,
+        dueDate: task.dueDate,
+        scheduledDate: task.scheduledDate,
+      })),
+      {
+        reviewSummary: latestReview?.summary ?? undefined,
+        projects: activeProjects,
+      },
+      aiContext.summary,
+      aiContext.evidence,
+    ),
   );
 
   revalidatePath("/");
@@ -857,24 +882,26 @@ export async function generateReviewDraftAction(formData: FormData) {
   ]);
 
   const aiContext = await buildAiContext({ kind: "review" });
-  const draft = await generateReviewDraft(
-    {
-      completed: completedTasks.map((task) => ({
-        title: task.title,
-        projectName: task.project?.name ?? null,
-      })),
-      open: openTasks.map((task) => ({
-        title: task.title,
-        projectName: task.project?.name ?? null,
-      })),
-      planned: plannedTasks.map((task) => ({ title: task.title })),
-      projects: activeProjects.map((project) => ({
-        name: project.name,
-        currentMilestone: project.currentMilestone,
-        taskCount: project._count.tasks,
-      })),
-    },
-    aiContext.evidence,
+  const draft = await withAiQuota("review_draft", () =>
+    generateReviewDraft(
+      {
+        completed: completedTasks.map((task) => ({
+          title: task.title,
+          projectName: task.project?.name ?? null,
+        })),
+        open: openTasks.map((task) => ({
+          title: task.title,
+          projectName: task.project?.name ?? null,
+        })),
+        planned: plannedTasks.map((task) => ({ title: task.title })),
+        projects: activeProjects.map((project) => ({
+          name: project.name,
+          currentMilestone: project.currentMilestone,
+          taskCount: project._count.tasks,
+        })),
+      },
+      aiContext.evidence,
+    ),
   );
 
   await prisma.review.upsert({

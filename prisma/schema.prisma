@@ -211,3 +211,18 @@ model ReviewNextAction {
 
   @@map("review_next_actions")
 }
+
+model AiUsageLog {
+  id               String   @id @default(cuid())
+  visitorId        String
+  feature          String
+  status           String   @default("ok")
+  promptTokens     Int      @default(0)
+  completionTokens Int      @default(0)
+  totalTokens      Int      @default(0)
+  createdAt        DateTime @default(now())
+
+  @@index([visitorId, createdAt])
+  @@index([createdAt])
+  @@map("ai_usage_logs")
+}

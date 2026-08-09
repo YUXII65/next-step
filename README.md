@@ -64,6 +64,20 @@ DEEPSEEK_BASE_URL="https://api.deepseek.com"
 
 未配置 Key 或 AI 调用失败时，系统会自动使用本地规则生成任务拆分、今日建议和复盘草稿。
 
+## 中心托管模式
+
+如果要由你提供 DeepSeek API Key 并限制成本，可以开启服务端配额：
+
+```env
+AI_QUOTA_ENABLED=true
+AI_QUOTA_DAILY_CALLS=500
+AI_QUOTA_DAILY_TOKENS=1000000
+AI_QUOTA_VISITOR_DAILY_CALLS=20
+AI_QUOTA_VISITOR_DAILY_TOKENS=50000
+```
+
+开启后，浏览器里填写的 API Key 会被忽略，AI 调用统一走服务端配置，并把真实 token 用量写入 `ai_usage_logs`。详细部署说明见 [docs/deployment-guide.md](docs/deployment-guide.md)。
+
 ## 当前阶段
 
 - Stage 1：项目骨架、数据库表、三个一级页面。
