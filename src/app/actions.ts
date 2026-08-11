@@ -169,14 +169,12 @@ async function ownedProjectId(projectId: string | null, userId: string) {
 export async function registerUser(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const confirmPassword = String(formData.get("confirmPassword") ?? "");
   const next = safeNext(String(formData.get("next") ?? "/"));
 
   if (
     username.length < 2 ||
     username.length > 20 ||
-    password.length < 6 ||
-    password !== confirmPassword
+    password.length < 6
   ) {
     redirect(`/login?error=register&next=${encodeURIComponent(next)}`);
   }
