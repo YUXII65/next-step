@@ -1,11 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { SlidersHorizontal } from "lucide-react";
-import {
-  getUserPreferences,
-  saveUserPreferencesWithState,
-} from "@/app/actions";
+import { getUserPreferences, saveUserPreferences } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
 
 const inputClass =
@@ -18,10 +16,9 @@ export function AiPreferences() {
     avoid_overdue: "yes",
     project_focus: "",
   });
-  const [saveState, formAction] = useActionState(
-    saveUserPreferencesWithState,
-    "idle",
-  );
+  const [saveState, setSaveState] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
   const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
@@ -51,13 +48,25 @@ export function AiPreferences() {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    setSaveState("saving");
+    try {
+      await saveUserPreferences(formData);
+      setSaveState("saved");
+    } catch {
+      setSaveState("error");
+    }
+  }
+
   return (
     <details className="rounded-md border border-border bg-surface">
       <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
         <SlidersHorizontal className="size-3.5" />
         AI 偏好
       </summary>
-      <form action={formAction} className="space-y-3 border-t border-border p-3">
+      <form onSubmit={handleSubmit} className="space-y-3 border-t border-border p-3">
         <label className="block">
           <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
             计划规模
@@ -125,7 +134,9 @@ export function AiPreferences() {
             偏好加载失败，请刷新页面后重试。
           </p>
         ) : null}
-        {saveState === "saved" ? (
+        {saveState === "saving" ? (
+          <p className="text-xs text-ink-muted">保存中...</p>
+        ) : saveState === "saved" ? (
           <p className="text-xs text-success">已保存</p>
         ) : saveState === "error" ? (
           <p className="text-xs text-danger">保存失败，请刷新页面后重试。</p>
@@ -133,6 +144,7 @@ export function AiPreferences() {
 
         <div className="flex justify-end">
           <SubmitButton
+            disabled={saveState === "saving"}
             pendingText="保存中..."
             className="inline-flex h-8 items-center justify-center rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
           >

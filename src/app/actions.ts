@@ -890,20 +890,6 @@ export async function saveUserPreferences(formData: FormData) {
   revalidatePath("/");
 }
 
-type PreferenceSaveState = "idle" | "saved" | "error";
-
-export async function saveUserPreferencesWithState(
-  _prevState: PreferenceSaveState,
-  formData: FormData,
-): Promise<PreferenceSaveState> {
-  try {
-    await saveUserPreferences(formData);
-    return "saved";
-  } catch {
-    return "error";
-  }
-}
-
 export async function recordSuggestionFeedback(input: {
   source?: "today_suggestion" | "task_coach" | "review_draft";
   taskId?: string;
