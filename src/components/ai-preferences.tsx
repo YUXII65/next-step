@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
-import { getUserPreferences, saveUserPreferences } from "@/app/actions";
+import {
+  getUserPreferences,
+  saveUserPreferencesWithState,
+} from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
 
 const inputClass =
@@ -15,21 +18,30 @@ export function AiPreferences() {
     avoid_overdue: "yes",
     project_focus: "",
   });
+  const [saveState, formAction] = useActionState(
+    saveUserPreferencesWithState,
+    "idle",
+  );
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     let mounted = true;
-    void getUserPreferences().then((preferences) => {
-      if (!mounted) return;
-      setValues((current) => {
-        const next = { ...current };
-        for (const preference of preferences) {
-          if (preference.key in next) {
-            next[preference.key as keyof typeof next] = preference.value;
+    void getUserPreferences()
+      .then((preferences) => {
+        if (!mounted) return;
+        setValues((current) => {
+          const next = { ...current };
+          for (const preference of preferences) {
+            if (preference.key in next) {
+              next[preference.key as keyof typeof next] = preference.value;
+            }
           }
-        }
-        return next;
+          return next;
+        });
+      })
+      .catch(() => {
+        if (mounted) setLoadFailed(true);
       });
-    });
     return () => {
       mounted = false;
     };
@@ -45,7 +57,7 @@ export function AiPreferences() {
         <SlidersHorizontal className="size-3.5" />
         AI 偏好
       </summary>
-      <form action={saveUserPreferences} className="space-y-3 border-t border-border p-3">
+      <form action={formAction} className="space-y-3 border-t border-border p-3">
         <label className="block">
           <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
             计划规模
@@ -107,6 +119,17 @@ export function AiPreferences() {
             className={inputClass}
           />
         </label>
+
+        {loadFailed ? (
+          <p className="text-xs text-danger">
+            偏好加载失败，请刷新页面后重试。
+          </p>
+        ) : null}
+        {saveState === "saved" ? (
+          <p className="text-xs text-success">已保存</p>
+        ) : saveState === "error" ? (
+          <p className="text-xs text-danger">保存失败，请刷新页面后重试。</p>
+        ) : null}
 
         <div className="flex justify-end">
           <SubmitButton
