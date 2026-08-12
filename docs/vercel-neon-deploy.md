@@ -45,6 +45,7 @@ DEEPSEEK_API_KEY="sk-..."
 DEEPSEEK_MODEL="deepseek-v4-flash"
 DEEPSEEK_BASE_URL="https://api.deepseek.com"
 AUTH_SECRET="随便填一段很长的随机字符串"
+ADMIN_USERNAME="Yuxii"
 
 AI_QUOTA_ENABLED=true
 AI_QUOTA_DAILY_CALLS=500
