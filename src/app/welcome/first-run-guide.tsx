@@ -266,7 +266,7 @@ export function FirstRunGuide() {
                     disabled={!taskTitle.trim()}
                     className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
                   >
-                    完成，进入今日页
+                    完成，去书桌查看
                     <Check className="size-4" />
                   </SubmitButton>
                 </div>

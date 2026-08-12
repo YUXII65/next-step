@@ -97,7 +97,7 @@ export default async function ProjectsPage({
       <PageHeader title="书桌" description="管理项目、任务和待办来源。" />
 
       <PageHint id="workspace" title="书桌提示">
-        项目放在这里，项目下的任务会自动排进今日。
+        任务已经放进书桌了。点任务右侧的“下一步”推进进度。
       </PageHint>
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">

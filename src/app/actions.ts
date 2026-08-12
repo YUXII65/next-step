@@ -224,7 +224,7 @@ export async function completeFirstRun(formData: FormData) {
   });
   if (existingProject) {
     await setOnboardingCompleted(user.id, true);
-    redirect("/");
+    redirect("/workspace");
   }
 
   const project = await prisma.project.create({
@@ -253,7 +253,7 @@ export async function completeFirstRun(formData: FormData) {
   await setOnboardingCompleted(user.id, true);
   revalidatePath("/");
   revalidatePath("/workspace");
-  redirect("/");
+  redirect("/workspace");
 }
 
 export async function skipOnboarding(_formData?: FormData) {

@@ -9,6 +9,8 @@ import { SubmitButton } from "@/components/submit-button";
 import { AiTaskCoach } from "@/components/ai-task-coach";
 import { AiTaskSticky } from "@/components/ai-task-sticky";
 import { TaskSettingsMenu } from "@/components/task-settings-menu";
+import { FirstTaskReviewHint } from "@/components/first-task-review-hint";
+import { markFirstTaskDone } from "@/lib/first-run-hints";
 import { setTaskStatus } from "@/app/actions";
 import { formatDate } from "@/lib/date";
 
@@ -83,7 +85,12 @@ export function TaskRow({
       </div>
 
       <div className="flex items-center gap-2">
-        <form action={setTaskStatus}>
+        <form
+          action={setTaskStatus}
+          onSubmit={() => {
+            if (nextStatus(task.status) === "done") markFirstTaskDone();
+          }}
+        >
           <input type="hidden" name="id" value={task.id} />
           <input type="hidden" name="status" value={nextStatus(task.status)} />
           <SubmitButton
@@ -116,6 +123,8 @@ export function TaskRow({
           projectName={null}
           status={task.status}
         />
+
+        <FirstTaskReviewHint />
       </div>
     </div>
   );
