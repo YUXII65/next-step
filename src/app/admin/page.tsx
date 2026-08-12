@@ -403,8 +403,8 @@ export default async function AdminPage() {
       </section>
 
       <p className="text-xs leading-5 text-ink-muted">
-        当前时间：{now.toLocaleString("zh-CN", { hour12: false })}。管理员身份由
-        ADMIN_USERNAME 环境变量决定；未配置时默认创建者可见。
+        当前时间：{now.toLocaleString("zh-CN", { hour12: false })}。管理员身份必须配置
+        ADMIN_USERNAME 环境变量后才能访问。
       </p>
     </div>
   );
