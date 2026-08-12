@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
+import { PageHint } from "@/components/page-hint";
 import { Panel, PanelHeader } from "@/components/panel";
 
 type StalledProject = {
@@ -249,6 +250,10 @@ export function ToolboxDemo({
         title="工具匣"
         description="按需启用小工具，核心闭环保持简单。"
       />
+
+      <PageHint id="tools" title="工具便利贴">
+        需要什么再打开什么，核心流程保持简单。
+      </PageHint>
 
       <Panel className="mb-6">
         <PanelHeader title="现状速览" icon={Sparkles} />

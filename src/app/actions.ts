@@ -20,6 +20,10 @@ import { buildAiContext } from "@/lib/ai-context";
 import { recordAiFeedback } from "@/lib/feedback";
 import { isAiQuotaEnabled, withAiQuota } from "@/lib/ai-quota";
 import {
+  isOnboardingCompleted,
+  setOnboardingCompleted,
+} from "@/lib/onboarding";
+import {
   clarifyInbox,
   generateReviewDraft,
   generateTaskCoachAdvice,
@@ -195,8 +199,65 @@ export async function registerUser(formData: FormData) {
     select: { id: true },
   });
   await createUserSession(user.id);
+  await setOnboardingCompleted(user.id, false);
 
-  redirect(next);
+  redirect("/welcome");
+}
+
+export async function completeFirstRun(formData: FormData) {
+  const user = await requireUser();
+  const projectName = text(formData, "projectName");
+  const objective = text(formData, "objective");
+  const taskTitle = text(formData, "taskTitle");
+
+  if (!projectName || !objective || !taskTitle) return;
+  if (await isOnboardingCompleted(user.id)) {
+    redirect("/");
+  }
+
+  const existingProject = await prisma.project.findFirst({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  if (existingProject) {
+    await setOnboardingCompleted(user.id, true);
+    redirect("/");
+  }
+
+  const project = await prisma.project.create({
+    data: {
+      userId: user.id,
+      name: projectName,
+      objective,
+      status: "active",
+    },
+    select: { id: true },
+  });
+
+  await prisma.task.create({
+    data: {
+      userId: user.id,
+      title: taskTitle,
+      projectId: project.id,
+      status: "todo",
+      priority: "medium",
+      scheduledDate: startOfDay(),
+      planOrder: 0,
+    },
+  });
+
+  await setOnboardingCompleted(user.id, true);
+  revalidatePath("/");
+  revalidatePath("/workspace");
+  redirect("/");
+}
+
+export async function skipOnboarding(_formData?: FormData) {
+  void _formData;
+  const user = await requireUser();
+  await setOnboardingCompleted(user.id, true);
+  revalidatePath("/");
+  redirect("/");
 }
 
 export async function loginUser(formData: FormData) {

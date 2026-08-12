@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FolderKanban, FolderPlus, ListTodo, PencilLine } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { PageHint } from "@/components/page-hint";
 import { Panel, PanelHeader } from "@/components/panel";
 import { EmptyState } from "@/components/empty-state";
 import { ProjectForm } from "@/components/project-form";
@@ -94,6 +95,10 @@ export default async function ProjectsPage({
   return (
     <>
       <PageHeader title="书桌" description="管理项目、任务和待办来源。" />
+
+      <PageHint id="workspace" title="书桌便利贴">
+        项目放在这里，项目下的任务会自动排进今日。
+      </PageHint>
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <Panel className="min-w-0 self-start">

@@ -7,6 +7,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
+import { PageHint } from "@/components/page-hint";
 import { Panel, PanelHeader } from "@/components/panel";
 import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/status-badge";
@@ -94,6 +95,10 @@ export default async function ReviewPage({
         title="抽屉"
         description="把每天复盘收进抽屉，回看真正推进了什么。"
       />
+
+      <PageHint id="review" title="复盘便利贴">
+        每天收尾时记一句今天推进了什么，明天要做的会从这里长出来。
+      </PageHint>
 
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
         <Panel className="min-w-0 self-start">
