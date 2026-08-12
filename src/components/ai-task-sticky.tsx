@@ -19,12 +19,14 @@ export function AiTaskSticky({
   notes,
   projectName,
   status,
+  firstUse = false,
 }: {
   taskId: string;
   title: string;
   notes?: string | null;
   projectName?: string | null;
   status?: string;
+  firstUse?: boolean;
 }) {
   const { ref, open, setOpen } = useClickOutside<HTMLDivElement>();
   const tipRef = useRef<HTMLDivElement>(null);
@@ -48,7 +50,7 @@ export function AiTaskSticky({
   }
 
   useEffect(() => {
-    if (stickyTipClaimed) return;
+    if (!firstUse || stickyTipClaimed) return;
 
     let isNewUser = false;
     let dismissed = false;
@@ -63,7 +65,7 @@ export function AiTaskSticky({
       stickyTipClaimed = true;
       setShowTip(true);
     }
-  }, []);
+  }, [firstUse]);
 
   useEffect(() => {
     if (!showTip) return;
@@ -113,7 +115,9 @@ export function AiTaskSticky({
           className="absolute right-0 top-10 z-40 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-surface p-3 shadow-lg"
         >
           <div className="flex items-start justify-between gap-2">
-            <p className="text-xs font-semibold text-ink">点这里试试</p>
+            <p className="text-xs font-semibold text-ink">
+              首次用行动便利贴
+            </p>
             <button
               type="button"
               onClick={dismissTip}
@@ -125,7 +129,7 @@ export function AiTaskSticky({
             </button>
           </div>
           <p className="mt-1 text-xs leading-5 text-ink-secondary">
-            AI 会把卡住的任务拆成能直接开始的小步。
+            卡住时点这里，AI 会把任务拆成能直接开始的小步。
           </p>
         </div>
       ) : null}

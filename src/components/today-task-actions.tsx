@@ -22,7 +22,6 @@ import { SubmitButton } from "@/components/submit-button";
 import { ConfirmActionButton } from "@/components/confirm-action-button";
 import { AiTaskCoach } from "@/components/ai-task-coach";
 import { AiTaskSticky } from "@/components/ai-task-sticky";
-import { FirstTaskReviewHint } from "@/components/first-task-review-hint";
 import { markFirstTaskDone } from "@/lib/first-run-hints";
 import { trackEvent } from "@/lib/track";
 import { useClickOutside } from "@/lib/use-click-outside";
@@ -163,8 +162,6 @@ export function TodayTaskActions({
         projectName={projectName}
         status={status}
       />
-
-      <FirstTaskReviewHint />
     </div>
   );
 }

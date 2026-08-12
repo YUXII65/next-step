@@ -110,6 +110,7 @@ export function TaskRow({
           notes={task.notes}
           projectName={null}
           status={task.status}
+          firstUse
         />
 
         <TaskSettingsMenu

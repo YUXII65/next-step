@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { RefreshCw, Sparkles } from "lucide-react";
 import { addInboxItemAndClarify } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
+import { markFirstAiQuestionAsked } from "@/lib/first-run-hints";
 import { trackEvent } from "@/lib/track";
 import { sampleIdeas } from "@/lib/sample-ideas";
 
@@ -62,7 +63,10 @@ export function QuickCapture({ compact = false }: { compact?: boolean }) {
     <form
       action={addInboxItemAndClarify}
       className="p-4"
-      onSubmit={() => trackEvent("home_ai_input_submit")}
+      onSubmit={() => {
+        markFirstAiQuestionAsked();
+        trackEvent("home_ai_input_submit");
+      }}
     >
       <input type="hidden" name="apiKey" value={apiKey} />
       <input type="hidden" name="model" value={model} />

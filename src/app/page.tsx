@@ -8,6 +8,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { CalendarDatePanel } from "@/components/calendar-date-panel";
+import { FirstTaskReviewHint } from "@/components/first-task-review-hint";
 import { PageHint } from "@/components/page-hint";
 import { Panel, PanelHeader } from "@/components/panel";
 import { EmptyState } from "@/components/empty-state";
@@ -152,6 +153,7 @@ export default async function TodayPage() {
       <PageHint id="today" title="今日提示">
         先记一个想法，今天只推进最重要的 1-3 件事。
       </PageHint>
+      <FirstTaskReviewHint />
       <CalendarDatePanel
         now={now}
         completedToday={completedToday}
