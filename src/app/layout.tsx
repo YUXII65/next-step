@@ -5,8 +5,8 @@ import { CommandPalette } from "@/components/command-palette";
 
 export const metadata: Metadata = {
   title: {
-    default: "下一步",
-    template: "%s | 下一步",
+    default: "走走",
+    template: "%s | 走走",
   },
   description: "把零散想法变成可持续推进的个人项目",
   icons: {

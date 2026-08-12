@@ -33,7 +33,7 @@ export function Sidebar() {
       <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-border bg-surface px-4 lg:hidden">
         <div className="flex items-center gap-2">
           <BrandMark className="size-7 rounded-md" />
-          <span className="text-sm font-semibold">下一步</span>
+          <span className="text-sm font-semibold">走走</span>
         </div>
         <div className="flex items-center gap-1">
           <Link
@@ -61,7 +61,7 @@ export function Sidebar() {
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-16 flex-col items-center border-r border-border bg-surface py-4 lg:flex">
         <Link
           href="/"
-          aria-label="下一步"
+          aria-label="走走"
           className="flex size-9 items-center justify-center rounded-lg"
         >
           <BrandMark className="size-9 rounded-lg" />

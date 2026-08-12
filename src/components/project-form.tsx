@@ -53,7 +53,7 @@ export function ProjectForm({
             name="name"
             required
             defaultValue={project?.name}
-            placeholder="例如：下一步"
+            placeholder="例如：个人网站"
             className={inputClass}
           />
         </div>

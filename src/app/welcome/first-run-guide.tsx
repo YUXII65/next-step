@@ -53,7 +53,12 @@ export function FirstRunGuide() {
           <div className="mb-6 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <BrandMark className="size-8" />
-              <span className="text-sm font-semibold text-ink">下一步</span>
+              <div>
+                <span className="block text-sm font-semibold text-ink">走走</span>
+                <span className="block text-[11px] text-ink-muted">
+                  让想法，走成下一步
+                </span>
+              </div>
             </div>
             <form action={skipOnboarding}>
               <SubmitButton

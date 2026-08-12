@@ -49,7 +49,7 @@ const comparisons = [
     gap: "替你执行任务，但不会帮你决定该做什么。",
   },
   {
-    name: "下一步",
+    name: "走走",
     gap: "帮你把想法变成可持续推进的个人项目。",
   },
 ];
@@ -68,21 +68,19 @@ export function LandingPage() {
         <header className="mb-12 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <BrandMark className="size-8" />
-            <span className="text-sm font-semibold text-ink">
-              下一步
-            </span>
+            <span className="text-sm font-semibold text-ink">走走</span>
           </div>
           <Link
             href="/"
             className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
           >
-            返回下一步
+            返回走走
           </Link>
         </header>
 
         <section className="mb-12">
           <p className="mb-3 text-sm font-medium text-accent">
-            不是另一个 Todo，也不是又一个 AI 聊天框
+            让想法，走成下一步
           </p>
           <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-ink sm:text-5xl">
             把脑子里的一堆想法，
@@ -98,7 +96,7 @@ export function LandingPage() {
               href="/"
               className="inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
             >
-              进入下一步
+              进入走走
               <ArrowRight className="size-4" />
             </Link>
             <Link
@@ -150,7 +148,7 @@ export function LandingPage() {
                   className="flex items-start gap-3 rounded-lg bg-surface-muted p-3"
                 >
                   <span className="mt-1 shrink-0">
-                    {item.name === "下一步" ? (
+                      {item.name === "走走" ? (
                       <CheckCircle2 className="size-4 text-success" />
                     ) : (
                       <Target className="size-4 text-ink-muted" />
@@ -182,7 +180,7 @@ export function LandingPage() {
             </div>
             <div className="mt-5 rounded-lg bg-accent-soft p-3 text-xs leading-5 text-accent-strong">
               如果你已经有一套稳定的 GTD 流程，或者只想要 AI
-              替你干活，下一步暂时不适合你。
+              替你干活，走走暂时不适合你。
             </div>
           </div>
         </section>
@@ -198,7 +196,7 @@ export function LandingPage() {
             href="/"
             className="mt-6 inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
           >
-            进入下一步
+            进入走走
             <ArrowRight className="size-4" />
           </Link>
         </section>

@@ -239,7 +239,7 @@ export function OnboardingDemo() {
               href="/"
               className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
             >
-              返回下一步
+              返回走走
             </Link>
           </div>
         </div>
@@ -527,7 +527,7 @@ export function OnboardingDemo() {
               </button>
               <Link href="/" className={primaryButtonClass}>
                 <Check className="size-4" />
-                确认计划，进入下一步
+                确认计划，进入走走
               </Link>
             </div>
           </section>
@@ -627,7 +627,7 @@ export function OnboardingDemo() {
                 重新演示一次
               </button>
               <Link href="/" className={primaryButtonClass}>
-                进入下一步
+                进入走走
                 <ArrowRight className="size-4" />
               </Link>
             </div>

@@ -17,9 +17,9 @@ export default async function LoginPage({
           <div className="mb-4 flex justify-center">
             <BrandMark className="size-12" />
           </div>
-          <h1 className="text-xl font-semibold text-ink">下一步</h1>
+          <h1 className="text-xl font-semibold text-ink">走走</h1>
           <p className="mt-2 text-sm leading-6 text-ink-secondary">
-            用账号登录，每个人的项目、任务和复盘分开保存。
+            让想法，走成下一步。用账号登录，每个人的项目、任务和复盘分开保存。
           </p>
         </div>
 

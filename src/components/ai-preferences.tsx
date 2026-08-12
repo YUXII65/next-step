@@ -124,7 +124,7 @@ export function AiPreferences() {
             name="project_focus"
             value={values.project_focus}
             onChange={(event) => update("project_focus", event.target.value)}
-            placeholder="例如：下一步"
+            placeholder="例如：先做最小版本"
             className={inputClass}
           />
         </label>
