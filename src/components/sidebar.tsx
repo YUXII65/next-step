@@ -75,6 +75,7 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch
                 aria-label={item.label}
                 title={item.label}
                 aria-current={active ? "page" : undefined}
@@ -122,6 +123,7 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch
               aria-current={active ? "page" : undefined}
               className={cx(
                 "flex min-h-14 flex-col items-center justify-center gap-1 px-1 text-[11px] font-medium",
