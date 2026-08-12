@@ -11,10 +11,11 @@ export const metadata: Metadata = {
   description: "把零散想法变成可持续推进的个人项目",
   icons: {
     icon: [
+      { url: "/favicon.ico?v=2", type: "image/x-icon", sizes: "any" },
       { url: "/icon.svg", type: "image/svg+xml" },
       { url: "/icon.png", type: "image/png", sizes: "256x256" },
-      { url: "/favicon.ico", sizes: "any" },
     ],
+    apple: [{ url: "/icon.png", sizes: "256x256", type: "image/png" }],
   },
 };
 

@@ -1,4 +1,5 @@
 import { AuthCard } from "@/components/auth-card";
+import { BrandMark } from "@/components/brand-mark";
 
 export default async function LoginPage({
   searchParams,
@@ -13,6 +14,9 @@ export default async function LoginPage({
     <div className="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto bg-background px-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
+          <div className="mb-4 flex justify-center">
+            <BrandMark className="size-12" />
+          </div>
           <h1 className="text-xl font-semibold text-ink">下一步</h1>
           <p className="mt-2 text-sm leading-6 text-ink-secondary">
             用账号登录，每个人的项目、任务和复盘分开保存。

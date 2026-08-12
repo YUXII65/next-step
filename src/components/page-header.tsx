@@ -12,10 +12,10 @@ export function PageHeader({
   return (
     <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <p className="text-[11px] font-medium tracking-[0.12em] text-accent">
-          PERSONAL JOURNAL
+        <p className="text-[11px] font-medium text-accent">
+          NEXT STEP
         </p>
-        <h1 className="mt-1.5 text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+        <h1 className="mt-1.5 text-xl font-semibold text-ink sm:text-2xl">
           {title}
         </h1>
         <p className="mt-1.5 max-w-2xl text-sm leading-6 text-ink-secondary">

@@ -241,7 +241,7 @@ export default async function ReviewPage({
                   />
                 </label>
                 <div className="rounded-lg bg-accent-soft p-3 text-xs leading-5 text-accent-strong">
-                  未配置 DeepSeek Key 时使用本地规则生成草稿；配置后会调用 AI。
+                  未配置服务端 AI 时使用本地规则生成草稿；配置后由服务端统一调用。
                 </div>
                 <SubmitButton className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60">
                   <CalendarDays className="size-4" />

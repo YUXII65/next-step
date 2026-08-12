@@ -8,8 +8,8 @@ import {
   BookOpen,
   CalendarDays,
   LogOut,
-  Sparkles,
 } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { cx } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { logoutUser } from "@/app/actions";
@@ -32,9 +32,7 @@ export function Sidebar() {
     <>
       <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-border bg-surface px-4 lg:hidden">
         <div className="flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-md bg-accent text-white">
-            <Sparkles className="size-3.5" />
-          </span>
+          <BrandMark className="size-7 rounded-md" />
           <span className="text-sm font-semibold">下一步</span>
         </div>
         <div className="flex items-center gap-1">
@@ -64,9 +62,9 @@ export function Sidebar() {
         <Link
           href="/"
           aria-label="下一步"
-          className="flex size-9 items-center justify-center rounded-lg bg-accent text-white"
+          className="flex size-9 items-center justify-center rounded-lg"
         >
-          <Sparkles className="size-4" />
+          <BrandMark className="size-9 rounded-lg" />
         </Link>
 
         <nav className="mt-5 flex flex-1 flex-col items-center gap-1">

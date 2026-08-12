@@ -10,6 +10,7 @@ import {
   Sparkles,
   Target,
 } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { LandingDemo } from "./landing-demo";
 
 const outcomes = [
@@ -66,9 +67,7 @@ export function LandingPage() {
       <div className="mx-auto min-h-dvh w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-12 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-accent text-white">
-              <Sparkles className="size-4" />
-            </span>
+            <BrandMark className="size-8" />
             <span className="text-sm font-semibold text-ink">
               下一步
             </span>
