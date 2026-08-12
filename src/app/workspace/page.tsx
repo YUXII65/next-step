@@ -96,7 +96,7 @@ export default async function ProjectsPage({
     <>
       <PageHeader title="书桌" description="管理项目、任务和待办来源。" />
 
-      <PageHint id="workspace" title="书桌便利贴">
+      <PageHint id="workspace" title="书桌提示">
         项目放在这里，项目下的任务会自动排进今日。
       </PageHint>
 

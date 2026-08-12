@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RefreshCw, StickyNote, X } from "lucide-react";
 import { getTaskCoachAdvice } from "@/app/actions";
 import { trackEvent } from "@/lib/track";
 import { useClickOutside } from "@/lib/use-click-outside";
 import type { TaskCoachAdvice } from "@/lib/ai";
+
+const STICKY_TIP_KEY = "next_step_sticky_tip_dismissed";
+let stickyTipClaimed = false;
 
 const DEFAULT_MESSAGE =
   "这个任务我还没有头绪，请给我一个能直接开始的行动方案";
@@ -24,8 +27,10 @@ export function AiTaskSticky({
   status?: string;
 }) {
   const { ref, open, setOpen } = useClickOutside<HTMLDivElement>();
+  const tipRef = useRef<HTMLDivElement>(null);
   const [advice, setAdvice] = useState<TaskCoachAdvice | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showTip, setShowTip] = useState(false);
 
   async function generate() {
     setLoading(true);
@@ -42,10 +47,51 @@ export function AiTaskSticky({
     trackEvent("task_sticky_generate", { taskId });
   }
 
+  useEffect(() => {
+    if (stickyTipClaimed) return;
+
+    let isNewUser = false;
+    let dismissed = false;
+    try {
+      isNewUser = localStorage.getItem("next_step_new_user") === "1";
+      dismissed = localStorage.getItem(STICKY_TIP_KEY) === "1";
+    } catch {
+      // Ignore storage errors and skip the tip.
+    }
+
+    if (isNewUser && !dismissed) {
+      stickyTipClaimed = true;
+      setShowTip(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!showTip) return;
+
+    function onPointerDown(event: PointerEvent) {
+      if (tipRef.current && !tipRef.current.contains(event.target as Node)) {
+        dismissTip();
+      }
+    }
+
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [showTip]);
+
   function toggle() {
+    dismissTip();
     setOpen((value) => !value);
     if (!open && !advice && !loading) {
       void generate();
+    }
+  }
+
+  function dismissTip() {
+    setShowTip(false);
+    try {
+      localStorage.setItem(STICKY_TIP_KEY, "1");
+    } catch {
+      // Ignore storage errors.
     }
   }
 
@@ -60,6 +106,29 @@ export function AiTaskSticky({
       >
         <StickyNote className="size-3.5" />
       </button>
+
+      {showTip ? (
+        <div
+          ref={tipRef}
+          className="absolute right-0 top-10 z-40 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-surface p-3 shadow-lg"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-xs font-semibold text-ink">点这里试试</p>
+            <button
+              type="button"
+              onClick={dismissTip}
+              aria-label="关闭提示"
+              title="关闭提示"
+              className="flex size-6 shrink-0 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+          <p className="mt-1 text-xs leading-5 text-ink-secondary">
+            AI 会把卡住的任务拆成能直接开始的小步。
+          </p>
+        </div>
+      ) : null}
 
       {open ? (
         <div className="absolute right-0 top-10 z-30 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-surface p-3 shadow-lg">
