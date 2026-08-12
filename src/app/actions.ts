@@ -25,12 +25,14 @@ import {
 } from "@/lib/onboarding";
 import {
   clarifyInbox,
+  generateFirstRunPlan,
   generateReviewDraft,
   generateTaskCoachAdvice,
   generateTaskEditSuggestion,
   generateProjectEditSuggestion,
   planInbox,
   suggestTodayFocus,
+  type FirstRunPlan,
   type InboxPlan,
   type TaskEditSuggestion,
   type TaskCoachAdvice,
@@ -208,6 +210,7 @@ export async function completeFirstRun(formData: FormData) {
   const user = await requireUser();
   const projectName = text(formData, "projectName");
   const objective = text(formData, "objective");
+  const milestone = text(formData, "milestone");
   const taskTitle = text(formData, "taskTitle");
 
   if (!projectName || !objective || !taskTitle) return;
@@ -229,6 +232,7 @@ export async function completeFirstRun(formData: FormData) {
       userId: user.id,
       name: projectName,
       objective,
+      currentMilestone: milestone,
       status: "active",
     },
     select: { id: true },
@@ -258,6 +262,21 @@ export async function skipOnboarding(_formData?: FormData) {
   await setOnboardingCompleted(user.id, true);
   revalidatePath("/");
   redirect("/");
+}
+
+export async function planOnboarding(idea: string): Promise<FirstRunPlan> {
+  await requireUser();
+  const content = idea.trim();
+  if (!content) {
+    return {
+      projectName: "第一个项目",
+      objective: "把第一个想法变成可推进的个人项目",
+      milestone: "开始推进",
+      taskTitle: "写下今天能做的最小动作",
+    };
+  }
+
+  return withAiQuota("onboarding_plan", () => generateFirstRunPlan(content));
 }
 
 export async function loginUser(formData: FormData) {

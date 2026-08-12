@@ -23,6 +23,13 @@ export type InboxPlan = {
   reason: string;
 };
 
+export type FirstRunPlan = {
+  projectName: string;
+  objective: string;
+  milestone: string;
+  taskTitle: string;
+};
+
 export type InboxClarificationDimension = {
   key: string;
   question: string;
@@ -268,6 +275,24 @@ function heuristicPlan(content: string, projectNames: string[]): InboxPlan {
   };
 }
 
+function heuristicFirstRun(content: string): FirstRunPlan {
+  const clean = content.trim().replace(/\s+/g, " ");
+  const short = clean.length > 48 ? `${clean.slice(0, 48)}…` : clean;
+  const topic =
+    clean
+      .replace(/^(?:我?想(?:做|要|把|开始|尝试|搞)?|做(?:个|一个)?|搞(?:个|一个)?)/, "")
+      .split(/[，。！？,.!?\n]/)[0]
+      .trim() || short;
+  const projectName = `${topic.slice(0, 10)}计划`;
+
+  return {
+    projectName,
+    objective: `把“${short}”梳理成一条能持续推进的路径，先从最重要的一步开始。`,
+    milestone: "完成第一个最小动作，让想法开始有进展",
+    taskTitle: `列出「${topic}」今天能做的第一个最小动作`,
+  };
+}
+
 function heuristicClarification(
   content: string,
   projectNames: string[],
@@ -488,6 +513,60 @@ export async function planInbox(
         typeof raw.reason === "string" && raw.reason.trim()
           ? raw.reason.trim()
           : fallback.reason,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
+export async function generateFirstRunPlan(
+  content: string,
+): Promise<FirstRunPlan> {
+  const fallback = heuristicFirstRun(content);
+  const text = await callModel(
+    `你是“走走”的新人规划助手。用户会输入一个模糊想法。你的任务不是重复这句话，而是把它整理成一个清晰的新人引导计划。
+要求：
+- projectName 用 2-8 个字概括核心方向，不能照抄原句。
+- projectObjective 用一句话描述完成后会变成什么样，不能照抄原句。
+- projectMilestone 用一句话描述当前阶段要先完成的成果。
+- taskTitle 是今天就能开始的最小行动，必须具体，不能照抄原句。
+- 只返回 JSON，不要 Markdown。
+格式：{"projectName":"","projectObjective":"","projectMilestone":"","taskTitle":""}`,
+    JSON.stringify({ idea: content }),
+  );
+
+  if (!text) return fallback;
+
+  try {
+    const raw = JSON.parse(extractJson(text) ?? "{}") as Partial<FirstRunPlan>;
+    const trimmed = content.trim();
+    const projectName =
+      typeof raw.projectName === "string" && raw.projectName.trim()
+        ? raw.projectName.trim().slice(0, 60)
+        : fallback.projectName;
+    const objective =
+      typeof raw.objective === "string" &&
+      raw.objective.trim() &&
+      raw.objective.trim() !== trimmed
+        ? raw.objective.trim().slice(0, 500)
+        : fallback.objective;
+    const milestone =
+      typeof raw.milestone === "string" && raw.milestone.trim()
+        ? raw.milestone.trim().slice(0, 200)
+        : fallback.milestone;
+    const taskTitle =
+      typeof raw.taskTitle === "string" &&
+      raw.taskTitle.trim() &&
+      raw.taskTitle.trim() !== trimmed
+        ? raw.taskTitle.trim().slice(0, 200)
+        : fallback.taskTitle;
+
+    return {
+      projectName:
+        projectName === trimmed ? fallback.projectName : projectName,
+      objective,
+      milestone,
+      taskTitle,
     };
   } catch {
     return fallback;

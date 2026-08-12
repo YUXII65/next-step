@@ -7,10 +7,16 @@ import {
   FolderKanban,
   ListTodo,
   NotebookPen,
+  Sparkles,
 } from "lucide-react";
-import { completeFirstRun, skipOnboarding } from "@/app/actions";
+import {
+  completeFirstRun,
+  planOnboarding,
+  skipOnboarding,
+} from "@/app/actions";
 import { BrandMark } from "@/components/brand-mark";
 import { SubmitButton } from "@/components/submit-button";
+import type { FirstRunPlan } from "@/lib/ai";
 
 const steps = [
   { label: "写想法", icon: NotebookPen },
@@ -26,6 +32,11 @@ export function FirstRunGuide() {
   const [idea, setIdea] = useState("");
   const [projectName, setProjectName] = useState("");
   const [objective, setObjective] = useState("");
+  const [milestone, setMilestone] = useState("");
+  const [taskTitle, setTaskTitle] = useState("");
+  const [plan, setPlan] = useState<FirstRunPlan | null>(null);
+  const [planSourceIdea, setPlanSourceIdea] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     try {
@@ -36,14 +47,39 @@ export function FirstRunGuide() {
   }, []);
 
   const trimmedIdea = idea.trim().replace(/\s+/g, " ");
-  const generatedProjectName = trimmedIdea.slice(0, 12) || "第一个项目";
-  const generatedObjective =
-    trimmedIdea || "把第一个想法变成可推进的个人项目";
 
-  function continueToProject() {
-    setProjectName(generatedProjectName);
-    setObjective(generatedObjective);
-    setStep(1);
+  function handleIdeaChange(value: string) {
+    setIdea(value);
+    setPlan(null);
+    setPlanSourceIdea("");
+  }
+
+  async function continueToProject() {
+    if (!trimmedIdea || generating) return;
+    if (plan && planSourceIdea === trimmedIdea) {
+      setStep(1);
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const nextPlan = await planOnboarding(trimmedIdea);
+      setPlan(nextPlan);
+      setPlanSourceIdea(trimmedIdea);
+      setProjectName(nextPlan.projectName);
+      setObjective(nextPlan.objective);
+      setMilestone(nextPlan.milestone);
+      setTaskTitle(nextPlan.taskTitle);
+      setStep(1);
+    } catch {
+      setProjectName(trimmedIdea.slice(0, 12) || "第一个项目");
+      setObjective(`把“${trimmedIdea}”推进成今天能做的一件事。`);
+      setMilestone("开始推进");
+      setTaskTitle(`列出「${trimmedIdea}」今天能做的第一个最小动作`);
+      setStep(1);
+    } finally {
+      setGenerating(false);
+    }
   }
 
   return (
@@ -100,7 +136,7 @@ export function FirstRunGuide() {
                 <textarea
                   autoFocus
                   value={idea}
-                  onChange={(event) => setIdea(event.target.value)}
+                  onChange={(event) => handleIdeaChange(event.target.value)}
                   rows={4}
                   placeholder="比如：整理自己的个人网站"
                   className={`${inputClass} mt-3 resize-none`}
@@ -109,11 +145,20 @@ export function FirstRunGuide() {
                   <button
                     type="button"
                     onClick={continueToProject}
-                    disabled={!trimmedIdea}
+                    disabled={!trimmedIdea || generating}
                     className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    下一步
-                    <ArrowRight className="size-4" />
+                    {generating ? (
+                      <>
+                        <Sparkles className="size-4 animate-pulse" />
+                        AI 正在整理...
+                      </>
+                    ) : (
+                      <>
+                        让 AI 整理
+                        <ArrowRight className="size-4" />
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -123,6 +168,9 @@ export function FirstRunGuide() {
               <div>
                 <p className="text-sm font-semibold text-ink">
                   把这个想法放进第一个项目
+                </p>
+                <p className="mt-1 text-xs leading-5 text-ink-secondary">
+                  AI 已整理，可继续修改。
                 </p>
                 <label className="mt-4 block">
                   <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
@@ -145,6 +193,17 @@ export function FirstRunGuide() {
                     rows={3}
                     maxLength={200}
                     className={`${inputClass} resize-none`}
+                  />
+                </label>
+                <label className="mt-4 block">
+                  <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
+                    当前里程碑
+                  </span>
+                  <input
+                    value={milestone}
+                    onChange={(event) => setMilestone(event.target.value)}
+                    maxLength={80}
+                    className={inputClass}
                   />
                 </label>
                 <div className="mt-5 flex items-center justify-between gap-3">
@@ -172,26 +231,29 @@ export function FirstRunGuide() {
               <form action={completeFirstRun}>
                 <input type="hidden" name="projectName" value={projectName.trim()} />
                 <input type="hidden" name="objective" value={objective.trim()} />
-                <input type="hidden" name="taskTitle" value={trimmedIdea} />
+                <input type="hidden" name="milestone" value={milestone.trim()} />
                 <p className="text-sm font-semibold text-ink">
                   今天先做这一件
                 </p>
-                <div className="mt-3 flex items-start gap-3 rounded-lg bg-surface-muted p-4">
-                  <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent-strong">
-                    <ListTodo className="size-4" />
+                <label className="mt-3 block">
+                  <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
+                    今日任务
                   </span>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-ink">
-                      {trimmedIdea}
-                    </p>
-                    <p className="mt-1 text-xs leading-5 text-ink-secondary">
-                      已放入 {projectName}，安排在今日
-                    </p>
-                  </div>
-                </div>
+                  <input
+                    name="taskTitle"
+                    value={taskTitle}
+                    onChange={(event) => setTaskTitle(event.target.value)}
+                    maxLength={200}
+                    className={inputClass}
+                  />
+                </label>
+                <p className="mt-2 text-xs leading-5 text-ink-secondary">
+                  已放入 {projectName}，安排在今日
+                </p>
                 <div className="mt-5 flex justify-end">
                   <SubmitButton
                     pendingText="正在创建..."
+                    disabled={!taskTitle.trim()}
                     className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
                   >
                     完成，进入今日页
