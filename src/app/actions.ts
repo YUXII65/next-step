@@ -32,7 +32,7 @@ import {
   generateProjectEditSuggestion,
   planInbox,
   suggestTodayFocus,
-  type FirstRunPlan,
+  type FirstRunPlanResult,
   type InboxPlan,
   type TaskEditSuggestion,
   type TaskCoachAdvice,
@@ -264,7 +264,7 @@ export async function skipOnboarding(_formData?: FormData) {
   redirect("/");
 }
 
-export async function planOnboarding(idea: string): Promise<FirstRunPlan> {
+export async function planOnboarding(idea: string): Promise<FirstRunPlanResult> {
   await requireUser();
   const content = idea.trim();
   if (!content) {
@@ -273,6 +273,7 @@ export async function planOnboarding(idea: string): Promise<FirstRunPlan> {
       objective: "把第一个想法变成可推进的个人项目",
       milestone: "开始推进",
       taskTitle: "写下今天能做的最小动作",
+      usedFallback: true,
     };
   }
 

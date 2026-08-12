@@ -30,6 +30,10 @@ export type FirstRunPlan = {
   taskTitle: string;
 };
 
+export type FirstRunPlanResult = FirstRunPlan & {
+  usedFallback: boolean;
+};
+
 export type InboxClarificationDimension = {
   key: string;
   question: string;
@@ -187,53 +191,72 @@ async function callModel(
     "https://api.deepseek.com"
   ).replace(/\/$/, "");
 
-  try {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
     if (isAiQuotaEnabled() && !(await hasAiQuota())) return null;
 
-    const response = await fetch(`${baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-        temperature: 0.2,
-      }),
-      signal: AbortSignal.timeout(20000),
-    });
+    try {
+      const response = await fetch(`${baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user },
+          ],
+          temperature: 0.2,
+        }),
+        signal: AbortSignal.timeout(30000),
+      });
 
-    if (!response.ok) return null;
+      if (!response.ok) {
+        console.warn(`[ai] request failed with ${response.status}`);
+        if (
+          (response.status === 429 || response.status >= 500) &&
+          attempt === 0
+        ) {
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          continue;
+        }
+        return null;
+      }
 
-    const data = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-      usage?: {
-        prompt_tokens?: number;
-        completion_tokens?: number;
-        total_tokens?: number;
+      const data = (await response.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+        usage?: {
+          prompt_tokens?: number;
+          completion_tokens?: number;
+          total_tokens?: number;
+        };
       };
-    };
-    const content = data.choices?.[0]?.message?.content ?? null;
+      const content = data.choices?.[0]?.message?.content ?? null;
 
-    if (isAiQuotaEnabled()) {
-      const usage = data.usage
-        ? {
-            promptTokens: data.usage.prompt_tokens ?? 0,
-            completionTokens: data.usage.completion_tokens ?? 0,
-            totalTokens: data.usage.total_tokens ?? 0,
-          }
-        : await estimateAiUsage({ system, user }, content);
-      await recordAiUsage(usage);
+      if (isAiQuotaEnabled()) {
+        const usage = data.usage
+          ? {
+              promptTokens: data.usage.prompt_tokens ?? 0,
+              completionTokens: data.usage.completion_tokens ?? 0,
+              totalTokens: data.usage.total_tokens ?? 0,
+            }
+          : await estimateAiUsage({ system, user }, content);
+        await recordAiUsage(usage);
+      }
+
+      return content;
+    } catch (error) {
+      console.warn("[ai] request error", error);
+      if (attempt === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        continue;
+      }
+      return null;
     }
-
-    return content;
-  } catch {
-    return null;
   }
+
+  return null;
 }
 
 function heuristicPlan(content: string, projectNames: string[]): InboxPlan {
@@ -252,6 +275,9 @@ function heuristicPlan(content: string, projectNames: string[]): InboxPlan {
     };
   }
 
+  const first = firstLine(content);
+  const short = first.length > 24 ? `${first.slice(0, 24)}…` : first;
+
   return {
     action: projectName ? "existing_project" : "single_task",
     projectName,
@@ -259,8 +285,10 @@ function heuristicPlan(content: string, projectNames: string[]): InboxPlan {
     projectMilestone: null,
     tasks: [
       {
-        title: firstLine(content),
-        notes: null,
+        title: projectName
+          ? `推进「${short}」的下一步`
+          : `启动「${short}」的第一步`,
+        notes: first,
         priority:
           /(紧急|尽快|今天|立刻)/.test(lower)
             ? "high"
@@ -270,8 +298,8 @@ function heuristicPlan(content: string, projectNames: string[]): InboxPlan {
       },
     ],
     reason: projectName
-      ? "本地规则：归入已有项目"
-      : "本地规则：暂按单条任务处理",
+      ? "本地规则：AI 暂不可用，先生成下一步动作"
+      : "本地规则：AI 暂不可用，先生成最小启动动作",
   };
 }
 
@@ -521,8 +549,11 @@ export async function planInbox(
 
 export async function generateFirstRunPlan(
   content: string,
-): Promise<FirstRunPlan> {
-  const fallback = heuristicFirstRun(content);
+): Promise<FirstRunPlanResult> {
+  const fallback: FirstRunPlanResult = {
+    ...heuristicFirstRun(content),
+    usedFallback: true,
+  };
   const text = await callModel(
     `你是“走走”的新人规划助手。用户会输入一个模糊想法。你的任务不是重复这句话，而是把它整理成一个清晰的新人引导计划。
 要求：
@@ -567,6 +598,7 @@ export async function generateFirstRunPlan(
       objective,
       milestone,
       taskTitle,
+      usedFallback: false,
     };
   } catch {
     return fallback;

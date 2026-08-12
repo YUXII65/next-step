@@ -16,7 +16,7 @@ import {
 } from "@/app/actions";
 import { BrandMark } from "@/components/brand-mark";
 import { SubmitButton } from "@/components/submit-button";
-import type { FirstRunPlan } from "@/lib/ai";
+import type { FirstRunPlanResult } from "@/lib/ai";
 
 const steps = [
   { label: "写想法", icon: NotebookPen },
@@ -34,9 +34,10 @@ export function FirstRunGuide() {
   const [objective, setObjective] = useState("");
   const [milestone, setMilestone] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
-  const [plan, setPlan] = useState<FirstRunPlan | null>(null);
+  const [plan, setPlan] = useState<FirstRunPlanResult | null>(null);
   const [planSourceIdea, setPlanSourceIdea] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [aiFallback, setAiFallback] = useState(false);
 
   useEffect(() => {
     try {
@@ -52,6 +53,7 @@ export function FirstRunGuide() {
     setIdea(value);
     setPlan(null);
     setPlanSourceIdea("");
+    setAiFallback(false);
   }
 
   async function continueToProject() {
@@ -65,6 +67,7 @@ export function FirstRunGuide() {
     try {
       const nextPlan = await planOnboarding(trimmedIdea);
       setPlan(nextPlan);
+      setAiFallback(nextPlan.usedFallback);
       setPlanSourceIdea(trimmedIdea);
       setProjectName(nextPlan.projectName);
       setObjective(nextPlan.objective);
@@ -72,6 +75,7 @@ export function FirstRunGuide() {
       setTaskTitle(nextPlan.taskTitle);
       setStep(1);
     } catch {
+      setAiFallback(true);
       setProjectName(trimmedIdea.slice(0, 12) || "第一个项目");
       setObjective(`把“${trimmedIdea}”推进成今天能做的一件事。`);
       setMilestone("开始推进");
@@ -169,9 +173,15 @@ export function FirstRunGuide() {
                 <p className="text-sm font-semibold text-ink">
                   把这个想法放进第一个项目
                 </p>
-                <p className="mt-1 text-xs leading-5 text-ink-secondary">
-                  AI 已整理，可继续修改。
-                </p>
+                {aiFallback ? (
+                  <div className="mt-2 rounded-lg border border-warning/25 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
+                    AI 暂时不可用，当前使用本地整理，结果可继续修改。
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs leading-5 text-ink-secondary">
+                    AI 已整理，可继续修改。
+                  </p>
+                )}
                 <label className="mt-4 block">
                   <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
                     项目名
