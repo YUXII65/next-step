@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import {
   createUserSession,
   destroyUserSession,
+  getCurrentUser,
   hashPassword,
   requireUser,
   verifyPassword,
@@ -18,6 +19,7 @@ import {
 import { endOfDay, startOfDay, toDateInputValue } from "@/lib/date";
 import { buildAiContext } from "@/lib/ai-context";
 import { recordAiFeedback } from "@/lib/feedback";
+import { recordUsageEvent } from "@/lib/usage";
 import { isAiQuotaEnabled, withAiQuota } from "@/lib/ai-quota";
 import {
   isOnboardingCompleted,
@@ -201,6 +203,7 @@ export async function registerUser(formData: FormData) {
     select: { id: true },
   });
   await createUserSession(user.id);
+  await recordUsageEvent({ userId: user.id, event: "register" });
   await setOnboardingCompleted(user.id, false);
 
   redirect("/welcome");
@@ -250,7 +253,13 @@ export async function completeFirstRun(formData: FormData) {
     },
   });
 
+  await recordUsageEvent({
+    userId: user.id,
+    event: "task_created",
+    detail: "onboarding",
+  });
   await setOnboardingCompleted(user.id, true);
+  await recordUsageEvent({ userId: user.id, event: "onboarding_complete" });
   revalidatePath("/");
   revalidatePath("/workspace");
   redirect("/workspace");
@@ -260,6 +269,7 @@ export async function skipOnboarding(_formData?: FormData) {
   void _formData;
   const user = await requireUser();
   await setOnboardingCompleted(user.id, true);
+  await recordUsageEvent({ userId: user.id, event: "onboarding_skipped" });
   revalidatePath("/");
   redirect("/");
 }
@@ -280,6 +290,12 @@ export async function planOnboarding(idea: string): Promise<FirstRunPlanResult> 
   return withAiQuota("onboarding_plan", () => generateFirstRunPlan(content));
 }
 
+export async function recordPageView(page: string) {
+  const user = await getCurrentUser();
+  if (!user) return;
+  await recordUsageEvent({ userId: user.id, event: "page_view", page });
+}
+
 export async function loginUser(formData: FormData) {
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
@@ -294,6 +310,7 @@ export async function loginUser(formData: FormData) {
   }
 
   await createUserSession(user.id);
+  await recordUsageEvent({ userId: user.id, event: "login" });
   redirect(next);
 }
 
@@ -316,6 +333,11 @@ export async function addInboxItem(formData: FormData) {
     },
   });
 
+  await recordUsageEvent({
+    userId: user.id,
+    event: "task_created",
+    detail: "manual",
+  });
   revalidatePath("/");
   revalidatePath("/workspace");
 }
@@ -560,6 +582,11 @@ export async function convertInboxItemToTask(formData: FormData) {
     }),
   ]);
 
+  await recordUsageEvent({
+    userId: user.id,
+    event: "task_created",
+    detail: "inbox",
+  });
   revalidatePath("/");
   revalidatePath("/workspace");
 }
@@ -855,6 +882,11 @@ export async function confirmInboxPlan(formData: FormData) {
     beforeJson: item.aiPlanJson,
     afterJson: confirmedTasksJson,
     detail: edited ? "用户编辑 AI 计划后确认" : "用户直接确认 AI 计划",
+  });
+  await recordUsageEvent({
+    userId: user.id,
+    event: "task_created",
+    detail: "inbox_plan",
   });
 
   revalidatePath("/");
@@ -1230,6 +1262,7 @@ export async function saveReview(formData: FormData) {
     .filter(Boolean);
 
   await syncReviewRelations(review, nextActionTitles, user.id);
+  await recordUsageEvent({ userId: user.id, event: "review_saved" });
 
   revalidatePath("/");
   revalidatePath("/review");
@@ -1395,6 +1428,11 @@ export async function updateTask(formData: FormData) {
       beforeJson,
       afterJson,
     });
+    await recordUsageEvent({
+      userId: user.id,
+      event: "task_completed",
+      detail: id,
+    });
   } else if (status === "cancelled" && existing.status !== "cancelled") {
     await recordAiFeedback({
       userId: user.id,
@@ -1497,6 +1535,11 @@ export async function setTaskStatus(formData: FormData) {
       projectId: existing.projectId,
       beforeJson,
       afterJson,
+    });
+    await recordUsageEvent({
+      userId: user.id,
+      event: "task_completed",
+      detail: id,
     });
   } else if (status === "cancelled" && existing.status !== "cancelled") {
     await recordAiFeedback({

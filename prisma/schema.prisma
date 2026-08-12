@@ -70,6 +70,7 @@ model User {
   reviewTasks       ReviewTask[]
   reviewNextActions ReviewNextAction[]
   aiUsageLogs       AiUsageLog[]
+  usageEvents       UsageEvent[]
 
   @@map("users")
 }
@@ -278,4 +279,21 @@ model AiUsageLog {
   @@index([createdAt])
   @@index([userId])
   @@map("ai_usage_logs")
+}
+
+model UsageEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  visitorId String?
+  event     String
+  page      String?
+  detail    String?
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([event, createdAt])
+  @@index([createdAt])
+  @@map("usage_events")
 }

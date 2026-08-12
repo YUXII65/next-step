@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
 import { CommandPalette } from "@/components/command-palette";
+import { UsageTracker } from "@/components/usage-tracker";
 
 export const metadata: Metadata = {
   title: {
@@ -27,6 +28,7 @@ export default function RootLayout({
       <body className="min-h-dvh bg-background text-ink">
         <Sidebar />
         <CommandPalette />
+        <UsageTracker />
         <div className="lg:pl-16">
           <main className="mx-auto w-full max-w-5xl px-4 py-5 pb-28 sm:px-6 lg:px-8 lg:py-7 lg:pb-12">
             {children}
