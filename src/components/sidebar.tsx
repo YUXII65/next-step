@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Archive,
+  BarChart3,
   Blocks,
   BookOpen,
   CalendarDays,
@@ -20,7 +21,7 @@ const navItems = [
   { href: "/review", label: "抽屉", icon: Archive },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
 
   function isActive(href: string) {
@@ -44,6 +45,16 @@ export function Sidebar() {
           >
             <Blocks className="size-[18px]" />
           </Link>
+          {isAdmin ? (
+            <Link
+              href="/admin"
+              aria-label="使用情况"
+              title="使用情况"
+              className="zouzou-icon-button flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+            >
+              <BarChart3 className="size-[18px]" />
+            </Link>
+          ) : null}
           <ThemeToggle />
           <form action={logoutUser}>
             <button
@@ -101,6 +112,16 @@ export function Sidebar() {
           >
             <Blocks className="size-[18px]" />
           </Link>
+          {isAdmin ? (
+            <Link
+              href="/admin"
+              aria-label="使用情况"
+              title="使用情况"
+              className="zouzou-icon-button flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+            >
+              <BarChart3 className="size-[18px]" />
+            </Link>
+          ) : null}
           <ThemeToggle />
           <form action={logoutUser}>
             <button

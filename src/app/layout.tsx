@@ -3,6 +3,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
 import { CommandPalette } from "@/components/command-palette";
 import { UsageTracker } from "@/components/usage-tracker";
+import { getAdminUser } from "@/lib/admin";
 
 export const metadata: Metadata = {
   title: {
@@ -20,14 +21,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const admin = await getAdminUser();
+
   return (
     <html lang="zh-CN" className="h-full antialiased">
       <body className="min-h-dvh text-ink">
-        <Sidebar />
-        <CommandPalette />
+        <Sidebar isAdmin={Boolean(admin)} />
+        <CommandPalette isAdmin={Boolean(admin)} />
         <UsageTracker />
         <div className="lg:pl-[72px]">
           <main className="mx-auto w-full max-w-5xl px-4 py-5 pb-28 sm:px-6 lg:px-8 lg:py-8 lg:pb-12">

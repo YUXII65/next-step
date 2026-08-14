@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Archive,
+  BarChart3,
   Blocks,
   BookOpen,
   CalendarDays,
@@ -58,20 +59,33 @@ const actions = [
   },
 ] as const;
 
-export function CommandPalette() {
+const adminAction = {
+  id: "admin",
+  label: "使用情况",
+  description: "查看注册用户、活跃和 AI 成本",
+  href: "/admin",
+  icon: BarChart3,
+} as const;
+
+export function CommandPalette({ isAdmin = false }: { isAdmin?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const allActions = useMemo(
+    () => (isAdmin ? [...actions, adminAction] : [...actions]),
+    [isAdmin],
+  );
+
   const filtered = useMemo(() => {
     const keyword = query.trim().toLowerCase();
-    if (!keyword) return actions;
-    return actions.filter((action) =>
+    if (!keyword) return allActions;
+    return allActions.filter((action) =>
       `${action.label} ${action.description}`.toLowerCase().includes(keyword),
     );
-  }, [query]);
+  }, [allActions, query]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
