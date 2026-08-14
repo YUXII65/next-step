@@ -6,5 +6,7 @@ export async function getAdminUser() {
 
   const adminUsername = process.env.ADMIN_USERNAME?.trim();
   if (!adminUsername) return null;
-  return user.username === adminUsername ? user : null;
+  return user.username.toLowerCase() === adminUsername.toLowerCase()
+    ? user
+    : null;
 }
