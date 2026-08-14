@@ -6,17 +6,25 @@ import { loginUser, registerUser } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
 
 const firstInputClass =
-  "mt-4 w-full rounded-md border border-border bg-surface-muted px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input mt-4 w-full rounded-lg px-3 py-2 text-sm text-ink";
 const inputClass =
-  "mt-3 w-full rounded-md border border-border bg-surface-muted px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input mt-3 w-full rounded-lg px-3 py-2 text-sm text-ink";
 const submitClass =
-  "mt-5 inline-flex h-10 w-full items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong";
+  "zouzou-primary-button mt-5 inline-flex h-10 w-full items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong";
 const switchClass =
-  "mt-2 inline-flex h-10 w-full items-center justify-center rounded-lg border border-border bg-surface px-4 text-sm font-medium text-accent transition-colors hover:bg-surface-hover";
+  "zouzou-secondary-button mt-2 inline-flex h-10 w-full items-center justify-center rounded-lg border border-border bg-surface px-4 text-sm font-medium text-accent transition-colors hover:bg-surface-hover";
 
-export function AuthCard({ next, error }: { next: string; error: string }) {
+export function AuthCard({
+  next,
+  error,
+  initialMode,
+}: {
+  next: string;
+  error: string;
+  initialMode?: "login" | "register";
+}) {
   const [mode, setMode] = useState<"login" | "register">(
-    error === "register" ? "register" : "login",
+    initialMode ?? (error === "register" ? "register" : "login"),
   );
   const [confirming, setConfirming] = useState(false);
   const [pendingUsername, setPendingUsername] = useState("");
@@ -48,7 +56,7 @@ export function AuthCard({ next, error }: { next: string; error: string }) {
       {mode === "login" ? (
         <form
           action={loginUser}
-          className="rounded-lg border border-border bg-surface p-6"
+          className="zouzou-panel rounded-xl p-6 sm:p-7"
         >
           <input type="hidden" name="next" value={next} />
           <h2 className="text-sm font-semibold text-ink">登录</h2>
@@ -91,7 +99,7 @@ export function AuthCard({ next, error }: { next: string; error: string }) {
           ref={registerFormRef}
           action={registerUser}
           onSubmit={handleRegisterSubmit}
-          className="rounded-lg border border-border bg-surface p-6"
+          className="zouzou-panel rounded-xl p-6 sm:p-7"
         >
           <input type="hidden" name="next" value={next} />
           <h2 className="text-sm font-semibold text-ink">注册</h2>
@@ -141,7 +149,7 @@ export function AuthCard({ next, error }: { next: string; error: string }) {
           aria-modal="true"
           aria-labelledby="register-confirm-title"
         >
-          <div className="w-full max-w-sm rounded-lg border border-border bg-surface p-6 shadow-xl">
+          <div className="zouzou-panel w-full max-w-sm rounded-xl p-6 shadow-pop">
             <h2
               id="register-confirm-title"
               className="text-sm font-semibold text-ink"
@@ -155,14 +163,14 @@ export function AuthCard({ next, error }: { next: string; error: string }) {
               <button
                 type="button"
                 onClick={() => setConfirming(false)}
-                className="inline-flex h-10 items-center rounded-lg border border-border bg-surface px-4 text-sm font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
+                className="zouzou-secondary-button inline-flex h-10 items-center rounded-lg border border-border bg-surface px-4 text-sm font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
               >
                 取消
               </button>
               <button
                 type="button"
                 onClick={confirmRegistration}
-                className="inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+                className="zouzou-primary-button inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
               >
                 确认注册
               </button>

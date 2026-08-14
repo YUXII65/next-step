@@ -26,7 +26,7 @@ export function LandingDemo() {
 
   return (
     <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="rounded-lg bg-surface-muted p-4">
+      <div className="zouzou-panel rounded-xl bg-surface-muted p-4">
         <label
           htmlFor="landing-idea"
           className="mb-2 block text-xs font-medium text-ink-secondary"
@@ -41,14 +41,14 @@ export function LandingDemo() {
             setSubmitted(false);
           }}
           rows={4}
-          className="w-full resize-none rounded-lg border border-border bg-surface px-3 py-2.5 text-sm leading-6 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/20"
+          className="zouzou-input w-full resize-none rounded-lg bg-surface px-3 py-2.5 text-sm leading-6 text-ink"
         />
         <div className="mt-3 flex justify-end">
           <button
             type="button"
             onClick={() => setSubmitted(true)}
             disabled={!idea.trim()}
-            className="inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+            className="zouzou-primary-button inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Wand2 className="size-4" />
             让 AI 帮我整理
@@ -56,7 +56,7 @@ export function LandingDemo() {
         </div>
       </div>
 
-      <div className="rounded-lg bg-surface-muted p-4">
+      <div className="zouzou-panel rounded-xl bg-surface-muted p-4">
         {submitted ? (
           <div>
             <div className="flex items-center gap-2 text-xs font-medium text-ink-secondary">

@@ -136,11 +136,11 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-overlay px-4 pt-[12vh] backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-overlay px-4 pt-[12vh] backdrop-blur-xl"
       onMouseDown={() => setOpen(false)}
     >
       <div
-        className="w-full max-w-xl overflow-hidden rounded-lg border border-border bg-surface shadow-2xl"
+        className="zouzou-panel w-full max-w-xl overflow-hidden rounded-xl shadow-pop animate-[zouzou-fade-in_240ms_ease-out]"
         onMouseDown={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -175,7 +175,7 @@ export function CommandPalette() {
                   onClick={() => choose(index)}
                   onMouseEnter={() => setSelectedIndex(index)}
                   className={cx(
-                    "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left",
+                    "zouzou-icon-button flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors",
                     index === selectedIndex
                       ? "bg-accent-soft text-ink"
                       : "text-ink-secondary",

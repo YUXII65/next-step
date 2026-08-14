@@ -70,7 +70,7 @@ export function PageHint({
     <div
       ref={cardRef}
       role="note"
-      className="fixed bottom-24 left-4 right-4 z-40 w-auto max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-surface p-4 shadow-lg sm:bottom-auto sm:left-auto sm:right-4 sm:top-20 sm:w-72"
+      className="zouzou-panel fixed bottom-24 left-4 right-4 z-40 w-auto max-w-[calc(100vw-2rem)] rounded-xl p-4 shadow-pop animate-[zouzou-fade-in_240ms_ease-out] sm:bottom-auto sm:left-auto sm:right-4 sm:top-20 sm:w-72"
     >
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-semibold text-ink">{title}</p>

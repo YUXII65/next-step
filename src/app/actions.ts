@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes, randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type {
@@ -13,6 +14,7 @@ import {
   destroyUserSession,
   getCurrentUser,
   hashPassword,
+  isGuestUser,
   requireUser,
   verifyPassword,
 } from "@/lib/auth";
@@ -207,6 +209,61 @@ export async function registerUser(formData: FormData) {
   await setOnboardingCompleted(user.id, false);
 
   redirect("/welcome");
+}
+
+export async function startGuestExperience() {
+  const current = await getCurrentUser();
+  if (current) redirect("/welcome");
+
+  const username = `guest_${randomUUID().replaceAll("-", "").slice(0, 12)}`;
+  const password = randomBytes(12).toString("base64url");
+  const user = await prisma.user.create({
+    data: {
+      username,
+      passwordHash: hashPassword(password),
+    },
+    select: { id: true },
+  });
+
+  await createUserSession(user.id);
+  await setOnboardingCompleted(user.id, false);
+  await recordUsageEvent({ userId: user.id, event: "guest_start" });
+  redirect("/welcome?guest=1");
+}
+
+export async function claimGuestAccount(formData: FormData) {
+  const user = await requireUser();
+  if (!isGuestUser(user)) redirect("/");
+
+  const username = String(formData.get("username") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  const next = safeNext(String(formData.get("next") ?? "/welcome"));
+
+  if (
+    username.length < 2 ||
+    username.length > 20 ||
+    password.length < 6
+  ) {
+    redirect(`/guest/register?error=register`);
+  }
+
+  const existing = await prisma.user.findFirst({
+    where: { username, NOT: { id: user.id } },
+    select: { id: true },
+  });
+  if (existing) {
+    redirect(`/guest/register?error=register`);
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      username,
+      passwordHash: hashPassword(password),
+    },
+  });
+  await recordUsageEvent({ userId: user.id, event: "guest_claimed" });
+  redirect(next);
 }
 
 export async function completeFirstRun(formData: FormData) {

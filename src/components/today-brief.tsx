@@ -41,15 +41,15 @@ export function TodayBrief({
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4 p-4 sm:p-5">
       {suggestions.length ? (
         <div className="space-y-2">
           {suggestions.map((suggestion) => (
             <div
               key={`${suggestion.taskId}-${suggestion.title}`}
-              className="flex items-start gap-3 rounded-lg bg-surface-muted p-3"
+              className="zouzou-row-hover flex items-start gap-3 rounded-lg bg-surface-muted p-3"
             >
-              <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent-strong">
+              <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md bg-ai-soft text-ai">
                 <Focus className="size-3.5" />
               </span>
               <div className="min-w-0">
@@ -107,11 +107,11 @@ export function TodayBrief({
         onSubmit={() => trackEvent("home_brief_regenerate")}
       >
         <SubmitButton
-          pendingText={pending ? "AI 简报生成中..." : "AI 简报生成中..."}
-          className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+          pendingText="AI 简报生成中..."
+          className="zouzou-secondary-button inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
         >
           <Sparkles className="size-4" />
-          下一步：重新生成
+          重新生成
         </SubmitButton>
       </form>
     </div>

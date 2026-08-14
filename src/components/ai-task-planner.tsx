@@ -88,7 +88,7 @@ export function AiTaskPlanner({
             return (
               <div
                 key={item.id}
-                className="rounded-lg border border-accent/20 bg-accent-soft/50 p-4"
+                className="zouzou-ai-card p-4"
               >
                 {plan ? (
                   <>
@@ -116,19 +116,19 @@ export function AiTaskPlanner({
                     <p className="text-sm leading-6 text-ink">
                       {item.content}
                     </p>
-                    <span className="inline-flex animate-pulse items-center gap-1.5 text-xs font-medium text-ink-secondary">
-                      <Sparkles className="size-3.5 animate-spin" />
+                    <span className="inline-flex animate-[zouzou-soft-pulse_1.6s_ease-in-out_infinite] items-center gap-1.5 text-xs font-medium text-ink-secondary">
+                      <Sparkles className="size-3.5" />
                       AI 正在梳理...
                     </span>
                   </div>
                 )}
 
-                <div className="mt-3 flex justify-end border-t border-border/60 pt-3">
+                <div className="mt-3 flex justify-end border-t border-border/70 pt-3">
                   <form action={ignoreInboxItem}>
                     <input type="hidden" name="id" value={item.id} />
                     <SubmitButton
                       pendingText="..."
-                      className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-warning hover:text-warning"
+                      className="zouzou-secondary-button inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-warning hover:text-warning"
                     >
                       <EyeOff className="size-3.5" />
                       忽略

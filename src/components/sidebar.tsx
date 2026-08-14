@@ -30,9 +30,9 @@ export function Sidebar() {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-border bg-surface px-4 lg:hidden">
+      <header className="zouzou-glass sticky top-0 z-30 flex h-12 items-center justify-between border-b border-border/70 px-4 lg:hidden">
         <div className="flex items-center gap-2">
-          <BrandMark className="size-7 rounded-md" />
+          <BrandMark className="size-7 rounded-lg" />
           <span className="text-sm font-semibold">走走</span>
         </div>
         <div className="flex items-center gap-1">
@@ -40,9 +40,9 @@ export function Sidebar() {
             href="/tools"
             aria-label="工具匣"
             title="工具匣"
-            className="flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+            className="zouzou-icon-button flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
           >
-            <Blocks className="size-4" />
+            <Blocks className="size-[18px]" />
           </Link>
           <ThemeToggle />
           <form action={logoutUser}>
@@ -50,24 +50,24 @@ export function Sidebar() {
               type="submit"
               aria-label="退出登录"
               title="退出登录"
-              className="flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+              className="zouzou-icon-button flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
             >
-              <LogOut className="size-4" />
+              <LogOut className="size-[18px]" />
             </button>
           </form>
         </div>
       </header>
 
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-16 flex-col items-center border-r border-border bg-surface py-4 lg:flex">
+      <aside className="zouzou-glass fixed inset-y-0 left-0 z-30 hidden w-[72px] flex-col items-center border-r border-border/70 py-4 lg:flex">
         <Link
           href="/"
           aria-label="走走"
-          className="flex size-9 items-center justify-center rounded-lg"
+          className="flex size-10 items-center justify-center rounded-lg"
         >
-          <BrandMark className="size-9 rounded-lg" />
+          <BrandMark className="size-10 rounded-xl" />
         </Link>
 
-        <nav className="mt-5 flex flex-1 flex-col items-center gap-1">
+        <nav className="mt-6 flex flex-1 flex-col items-center gap-1.5">
           {navItems.map((item) => {
             const active = isActive(item.href);
             const Icon = item.icon;
@@ -80,26 +80,26 @@ export function Sidebar() {
                 title={item.label}
                 aria-current={active ? "page" : undefined}
                 className={cx(
-                  "flex size-9 items-center justify-center rounded-lg transition-colors",
+                  "relative flex size-10 items-center justify-center rounded-lg transition-colors",
                   active
-                    ? "bg-accent-soft text-accent-strong"
+                    ? "bg-accent-soft text-accent-strong after:absolute after:left-0 after:top-1/2 after:h-5 after:w-0.5 after:-translate-y-1/2 after:rounded-r-full after:bg-accent"
                     : "text-ink-muted hover:bg-surface-hover hover:text-ink",
                 )}
               >
-                <Icon className="size-4" />
+                <Icon className="size-[18px]" />
               </Link>
             );
           })}
         </nav>
 
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-1.5">
           <Link
             href="/tools"
             aria-label="工具匣"
             title="工具匣"
-            className="flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+            className="zouzou-icon-button flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
           >
-            <Blocks className="size-4" />
+            <Blocks className="size-[18px]" />
           </Link>
           <ThemeToggle />
           <form action={logoutUser}>
@@ -107,15 +107,15 @@ export function Sidebar() {
               type="submit"
               aria-label="退出登录"
               title="退出登录"
-              className="flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+              className="zouzou-icon-button flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
             >
-              <LogOut className="size-4" />
+              <LogOut className="size-[18px]" />
             </button>
           </form>
         </div>
       </aside>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border bg-surface lg:hidden">
+      <nav className="zouzou-glass fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border/70 lg:hidden">
         {navItems.map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;
@@ -130,7 +130,7 @@ export function Sidebar() {
                 active ? "text-accent" : "text-ink-muted",
               )}
             >
-              <Icon className="size-4" />
+              <Icon className="size-5" />
               <span className="truncate">{item.label}</span>
             </Link>
           );

@@ -25,12 +25,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN" className="h-full antialiased">
-      <body className="min-h-dvh bg-background text-ink">
+      <body className="min-h-dvh text-ink">
         <Sidebar />
         <CommandPalette />
         <UsageTracker />
-        <div className="lg:pl-16">
-          <main className="mx-auto w-full max-w-5xl px-4 py-5 pb-28 sm:px-6 lg:px-8 lg:py-7 lg:pb-12">
+        <div className="lg:pl-[72px]">
+          <main className="mx-auto w-full max-w-5xl px-4 py-5 pb-28 sm:px-6 lg:px-8 lg:py-8 lg:pb-12">
             {children}
           </main>
         </div>

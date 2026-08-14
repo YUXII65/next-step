@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   ArrowRight,
   Check,
@@ -25,9 +26,9 @@ const steps = [
 ];
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-surface-muted px-3 py-2.5 text-sm leading-6 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input w-full rounded-lg px-3 py-2.5 text-sm leading-6 text-ink";
 
-export function FirstRunGuide() {
+export function FirstRunGuide({ guest }: { guest?: boolean }) {
   const [step, setStep] = useState(0);
   const [idea, setIdea] = useState("");
   const [projectName, setProjectName] = useState("");
@@ -87,9 +88,28 @@ export function FirstRunGuide() {
   }
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto bg-background">
+    <div className="fixed inset-0 z-40 overflow-y-auto">
       <div className="flex min-h-dvh items-center justify-center px-4 py-8">
         <div className="w-full max-w-xl">
+          {guest ? (
+            <div className="zouzou-panel mb-4 flex items-center justify-between gap-3 rounded-xl border-accent/25 bg-accent-soft px-4 py-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-accent-strong">
+                  游客体验中
+                </p>
+                <p className="mt-0.5 text-xs leading-5 text-ink-secondary">
+                  注册正式账号后，这个体验里的内容可以继续保存。
+                </p>
+              </div>
+              <Link
+                href="/guest/register"
+                className="zouzou-primary-button inline-flex h-9 shrink-0 items-center rounded-lg bg-accent px-3 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+              >
+                注册保存
+              </Link>
+            </div>
+          ) : null}
+
           <div className="mb-6 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <BrandMark className="size-8" />
@@ -103,7 +123,7 @@ export function FirstRunGuide() {
             <form action={skipOnboarding}>
               <SubmitButton
                 pendingText="..."
-                className="inline-flex h-9 items-center justify-center rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+                className="zouzou-secondary-button inline-flex h-9 items-center justify-center rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
               >
                 跳过
               </SubmitButton>
@@ -131,7 +151,7 @@ export function FirstRunGuide() {
             })}
           </div>
 
-          <div className="rounded-lg border border-border bg-surface p-5 shadow-[0_1px_2px_rgba(23,25,29,0.04)] sm:p-6">
+          <div className="zouzou-panel rounded-xl p-5 sm:p-7">
             {step === 0 ? (
               <div>
                 <p className="text-sm font-semibold text-ink">
@@ -150,7 +170,7 @@ export function FirstRunGuide() {
                     type="button"
                     onClick={continueToProject}
                     disabled={!trimmedIdea || generating}
-                    className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+                    className="zouzou-primary-button inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {generating ? (
                       <>
@@ -228,7 +248,7 @@ export function FirstRunGuide() {
                     type="button"
                     onClick={() => setStep(2)}
                     disabled={!projectName.trim() || !objective.trim()}
-                    className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+                    className="zouzou-primary-button inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     下一步
                     <ArrowRight className="size-4" />
@@ -264,7 +284,7 @@ export function FirstRunGuide() {
                   <SubmitButton
                     pendingText="正在创建..."
                     disabled={!taskTitle.trim()}
-                    className="inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+                    className="zouzou-primary-button inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
                   >
                     完成，去书桌查看
                     <Check className="size-4" />

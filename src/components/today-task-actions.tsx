@@ -41,12 +41,12 @@ function actionLabel(status: string) {
 
 function statusButtonClass(status: string) {
   if (status === "in_progress") {
-    return "inline-flex h-8 min-w-16 items-center justify-center gap-1.5 rounded-md border border-accent bg-accent-soft px-2.5 text-xs font-medium text-accent-strong transition-colors hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-60";
+    return "zouzou-primary-button inline-flex h-8 min-w-16 items-center justify-center gap-1.5 rounded-md border border-accent bg-accent-soft px-2.5 text-xs font-medium text-accent-strong transition-colors hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-60";
   }
   if (status === "done") {
-    return "inline-flex h-8 min-w-16 items-center justify-center gap-1.5 rounded-md border border-success/30 bg-success/10 px-2.5 text-xs font-medium text-success transition-colors hover:bg-success/20 disabled:cursor-not-allowed disabled:opacity-60";
+    return "zouzou-primary-button inline-flex h-8 min-w-16 items-center justify-center gap-1.5 rounded-md border border-success/30 bg-success/10 px-2.5 text-xs font-medium text-success transition-colors hover:bg-success/20 disabled:cursor-not-allowed disabled:opacity-60";
   }
-  return "inline-flex h-8 min-w-16 items-center justify-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-60";
+  return "zouzou-secondary-button inline-flex h-8 min-w-16 items-center justify-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-60";
 }
 
 function statusIcon(status: string) {
@@ -110,12 +110,12 @@ export function TodayTaskActions({
           onClick={() => setOpen((value) => !value)}
           aria-label="任务设置"
           title="任务设置"
-          className="flex size-8 items-center justify-center rounded-md border border-border bg-surface text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+          className="zouzou-icon-button flex size-8 items-center justify-center rounded-md border border-border bg-surface text-ink-secondary transition-colors hover:border-accent hover:text-accent"
         >
           <Settings2 className="size-3.5" />
         </button>
         {open ? (
-          <div className="absolute right-0 top-10 z-30 w-48 rounded-lg border border-border bg-surface p-1.5 shadow-lg">
+          <div className="zouzou-panel absolute right-0 top-10 z-30 w-48 rounded-xl p-1.5 shadow-pop animate-[zouzou-fade-in_240ms_ease-out]">
             <form action={focused ? clearTodayFocus : markTodayFocus}>
               <input type="hidden" name="id" value={taskId} />
               <SubmitButton
@@ -130,7 +130,7 @@ export function TodayTaskActions({
                 ) : (
                   <>
                     <CalendarPlus className="size-3.5" />
-                    下一步：设为今日重点
+                    设为今日重点
                   </>
                 )}
               </SubmitButton>

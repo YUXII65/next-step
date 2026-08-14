@@ -8,7 +8,7 @@ import { useClickOutside } from "@/lib/use-click-outside";
 import type { TaskCoachAdvice } from "@/lib/ai";
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm leading-6 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input w-full rounded-lg px-3 py-2 text-sm leading-6 text-ink";
 
 export function AiTaskCoach({
   taskId,
@@ -58,7 +58,7 @@ export function AiTaskCoach({
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-10 z-30 w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-surface p-3 shadow-lg">
+        <div className="zouzou-panel absolute right-0 top-10 z-30 w-80 max-w-[calc(100vw-2rem)] rounded-xl p-3 shadow-pop animate-[zouzou-fade-in_240ms_ease-out]">
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs font-medium text-ink-secondary">和 AI 聊聊</p>
             <button
@@ -73,7 +73,7 @@ export function AiTaskCoach({
           </div>
 
           {advice ? (
-            <div className="mt-3 rounded-lg border border-[#eadf9a] bg-[#fff8d6] p-3">
+            <div className="zouzou-ai-card mt-3 p-3">
               <p className="text-xs text-ink-muted">你说：“{message}”</p>
               <p className="mt-2 text-sm font-semibold text-ink">
                 {advice.title}
@@ -87,14 +87,14 @@ export function AiTaskCoach({
                     key={`${step}-${index}`}
                     className="flex items-start gap-2 text-sm leading-6 text-ink"
                   >
-                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-white/70 text-xs font-medium text-ink-secondary">
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-surface-muted text-xs font-medium text-ink-secondary">
                       {index + 1}
                     </span>
                     {step}
                   </li>
                 ))}
               </ol>
-              <p className="mt-3 rounded-md bg-white/70 px-3 py-2 text-sm leading-6 text-ink">
+              <p className="mt-3 rounded-md bg-surface-muted/80 px-3 py-2 text-sm leading-6 text-ink">
                 先做这个：{advice.nextStep}
               </p>
             </div>
@@ -114,10 +114,10 @@ export function AiTaskCoach({
                 type="button"
                 onClick={ask}
                 disabled={!message.trim() || loading}
-                className="mt-2 inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+                className="zouzou-primary-button mt-2 inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Sparkles className="size-3.5" />
-                {loading ? "AI 正在写便利贴..." : "下一步：帮我想想"}
+                {loading ? "AI 正在写便利贴..." : "帮我想想"}
               </button>
             </>
           )}

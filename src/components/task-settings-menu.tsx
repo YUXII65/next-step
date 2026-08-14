@@ -37,7 +37,7 @@ export function TaskSettingsMenu({
       </button>
 
       {open ? (
-        <div className="absolute right-0 top-10 z-30 w-44 rounded-lg border border-border bg-surface p-1.5 shadow-lg">
+        <div className="zouzou-panel absolute right-0 top-10 z-30 w-44 rounded-xl p-1.5 shadow-pop animate-[zouzou-fade-in_240ms_ease-out]">
           <Link
             href={editHref(projectId, taskId)}
             className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-ink-secondary transition-colors hover:bg-surface-muted hover:text-ink"

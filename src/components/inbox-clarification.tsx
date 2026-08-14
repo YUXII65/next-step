@@ -7,7 +7,7 @@ import { SubmitButton } from "@/components/submit-button";
 import type { InboxClarificationDimension } from "@/lib/ai";
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm leading-6 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input w-full rounded-lg px-3 py-2 text-sm leading-6 text-ink";
 
 export function InboxClarification({
   itemId,
@@ -62,7 +62,7 @@ export function InboxClarification({
         {dimensions.map((dimension, dimensionIndex) => (
           <div
             key={`${dimension.key}-${dimensionIndex}`}
-            className="rounded-lg border border-border bg-surface p-3"
+            className="zouzou-panel rounded-xl bg-surface p-3"
           >
             <p className="mt-1 text-sm font-medium text-ink">
               {dimension.question}
@@ -123,10 +123,10 @@ export function InboxClarification({
           <SubmitButton
             disabled={!canGenerate}
             pendingText="生成计划中..."
-            className="inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+            className="zouzou-primary-button inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Sparkles className="size-4" />
-            下一步：生成计划
+            生成计划
           </SubmitButton>
         </div>
       </form>

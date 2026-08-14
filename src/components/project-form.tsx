@@ -10,7 +10,7 @@ const statusOptions = [
 ];
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input w-full rounded-lg px-3 py-2 text-sm text-ink";
 
 export function ProjectForm({
   action,
@@ -78,7 +78,7 @@ export function ProjectForm({
 
         {project ? (
           <div className="sm:col-span-2">
-            <details className="rounded-lg border border-border bg-surface">
+            <details className="zouzou-panel rounded-xl bg-surface">
               <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
                 AI 帮助
               </summary>
@@ -131,7 +131,7 @@ export function ProjectForm({
       </div>
 
       <div className="flex justify-end">
-        <SubmitButton className="inline-flex h-9 items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60">
+        <SubmitButton className="zouzou-primary-button inline-flex h-9 items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60">
           {submitLabel}
         </SubmitButton>
       </div>

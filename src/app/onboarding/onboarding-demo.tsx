@@ -16,6 +16,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { startGuestExperience } from "@/app/actions";
 
 type Stage = "capture" | "ask" | "planning" | "prompt" | "received";
 
@@ -165,13 +166,13 @@ const plans: Record<string, Plan> = {
 };
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-surface-muted px-3 py-2.5 text-sm leading-6 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input w-full rounded-lg px-3 py-2.5 text-sm leading-6 text-ink";
 
 const primaryButtonClass =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50";
+  "zouzou-primary-button inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50";
 
 const secondaryButtonClass =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent";
+  "zouzou-secondary-button inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent";
 
 function getAiQuestion(selected: string | null) {
   if (selected === "website") {
@@ -218,11 +219,11 @@ export function OnboardingDemo() {
           : 3;
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto bg-background">
+    <div className="fixed inset-0 z-40 overflow-y-auto">
       <div className="mx-auto min-h-dvh w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="mb-2 inline-flex items-center gap-1.5 rounded-md bg-accent-soft px-2 py-1 text-xs font-medium text-accent-strong">
+            <p className="mb-2 inline-flex items-center gap-1.5 rounded-md bg-ai-soft px-2 py-1 text-xs font-medium text-ai">
               <Sparkles className="size-3.5" />
               首次交互演示
             </p>
@@ -237,7 +238,7 @@ export function OnboardingDemo() {
             <ThemeToggle />
             <Link
               href="/"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+              className="zouzou-secondary-button inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
             >
               返回走走
             </Link>
@@ -262,7 +263,7 @@ export function OnboardingDemo() {
 
         {stage === "capture" ? (
           <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+            <div className="zouzou-panel rounded-xl p-5 sm:p-6">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <p className="text-sm font-medium text-ink">
                   你的脑子现在大概是这样
@@ -273,7 +274,7 @@ export function OnboardingDemo() {
                 value={thought}
                 onChange={(event) => setThought(event.target.value)}
                 rows={9}
-                className="min-h-52 resize-none rounded-lg border border-border bg-surface-muted px-4 py-3 text-base leading-7 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20"
+                className="zouzou-input min-h-52 resize-none px-4 py-3 text-base leading-7 text-ink"
               />
               <div className="mt-4 flex flex-wrap justify-end gap-2">
                 <button
@@ -287,7 +288,7 @@ export function OnboardingDemo() {
               </div>
             </div>
 
-            <aside className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+            <aside className="zouzou-panel rounded-xl p-5 sm:p-6">
               <div className="flex items-start gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent text-white">
                   <MessageSquareText className="size-4" />
@@ -312,7 +313,7 @@ export function OnboardingDemo() {
                 ))}
               </div>
 
-              <p className="mt-6 rounded-lg bg-accent-soft px-3 py-2.5 text-xs leading-5 text-accent-strong">
+              <p className="zouzou-ai-card mt-6 px-3 py-2.5 text-xs leading-5 text-accent-strong">
                 AI 会先问关键问题，再给出可编辑的计划，而不是直接丢给你一堆任务。
               </p>
             </aside>
@@ -320,7 +321,7 @@ export function OnboardingDemo() {
         ) : null}
 
         {stage === "ask" ? (
-          <section className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+          <section className="zouzou-panel rounded-xl p-5 sm:p-6">
             <div className="flex items-start gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-white">
                 <Sparkles className="size-4" />
@@ -361,7 +362,7 @@ export function OnboardingDemo() {
               })}
             </div>
 
-            <div className="mt-6 rounded-lg border border-border bg-surface-muted p-4">
+            <div className="zouzou-panel mt-6 rounded-xl bg-surface-muted p-4">
               <div className="flex items-center gap-2 text-sm font-medium text-ink">
                 <ArrowDown className="size-4 text-accent" />
                 也可以补充两句，让计划更贴近你
@@ -413,7 +414,7 @@ export function OnboardingDemo() {
         ) : null}
 
         {stage === "planning" && plan ? (
-          <section className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+          <section className="zouzou-panel rounded-xl p-5 sm:p-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-ink">
@@ -477,7 +478,7 @@ export function OnboardingDemo() {
                 </label>
 
                 {extra.trim() ? (
-                  <div className="mt-4 rounded-lg bg-accent-soft px-3 py-2.5 text-xs leading-5 text-accent-strong">
+                  <div className="zouzou-ai-card mt-4 px-3 py-2.5 text-xs leading-5 text-accent-strong">
                     已纳入你的补充：“{extra.trim()}”
                   </div>
                 ) : null}
@@ -488,7 +489,7 @@ export function OnboardingDemo() {
                   <ListChecks className="size-4 text-accent" />
                   本周任务
                 </div>
-                <div className="mt-3 divide-y divide-border rounded-lg border border-border bg-surface-muted">
+                <div className="zouzou-panel mt-3 divide-y divide-border rounded-xl bg-surface-muted">
                   {plan.tasks.map((task, index) => (
                     <div
                       key={`${task.title}-${index}`}
@@ -525,17 +526,29 @@ export function OnboardingDemo() {
               >
                 换一个方向重新问
               </button>
-              <Link href="/" className={primaryButtonClass}>
-                <Check className="size-4" />
-                确认计划，进入走走
+              <Link
+                href="/login?mode=register&next=/welcome"
+                className={secondaryButtonClass}
+              >
+                注册并保存
               </Link>
+              <form action={startGuestExperience}>
+                <button type="submit" className={primaryButtonClass}>
+                  <Check className="size-4" />
+                  先游客体验
+                  <ArrowRight className="size-4" />
+                </button>
+              </form>
             </div>
+            <p className="mt-3 text-right text-xs leading-5 text-ink-secondary">
+              演示已完成，可以先体验，也可以注册账号保存。
+            </p>
           </section>
         ) : null}
 
         {stage === "prompt" ? (
           <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+            <div className="zouzou-panel rounded-xl p-5 sm:p-6">
               <p className="text-sm font-semibold text-ink">
                 如果你还没想清楚，试着换一种问法
               </p>
@@ -568,7 +581,7 @@ export function OnboardingDemo() {
                 onChange={(event) => setUserThought(event.target.value)}
                 rows={7}
                 placeholder={thoughtPrompts[promptIndex].placeholder}
-                className="mt-5 min-h-44 w-full resize-none rounded-lg border border-border bg-surface-muted px-4 py-3 text-base leading-7 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20"
+                className="zouzou-input mt-5 min-h-44 w-full resize-none px-4 py-3 text-base leading-7 text-ink"
               />
 
               <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
@@ -591,7 +604,7 @@ export function OnboardingDemo() {
               </div>
             </div>
 
-            <aside className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+            <aside className="zouzou-panel rounded-xl p-5 sm:p-6">
               <div className="flex items-start gap-3">
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-strong">
                   <Lightbulb className="size-4" />
@@ -605,7 +618,7 @@ export function OnboardingDemo() {
         ) : null}
 
         {stage === "received" ? (
-          <section className="mx-auto max-w-2xl rounded-lg border border-border bg-surface p-6 text-center sm:p-8">
+          <section className="zouzou-panel mx-auto max-w-2xl rounded-xl p-6 text-center sm:p-8">
             <span className="mx-auto flex size-12 items-center justify-center rounded-lg bg-accent text-white">
               <Sparkles className="size-5" />
             </span>
@@ -626,11 +639,22 @@ export function OnboardingDemo() {
               >
                 重新演示一次
               </button>
-              <Link href="/" className={primaryButtonClass}>
-                进入走走
-                <ArrowRight className="size-4" />
+              <Link
+                href="/login?mode=register&next=/welcome"
+                className={secondaryButtonClass}
+              >
+                注册并保存
               </Link>
+              <form action={startGuestExperience}>
+                <button type="submit" className={primaryButtonClass}>
+                  先游客体验
+                  <ArrowRight className="size-4" />
+                </button>
+              </form>
             </div>
+            <p className="mt-3 text-xs leading-5 text-ink-secondary">
+              演示已完成，可以先体验，也可以注册账号保存。
+            </p>
           </section>
         ) : null}
       </div>

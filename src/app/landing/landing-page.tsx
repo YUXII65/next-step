@@ -41,7 +41,7 @@ const comparisons = [
     gap: "帮你管理任务，但不知道你为什么做。",
   },
   {
-    name: "Notion",
+    name: "模板笔记工具",
     gap: "给你一堆模板，但不知道哪个适合你。",
   },
   {
@@ -61,9 +61,9 @@ const audiences = [
   "知识工作者：会议和琐事多，需要把重要目标拉回日常。",
 ];
 
-export function LandingPage() {
+export function LandingPage({ authed = false }: { authed?: boolean }) {
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto bg-background">
+    <div className="fixed inset-0 z-40 overflow-y-auto">
       <div className="mx-auto min-h-dvh w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="mb-12 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -71,10 +71,10 @@ export function LandingPage() {
             <span className="text-sm font-semibold text-ink">走走</span>
           </div>
           <Link
-            href="/"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+            href={authed ? "/" : "/login"}
+            className="zouzou-secondary-button inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
           >
-            返回走走
+            {authed ? "返回走走" : "登录"}
           </Link>
         </header>
 
@@ -82,30 +82,38 @@ export function LandingPage() {
           <p className="mb-3 text-sm font-medium text-accent">
             让想法，走成下一步
           </p>
-          <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-ink sm:text-5xl">
+          <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-ink sm:text-4xl">
             把脑子里的一堆想法，
             <br />
             变成今天能做的 1-3 件事。
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-ink-secondary">
-            你不用先学 Notion，也不用自己拆任务。AI
-            帮你整理、规划、复盘，让你把精力留给真正重要的事。
+            不用自学 AI 工作流，也不用自己拆任务，AI 帮你把想法变成下一步。
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
-              href="/"
-              className="inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+              href="/onboarding"
+              className="zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
             >
-              进入走走
+              立即体验
               <ArrowRight className="size-4" />
             </Link>
             <Link
-              href="/onboarding"
-              className="inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+              href="/login"
+              className="zouzou-secondary-button inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
             >
-              查看首次交互
+              登录
             </Link>
           </div>
+          <p className="mt-3 text-sm text-ink-secondary">
+            还没有账号？
+            <Link
+              href="/login?mode=register&next=/welcome"
+              className="ml-1 font-medium text-accent transition-colors hover:text-accent-strong"
+            >
+              注册
+            </Link>
+          </p>
         </section>
 
         <section className="mb-12 grid gap-4 sm:grid-cols-3">
@@ -114,7 +122,7 @@ export function LandingPage() {
             return (
               <div
                 key={outcome.title}
-                className="rounded-lg border border-border bg-surface p-5"
+                className="zouzou-panel rounded-xl p-5"
               >
                 <span className="flex size-9 items-center justify-center rounded-lg bg-accent-soft text-accent-strong">
                   <Icon className="size-4" />
@@ -130,7 +138,7 @@ export function LandingPage() {
           })}
         </section>
 
-        <section className="mb-12 rounded-lg border border-border bg-surface p-5 sm:p-8">
+        <section className="zouzou-panel mb-12 rounded-xl p-5 sm:p-8">
           <p className="text-xs font-medium text-accent">交互演示</p>
           <h2 className="mt-2 text-2xl font-semibold text-ink">
             试试看，AI 怎么把你的想法变轻。
@@ -139,7 +147,7 @@ export function LandingPage() {
         </section>
 
         <section className="mb-12 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <div className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+          <div className="zouzou-panel rounded-xl p-5 sm:p-6">
             <h2 className="text-lg font-semibold text-ink">我们和它们有什么不同</h2>
             <div className="mt-4 space-y-3">
               {comparisons.map((item) => (
@@ -165,7 +173,7 @@ export function LandingPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-border bg-surface p-5 sm:p-6">
+          <div className="zouzou-panel rounded-xl p-5 sm:p-6">
             <h2 className="text-lg font-semibold text-ink">适合谁</h2>
             <div className="mt-4 space-y-3">
               {audiences.map((audience) => (
@@ -185,18 +193,18 @@ export function LandingPage() {
           </div>
         </section>
 
-        <section className="rounded-lg bg-ink p-6 text-center text-background sm:p-10">
-          <h2 className="text-2xl font-semibold">
+        <section className="zouzou-panel rounded-xl border-border-strong/60 bg-surface p-6 text-center sm:p-10">
+          <h2 className="text-2xl font-semibold text-ink">
             现在从一句真实想法开始。
           </h2>
-          <p className="mt-2 text-sm leading-6 opacity-70">
+          <p className="mt-2 text-sm leading-6 text-ink-secondary">
             不用整理，不用选模板，先把你脑子里转的东西说出来。
           </p>
           <Link
-            href="/"
-            className="mt-6 inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+            href="/onboarding"
+            className="zouzou-primary-button mt-6 inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
           >
-            进入走走
+            立即体验
             <ArrowRight className="size-4" />
           </Link>
         </section>

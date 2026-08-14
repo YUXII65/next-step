@@ -22,7 +22,7 @@ import { formatDate, toDateInputValue } from "@/lib/date";
 export const dynamic = "force-dynamic";
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input w-full rounded-lg px-3 py-2 text-sm text-ink";
 
 function startOfWeek(date: Date) {
   const copy = new Date(date);
@@ -117,7 +117,7 @@ export default async function ReviewPage({
               className={cx(
                 "flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                 !selectedReview || toDateInputValue(selectedReview.reviewDate) === today
-                  ? "bg-accent-soft font-medium text-accent-strong"
+                  ? "relative bg-accent-soft font-medium text-accent-strong after:absolute after:left-0 after:top-1/2 after:h-4 after:w-0.5 after:-translate-y-1/2 after:rounded-r-full after:bg-accent"
                   : "text-ink-secondary hover:bg-surface-muted hover:text-ink",
               )}
             >
@@ -145,7 +145,7 @@ export default async function ReviewPage({
                       className={cx(
                         "flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                         active
-                          ? "bg-accent-soft font-medium text-accent-strong"
+                          ? "relative bg-accent-soft font-medium text-accent-strong after:absolute after:left-0 after:top-1/2 after:h-4 after:w-0.5 after:-translate-y-1/2 after:rounded-r-full after:bg-accent"
                           : "text-ink-secondary hover:bg-surface-muted hover:text-ink",
                       )}
                     >
@@ -194,9 +194,9 @@ export default async function ReviewPage({
                   <p className="text-sm text-ink-secondary">
                     可以重新生成草稿，然后手动修改。
                   </p>
-                  <SubmitButton className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent">
+                  <SubmitButton className="zouzou-secondary-button inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent">
                     <Sparkles className="size-4" />
-                    下一步：重新生成草稿
+                    重新生成草稿
                   </SubmitButton>
                 </form>
 
@@ -226,8 +226,8 @@ export default async function ReviewPage({
                     />
                   </label>
                   <div className="flex justify-end">
-                    <SubmitButton className="inline-flex h-9 items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60">
-                      下一步：保存复盘
+                    <SubmitButton className="zouzou-primary-button inline-flex h-9 items-center justify-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60">
+                      保存复盘
                     </SubmitButton>
                   </div>
                 </form>
@@ -245,12 +245,12 @@ export default async function ReviewPage({
                     className={inputClass}
                   />
                 </label>
-                <div className="rounded-lg bg-accent-soft p-3 text-xs leading-5 text-accent-strong">
+                <div className="zouzou-ai-card p-3 text-xs leading-5 text-accent-strong">
                   未配置服务端 AI 时使用本地规则生成草稿；配置后由服务端统一调用。
                 </div>
-                <SubmitButton className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60">
+                <SubmitButton className="zouzou-primary-button inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60">
                   <CalendarDays className="size-4" />
-                  下一步：生成复盘
+                  生成复盘
                 </SubmitButton>
               </form>
             )}
@@ -311,19 +311,19 @@ export default async function ReviewPage({
               }
             />
             <div className="grid gap-3 p-4 sm:grid-cols-3">
-              <div className="rounded-lg border border-success/20 bg-success/10 px-3 py-3">
+              <div className="zouzou-panel rounded-xl border-success/15 bg-success/5 px-3 py-3">
                 <p className="text-xs text-success">本周完成</p>
                 <p className="mt-1 text-2xl font-semibold text-ink">
                   {weekCompleted.length}
                 </p>
               </div>
-              <div className="rounded-lg border border-warning/20 bg-warning/10 px-3 py-3">
+              <div className="zouzou-panel rounded-xl border-warning/15 bg-warning/5 px-3 py-3">
                 <p className="text-xs text-warning">待推进</p>
                 <p className="mt-1 text-2xl font-semibold text-ink">
                   {weekOpen.length}
                 </p>
               </div>
-              <div className="rounded-lg border border-border bg-surface-muted px-3 py-3">
+              <div className="zouzou-panel rounded-xl bg-surface-muted px-3 py-3">
                 <p className="text-xs text-ink-secondary">涉及项目</p>
                 <p className="mt-1 text-2xl font-semibold text-ink">
                   {weekProjects.length}

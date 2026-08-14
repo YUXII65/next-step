@@ -18,5 +18,5 @@ export function CurrentTime({ initial }: { initial: string }) {
     return () => window.clearInterval(timer);
   }, []);
 
-  return <span>{time}</span>;
+  return <span className="tabular-nums">{time}</span>;
 }

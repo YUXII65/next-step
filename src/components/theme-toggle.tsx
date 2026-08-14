@@ -34,9 +34,9 @@ export function ThemeToggle() {
       onClick={() => setTheme(!dark)}
       aria-label={dark ? "切换到白天模式" : "切换到夜晚模式"}
       title={dark ? "切换到白天" : "切换到夜晚"}
-      className="flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+      className="zouzou-icon-button flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
     >
-      {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+      {dark ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
     </button>
   );
 }

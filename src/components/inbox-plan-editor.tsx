@@ -6,7 +6,7 @@ import { SubmitButton } from "@/components/submit-button";
 import type { InboxPlan } from "@/lib/ai";
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm leading-6 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:ring-2 focus:ring-accent/20";
+  "zouzou-input w-full rounded-lg px-3 py-2 text-sm leading-6 text-ink";
 
 export function InboxPlanEditor({
   itemId,
@@ -55,7 +55,7 @@ export function InboxPlanEditor({
         {plan.tasks.map((task, index) => (
           <div
             key={`${task.title}-${index}`}
-            className="rounded-lg border border-border bg-surface p-3"
+            className="zouzou-panel rounded-xl bg-surface p-3"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -145,10 +145,10 @@ export function InboxPlanEditor({
       <div className="flex justify-end">
         <SubmitButton
           pendingText="生成中..."
-          className="inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
+          className="zouzou-primary-button inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60"
         >
           <CheckCircle2 className="size-4" />
-          下一步：生成任务
+          生成任务
         </SubmitButton>
       </div>
     </form>

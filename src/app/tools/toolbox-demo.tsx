@@ -114,7 +114,7 @@ function FocusTimer() {
   }
 
   return (
-    <div className="rounded-lg bg-surface-muted p-4">
+    <div className="zouzou-panel rounded-xl bg-surface-muted p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium text-ink-secondary">专注计时</p>
@@ -137,7 +137,7 @@ function FocusTimer() {
               className={
                 modeSeconds === minutes * 60
                   ? "inline-flex h-8 items-center rounded-md bg-accent px-2.5 text-xs font-medium text-white"
-                  : "inline-flex h-8 items-center rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+                  : "zouzou-secondary-button inline-flex h-8 items-center rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
               }
             >
               {minutes} 分钟
@@ -155,7 +155,7 @@ function FocusTimer() {
             }
             setRunning((value) => !value);
           }}
-          className="inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
+          className="zouzou-primary-button inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
         >
           {running ? (
             <>
@@ -178,7 +178,7 @@ function FocusTimer() {
           }}
           aria-label="重置计时"
           title="重置计时"
-          className="flex size-8 items-center justify-center rounded-md border border-border bg-surface text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+          className="zouzou-icon-button flex size-8 items-center justify-center rounded-md border border-border bg-surface text-ink-secondary transition-colors hover:border-accent hover:text-accent"
         >
           <RotateCcw className="size-3.5" />
         </button>
@@ -189,7 +189,7 @@ function FocusTimer() {
 
 function WeeklySummary({ data }: { data: ToolboxInitialData }) {
   return (
-    <div className="rounded-lg bg-surface-muted p-4">
+    <div className="zouzou-panel rounded-xl bg-surface-muted p-4">
       <div className="grid gap-3 sm:grid-cols-4">
         <div>
           <p className="text-xs text-ink-secondary">本周复盘</p>
@@ -219,10 +219,10 @@ function WeeklySummary({ data }: { data: ToolboxInitialData }) {
       <div className="mt-3 flex justify-end">
         <Link
           href="/review"
-          className="inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
+          className="zouzou-primary-button inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
         >
           <ListChecks className="size-3.5" />
-          下一步：去复盘
+          去复盘
         </Link>
       </div>
     </div>
@@ -258,7 +258,7 @@ export function ToolboxDemo({
       <Panel className="mb-6">
         <PanelHeader title="现状速览" icon={Sparkles} />
         <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-lg border border-border bg-surface-muted p-3">
+          <div className="zouzou-panel rounded-xl bg-surface-muted p-3">
             <p className="flex items-center gap-1.5 text-xs text-ink-secondary">
               <Inbox className="size-3.5" />
               未整理想法
@@ -267,7 +267,7 @@ export function ToolboxDemo({
               {initialData.pendingInbox}
             </p>
           </div>
-          <div className="rounded-lg border border-border bg-surface-muted p-3">
+          <div className="zouzou-panel rounded-xl bg-surface-muted p-3">
             <p className="flex items-center gap-1.5 text-xs text-ink-secondary">
               <ListChecks className="size-3.5" />
               未完成任务
@@ -276,7 +276,7 @@ export function ToolboxDemo({
               {initialData.openTasks}
             </p>
           </div>
-          <div className="rounded-lg border border-border bg-surface-muted p-3">
+          <div className="zouzou-panel rounded-xl bg-surface-muted p-3">
             <p className="flex items-center gap-1.5 text-xs text-ink-secondary">
               <Check className="size-3.5" />
               已完成任务
@@ -285,7 +285,7 @@ export function ToolboxDemo({
               {initialData.doneTasks}
             </p>
           </div>
-          <div className="rounded-lg border border-border bg-surface-muted p-3">
+          <div className="zouzou-panel rounded-xl bg-surface-muted p-3">
             <p className="flex items-center gap-1.5 text-xs text-ink-secondary">
               <FolderKanban className="size-3.5" />
               本周复盘
@@ -379,8 +379,8 @@ export function ToolboxDemo({
                       !module.available
                         ? "inline-flex h-9 items-center justify-center rounded-lg border border-border bg-surface-muted px-3 text-sm font-medium text-ink-muted disabled:cursor-not-allowed"
                         : active
-                          ? "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-accent px-3 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
-                          : "inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+                          ? "zouzou-primary-button inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-accent px-3 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+                          : "zouzou-secondary-button inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
                     }
                   >
                     {module.available ? (
@@ -425,7 +425,7 @@ export function ToolboxDemo({
           </p>
           <Link
             href="/api/export"
-            className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+            className="zouzou-primary-button inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
           >
             <Download className="size-4" />
             导出 JSON

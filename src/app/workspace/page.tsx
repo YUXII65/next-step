@@ -105,12 +105,12 @@ export default async function ProjectsPage({
           <PanelHeader title="项目" icon={FolderKanban} />
 
           <details className="border-b border-border bg-surface">
-            <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-surface-muted">
+            <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 border-b border-dashed border-border-strong/70 px-3 py-2 text-xs font-semibold text-ink transition-colors hover:bg-surface-hover">
               <FolderPlus className="size-3.5 text-ink-muted" />
               新建项目
             </summary>
             <div className="border-t border-border p-4">
-              <ProjectForm action={createProject} submitLabel="下一步：创建项目" />
+              <ProjectForm action={createProject} submitLabel="创建项目" />
             </div>
           </details>
 
@@ -129,7 +129,7 @@ export default async function ProjectsPage({
                       className={cx(
                         "flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                         active
-                          ? "bg-accent-soft font-medium text-accent-strong"
+                          ? "relative bg-accent-soft font-medium text-accent-strong after:absolute after:left-0 after:top-1/2 after:h-4 after:w-0.5 after:-translate-y-1/2 after:rounded-r-full after:bg-accent"
                           : "text-ink-secondary hover:bg-surface-muted hover:text-ink",
                       )}
                     >
@@ -155,7 +155,7 @@ export default async function ProjectsPage({
                 className={cx(
                   "mt-2 flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                   showUnassigned
-                    ? "bg-accent-soft font-medium text-accent-strong"
+                    ? "relative bg-accent-soft font-medium text-accent-strong after:absolute after:left-0 after:top-1/2 after:h-4 after:w-0.5 after:-translate-y-1/2 after:rounded-r-full after:bg-accent"
                     : "text-ink-secondary hover:bg-surface-muted hover:text-ink",
                 )}
               >
@@ -191,7 +191,7 @@ export default async function ProjectsPage({
                 projects={projectOptions}
                 task={editingTask}
                 returnTo={editReturnTo}
-                submitLabel="下一步：保存任务"
+                submitLabel="保存任务"
               />
             </Panel>
           ) : null}
@@ -208,7 +208,7 @@ export default async function ProjectsPage({
                 }
               />
               <div className="p-4">
-                <details className="rounded-lg border border-border bg-surface">
+                <details className="zouzou-panel rounded-xl bg-surface">
                   <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
                     <FolderPlus className="size-3.5" />
                     新增任务
@@ -219,13 +219,13 @@ export default async function ProjectsPage({
                       projects={projectOptions}
                       defaultProjectId={undefined}
                       returnTo="/workspace?view=unassigned"
-                      submitLabel="下一步：创建任务"
+                      submitLabel="创建任务"
                     />
                   </div>
                 </details>
 
                 {unassociatedTasks.length ? (
-                  <div className="mt-4 divide-y divide-border rounded-lg border border-border bg-surface">
+                  <div className="zouzou-panel mt-4 divide-y divide-border rounded-xl bg-surface">
                     {unassociatedTasks.map((task) => (
                       <TaskRow
                         key={task.id}
@@ -276,7 +276,7 @@ export default async function ProjectsPage({
                   </p>
                 ) : null}
 
-                <details className="mt-4 rounded-lg border border-border bg-surface">
+                <details className="zouzou-panel mt-4 rounded-xl bg-surface">
                   <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
                     <PencilLine className="size-3.5" />
                     编辑项目
@@ -285,7 +285,7 @@ export default async function ProjectsPage({
                     <ProjectForm
                       action={updateProject}
                       project={selectedProject}
-                      submitLabel="下一步：保存项目"
+                      submitLabel="保存项目"
                     />
                   </div>
                 </details>
@@ -304,14 +304,14 @@ export default async function ProjectsPage({
                           projects={projectOptions}
                           defaultProjectId={selectedProject.id}
                           returnTo={`/workspace?project=${selectedProject.id}`}
-                          submitLabel="下一步：创建任务"
+                          submitLabel="创建任务"
                         />
                       </div>
                     </details>
                   </div>
 
                   {selectedProject.tasks.length ? (
-                    <div className="mt-3 divide-y divide-border rounded-lg border border-border bg-surface">
+                    <div className="zouzou-panel mt-3 divide-y divide-border rounded-xl bg-surface">
                       {sortTasks(selectedProject.tasks, sortParam).map((task) => (
                         <TaskRow
                           key={task.id}

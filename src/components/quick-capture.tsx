@@ -82,7 +82,7 @@ export function QuickCapture({ compact = false }: { compact?: boolean }) {
         onChange={(event) => setContent(event.target.value)}
         rows={compact ? 3 : 4}
         placeholder="今天脑子里在转什么？直接倒出来"
-        className="min-h-28 w-full resize-none rounded-lg border border-border bg-surface-muted px-3 py-2.5 text-sm leading-6 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20"
+        className="zouzou-input min-h-28 w-full resize-none px-3 py-2.5 text-sm leading-6 text-ink"
       />
       <div className="mt-2 flex flex-wrap gap-2">
         {samples.map((sample) => (
@@ -110,10 +110,10 @@ export function QuickCapture({ compact = false }: { compact?: boolean }) {
       <div className="mt-3 flex justify-end">
         <SubmitButton
           pendingText="AI 梳理中..."
-          className="inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+          className="zouzou-primary-button inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
         >
           <Sparkles className="size-4" />
-          下一步：让 AI 梳理
+          让 AI 梳理
         </SubmitButton>
       </div>
     </form>

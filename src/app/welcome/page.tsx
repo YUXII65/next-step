@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { isGuestUser, requireUser } from "@/lib/auth";
 import { isOnboardingCompleted } from "@/lib/onboarding";
 import { FirstRunGuide } from "./first-run-guide";
 
@@ -17,5 +17,5 @@ export default async function WelcomePage() {
     redirect("/");
   }
 
-  return <FirstRunGuide />;
+  return <FirstRunGuide guest={isGuestUser(user)} />;
 }

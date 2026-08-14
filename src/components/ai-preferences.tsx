@@ -10,7 +10,7 @@ const AI_QUESTION_KEY = "next_step_ai_question_asked";
 const AI_PREF_HINT_KEY = "next_step_ai_pref_hint_dismissed";
 
 const inputClass =
-  "w-full rounded-md border border-border bg-surface-muted px-3 py-2 text-sm text-ink outline-none focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input w-full rounded-lg px-3 py-2 text-sm text-ink";
 
 export function AiPreferences() {
   const [values, setValues] = useState({
@@ -104,7 +104,7 @@ export function AiPreferences() {
 
   return (
     <div className="relative">
-      <details className="rounded-md border border-border bg-surface">
+      <details className="zouzou-panel rounded-xl bg-surface">
         <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
           <SlidersHorizontal className="size-3.5" />
           AI 偏好
@@ -192,7 +192,7 @@ export function AiPreferences() {
             <SubmitButton
               disabled={saveState === "saving"}
               pendingText="保存中..."
-              className="inline-flex h-8 items-center justify-center rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
+              className="zouzou-primary-button inline-flex h-8 items-center justify-center rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
             >
               保存偏好
             </SubmitButton>
@@ -204,7 +204,7 @@ export function AiPreferences() {
         <div
           ref={hintRef}
           role="note"
-          className="absolute left-0 top-10 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-surface p-3 shadow-lg"
+          className="zouzou-panel absolute left-0 top-10 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-xl p-3 shadow-pop animate-[zouzou-fade-in_240ms_ease-out]"
         >
           <div className="flex items-start justify-between gap-2">
             <p className="text-xs font-semibold text-ink">

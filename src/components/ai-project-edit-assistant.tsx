@@ -9,7 +9,7 @@ import {
 import type { ProjectEditSuggestion } from "@/lib/ai";
 
 const inputClass =
-  "w-full rounded-lg border border-border bg-surface-muted px-3 py-2 text-sm leading-6 text-ink outline-none placeholder:text-ink-muted focus:border-accent focus:bg-surface focus:ring-2 focus:ring-accent/20";
+  "zouzou-input w-full rounded-lg px-3 py-2 text-sm leading-6 text-ink";
 
 function setField(id: string, value: string | null | undefined) {
   const field = document.getElementById(id) as
@@ -126,10 +126,10 @@ export function AiProjectEditAssistant({
           <button
             type="button"
             onClick={apply}
-            className="mt-2 inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
+            className="zouzou-primary-button mt-2 inline-flex h-8 items-center gap-1.5 rounded-md bg-accent px-3 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
           >
             <Check className="size-3.5" />
-            下一步：应用建议
+            应用建议
           </button>
         </div>
       ) : null}

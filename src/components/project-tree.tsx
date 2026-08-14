@@ -71,7 +71,7 @@ export function ProjectTree({
         return (
         <details
           key={project.id}
-          className="rounded-lg border border-border bg-surface"
+          className="zouzou-panel rounded-xl bg-surface"
           open={project.id === defaultOpenProjectId}
         >
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-surface-muted">
@@ -99,7 +99,7 @@ export function ProjectTree({
               </p>
             ) : null}
 
-            <div className="mt-3 overflow-hidden rounded-lg border border-border bg-surface-muted/60">
+            <div className="zouzou-panel mt-3 overflow-hidden rounded-xl bg-surface-muted/60">
               {sortedTasks.length ? (
                 <div className="divide-y divide-border">
                   {sortedTasks.map((task) => (
@@ -127,7 +127,7 @@ export function ProjectTree({
                     projects={projectOptions}
                     defaultProjectId={project.id}
                     returnTo={`/workspace?project=${project.id}`}
-                    submitLabel="下一步：创建任务"
+                    submitLabel="创建任务"
                   />
                 </div>
               </details>
@@ -141,7 +141,7 @@ export function ProjectTree({
                   <ProjectForm
                     action={updateProject}
                     project={project}
-                    submitLabel="下一步：保存项目"
+                    submitLabel="保存项目"
                   />
                 </div>
               </details>
@@ -164,7 +164,7 @@ export function ProjectTree({
       })}
 
       {unassociatedTasks.length ? (
-        <details className="rounded-lg border border-border bg-surface">
+        <details className="zouzou-panel rounded-xl bg-surface">
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-surface-muted">
             <span className="flex min-w-0 items-center gap-2">
               <ListTodo className="size-4 shrink-0 text-ink-muted" />

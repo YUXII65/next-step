@@ -10,7 +10,7 @@ export function BrandMark({
       {...props}
       aria-hidden="true"
       className={cx(
-        "inline-flex shrink-0 items-center justify-center rounded-lg bg-accent text-white",
+        "inline-flex shrink-0 items-center justify-center rounded-lg bg-accent text-white shadow-card",
         className,
       )}
     >

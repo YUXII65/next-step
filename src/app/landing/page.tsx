@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getCurrentUser } from "@/lib/auth";
 import { LandingPage } from "./landing-page";
 
 export const metadata: Metadata = {
@@ -6,6 +7,9 @@ export const metadata: Metadata = {
   description: "让想法，走成下一步。",
 };
 
-export default function Landing() {
-  return <LandingPage />;
+export const dynamic = "force-dynamic";
+
+export default async function Landing() {
+  const user = await getCurrentUser();
+  return <LandingPage authed={Boolean(user)} />;
 }

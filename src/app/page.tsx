@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   Clock3,
@@ -17,7 +18,7 @@ import { TodayTaskActions } from "@/components/today-task-actions";
 import { TodayBrief } from "@/components/today-brief";
 import { AiTaskPlanner } from "@/components/ai-task-planner";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import type { TodaySuggestion } from "@/lib/ai";
 import {
   endOfDay,
@@ -62,7 +63,8 @@ function taskSource(task: AgendaTask) {
 export const dynamic = "force-dynamic";
 
 export default async function TodayPage() {
-  const user = await requireUser();
+  const user = await getCurrentUser();
+  if (!user) redirect("/landing");
   const now = new Date();
   const dayStart = startOfDay(now);
   const dayEnd = endOfDay(now);
@@ -212,9 +214,9 @@ export default async function TodayPage() {
       <div className="mt-6 flex justify-end">
         <Link
           href="/review"
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+          className="zouzou-secondary-button inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
         >
-          下一步：去复盘
+          去复盘
           <ArrowRight className="size-4" />
         </Link>
       </div>

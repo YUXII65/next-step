@@ -27,13 +27,13 @@ export function CalendarDatePanel({
   ).padStart(2, "0")}`;
 
   return (
-    <section className="mb-5 rounded-lg border border-border bg-surface px-4 py-3">
+    <section className="zouzou-panel mb-5 px-4 py-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <span className="text-3xl font-semibold leading-none text-ink">
+          <span className="text-4xl font-semibold leading-none tabular-nums text-ink">
             {String(now.getDate()).padStart(2, "0")}
           </span>
-          <span className="text-sm font-medium text-ink-secondary">
+          <span className="text-sm font-medium tabular-nums text-ink-secondary">
             {now.getMonth() + 1}月 {weekday}
           </span>
         </div>
@@ -50,9 +50,9 @@ export function CalendarDatePanel({
               {remaining ? `，还剩 ${remaining}` : "，全部完成"}
             </span>
           </div>
-          <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-muted">
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-muted">
             <div
-              className="h-full rounded-full bg-accent transition-all duration-300"
+              className="h-full rounded-full bg-accent transition-all duration-300 ease-out"
               style={{ width: `${progress}%` }}
             />
           </div>
