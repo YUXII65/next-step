@@ -59,7 +59,22 @@ function Read-TunnelUrl {
   return $null
 }
 
+function Get-ExistingTunnel {
+  $proc = Get-CimInstance Win32_Process -Filter "name='cloudflared.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -match "localhost:3000" } |
+    Select-Object -First 1
+  if (-not $proc) { return $null }
+  return Get-Process -Id $proc.ProcessId -ErrorAction SilentlyContinue
+}
+
 function Ensure-Tunnel {
+  # 已有指向 3000 的隧道就复用，避免重启守护进程时更换公网地址
+  $existing = Get-ExistingTunnel
+  if ($existing) {
+    Add-Content -Path $restartLog -Value "$(Get-Date -Format o) reuse tunnel pid=$($existing.Id)"
+    return $existing
+  }
+
   if (-not (Test-Path -LiteralPath $cloudflared)) {
     Add-Content -Path $restartLog -Value "$(Get-Date -Format o) cloudflared not found"
     return $null
