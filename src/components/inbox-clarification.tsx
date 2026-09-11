@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Check, Sparkles } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { Sparkles } from "lucide-react";
 import { generateInboxPlan } from "@/app/actions";
-import { SubmitButton } from "@/components/submit-button";
+import { ChatClarify } from "@/components/chat-clarify";
 import type { InboxClarificationDimension } from "@/lib/ai";
-
-const inputClass =
-  "zouzou-input w-full rounded-lg px-3 py-2 text-sm leading-6 text-ink";
 
 export function InboxClarification({
   itemId,
@@ -20,116 +17,64 @@ export function InboxClarification({
   dimensions: InboxClarificationDimension[];
   supplementPlaceholder: string;
 }) {
-  const [selections, setSelections] = useState<string[]>(
-    () => dimensions.map(() => ""),
-  );
   const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("deepseek-v4-flash");
-  const [baseUrl, setBaseUrl] = useState("https://api.deepseek.com");
-  const [supplement, setSupplement] = useState("");
+  const [pending, startTransition] = useTransition();
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setApiKey(localStorage.getItem("ai-api-key") ?? "");
-      setModel(localStorage.getItem("ai-model") ?? "deepseek-v4-flash");
-      setBaseUrl(
-        localStorage.getItem("ai-base-url") ?? "https://api.deepseek.com",
-      );
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
 
-  const allSelected =
-    dimensions.length > 0 &&
-    dimensions.every((_, index) => Boolean(selections[index]));
-  const canGenerate = allSelected || Boolean(supplement.trim());
+  function submit(payload: { answers: string[][]; supplement: string }) {
+    const formData = new FormData();
+    formData.set("id", itemId);
+    formData.set("option", payload.answers[0]?.join("、") ?? "");
+    payload.answers.forEach((group, index) => {
+      formData.set(`choice_${index}`, group.join("、"));
+    });
+    formData.set("supplement", payload.supplement);
+    formData.set("apiKey", apiKey);
+    startTransition(() => generateInboxPlan(formData));
+  }
 
   return (
-    <div>
+    <div className="space-y-3">
       <p className="text-sm leading-6 text-ink">{content}</p>
-
-      <div className="mt-3 rounded-lg bg-surface p-3">
-        <div className="flex items-center gap-2 text-xs font-medium text-ink-secondary">
-          <Sparkles className="size-3.5 text-accent" />
-          AI 规划助手
-        </div>
-        <p className="mt-2 text-sm leading-6 text-ink">
-          我先把你的想法拆成几个维度，每个维度选一个最接近的方向。
-        </p>
+      <div className="flex items-center gap-2 rounded-lg bg-surface px-3 py-2 text-xs font-medium text-ink-secondary">
+        <Sparkles className="size-3.5 text-accent" />
+        推进伙伴想先多了解一点
       </div>
-
-      <div className="mt-3 space-y-3">
-        {dimensions.map((dimension, dimensionIndex) => (
-          <div
-            key={`${dimension.key}-${dimensionIndex}`}
-            className="zouzou-panel rounded-xl bg-surface p-3"
-          >
-            <p className="mt-1 text-sm font-medium text-ink">
-              {dimension.question}
-            </p>
-            <div className="mt-2 grid gap-2 sm:grid-cols-3">
-              {dimension.options.map((option) => {
-                const active = selections[dimensionIndex] === option;
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() =>
-                      setSelections((current) =>
-                        current.map((value, index) =>
-                          index === dimensionIndex ? option : value,
-                        ),
-                      )
-                    }
-                    className={
-                      active
-                        ? "flex items-center justify-between gap-2 rounded-lg border-2 border-accent bg-accent-soft px-3 py-2.5 text-left text-sm font-medium text-accent-strong transition-colors"
-                        : "flex items-center justify-between gap-2 rounded-lg border border-border bg-surface-muted px-3 py-2.5 text-left text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
-                    }
-                  >
-                    <span>{option}</span>
-                    {active ? <Check className="size-4 shrink-0" /> : null}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <form action={generateInboxPlan} className="mt-3 space-y-3">
-        <input type="hidden" name="id" value={itemId} />
-        <input type="hidden" name="option" value={selections[0] ?? ""} />
-        <input type="hidden" name="supplement" value={supplement} />
-        {dimensions.map((_, index) => (
-          <input
-            key={`choice-${index}`}
-            type="hidden"
-            name={`choice_${index}`}
-            value={selections[index] ?? ""}
-          />
-        ))}
-        <input type="hidden" name="apiKey" value={apiKey} />
-        <input type="hidden" name="model" value={model} />
-        <input type="hidden" name="baseUrl" value={baseUrl} />
-        <textarea
-          value={supplement}
-          onChange={(event) => setSupplement(event.target.value)}
-          rows={2}
-          placeholder={supplementPlaceholder}
-          className={inputClass}
+      {dimensions.length ? (
+        <ChatClarify
+          dimensions={dimensions}
+          supplementPlaceholder={supplementPlaceholder}
+          busy={pending}
+          submitLabel="确定方向，给我下一步"
+          onSubmit={submit}
         />
-        <div className="flex justify-end">
-          <SubmitButton
-            disabled={!canGenerate}
-            pendingText="生成计划中..."
-            className="zouzou-primary-button inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+      ) : (
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            submit({ answers: [], supplement: "" });
+          }}
+          className="zouzou-panel rounded-xl p-4"
+        >
+          <p className="text-sm leading-6 text-ink">
+            没有需要补充的问题，直接生成下一步。
+          </p>
+          <button
+            type="submit"
+            disabled={pending}
+            className="zouzou-primary-button mt-3 inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Sparkles className="size-4" />
-            生成计划
-          </SubmitButton>
-        </div>
-      </form>
+            {pending ? "正在整理..." : "给我下一步"}
+          </button>
+        </form>
+      )}
     </div>
   );
 }

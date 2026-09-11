@@ -5,8 +5,8 @@ import { isOnboardingCompleted } from "@/lib/onboarding";
 import { FirstRunGuide } from "./first-run-guide";
 
 export const metadata: Metadata = {
-  title: "首次设置",
-  description: "用三步完成你的第一个项目和今日任务",
+  title: "让想法，走成下一步",
+  description: "说出真实想法，记住方向，然后走出第一步",
 };
 
 export const dynamic = "force-dynamic";

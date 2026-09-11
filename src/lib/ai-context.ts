@@ -56,12 +56,12 @@ export async function buildAiContext(
     await Promise.all([
       prisma.userPreference.findMany({
         where: { userId },
-        orderBy: { updatedAt: "desc" },
+        orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
         take: 20,
       }),
       prisma.aiFeedbackEvent.findMany({
         where: { userId },
-        orderBy: { createdAt: "desc" },
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
         take: 50,
         include: {
           task: { select: { title: true } },
@@ -70,7 +70,7 @@ export async function buildAiContext(
       }),
       prisma.review.findMany({
         where: { userId },
-        orderBy: { reviewDate: "desc" },
+        orderBy: [{ reviewDate: "desc" }, { id: "asc" }],
         take: 3,
         select: {
           reviewDate: true,
@@ -91,7 +91,7 @@ export async function buildAiContext(
               updatedAt: true,
               status: true,
             },
-            orderBy: { updatedAt: "desc" },
+            orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
             take: 10,
           },
           reviewTasks: {
@@ -101,7 +101,7 @@ export async function buildAiContext(
             take: 5,
           },
         },
-        orderBy: { updatedAt: "desc" },
+        orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
         take: 8,
       }),
       input.taskId
@@ -154,8 +154,11 @@ export async function buildAiContext(
       : "";
     const stalledText =
       stalledDays >= 3 ? `，已停 ${stalledDays} 天` : "";
+    const why = project.objective
+      ? `；为什么想做：${truncate(project.objective, 60)}`
+      : "";
     projectLines.push(
-      `${project.name}${milestone}（${openTasks} 个未完成任务${stalledText}）`,
+      `${project.name}${milestone}（${openTasks} 个未完成任务${stalledText}${why}）`,
     );
     if (stalledDays >= 3) {
       projectEvidence.push(`${project.name} 已停 ${stalledDays} 天`);
@@ -259,9 +262,13 @@ export async function buildAiContext(
     const completed = focusedTask.completedAt
       ? `，完成于 ${formatDate(focusedTask.completedAt)}`
       : "";
+    const original = focusedTask.inboxItem
+      ? `原始想法：${truncate(focusedTask.inboxItem.content, 80)}`
+      : "";
     taskHistorySummary = [
       `${focusedTask.title}`,
       source,
+      original,
       `状态 ${focusedTask.status}`,
       scheduled,
       due,

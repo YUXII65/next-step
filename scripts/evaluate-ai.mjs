@@ -44,9 +44,7 @@ async function callPlan(aiCase) {
   const context = aiCase.context ?? {};
   const projects = context.projects ?? [];
   const maxTasks = aiCase.checks?.maxTasks ?? 5;
-  const system = `你是下一步的计划助手。今天是 ${new Date().toLocaleDateString(
-    "sv-SE",
-  )}。用户会输入一个随意想法，你需要把它整理成一个可执行计划。只返回 JSON，不要 Markdown。字段：action 必须是 create_project、existing_project、single_task、ignore 之一；projectName 只能从给定项目中选择，若新建项目则给一个简洁名称；projectObjective 是项目目标；projectMilestone 是当前里程碑；tasks 是 1-5 条任务，每项包含 title、notes、priority、scheduledDate、dueDate；reason 用中文说明计划理由。日期格式是 YYYY-MM-DD 或 null。所有日期必须基于今天，不能使用训练数据中的旧日期。如果 maxTasks 存在，tasks 数量必须小于或等于 maxTasks；当输入里出现多个目标时，也要遵守 maxTasks。如果 contextEvidence 有内容，reason 必须引用其中至少一条真实依据。如果 memorySummary 中有用户偏好或规划提示，必须遵守。首条任务应该是今天或明天能启动的最小动作。`;
+  const system = `你是下一步的计划助手。用户会输入一个随意想法，你需要把它整理成一个可执行计划。只返回 JSON，不要 Markdown。字段：action 必须是 create_project、existing_project、single_task、ignore 之一；projectName 只能从给定项目中选择，若新建项目则给一个简洁名称；projectObjective 是项目目标；projectMilestone 是当前里程碑；tasks 是 1-5 条任务，每项包含 title、notes、priority、scheduledDate、dueDate；reason 用中文说明计划理由。日期格式是 YYYY-MM-DD 或 null。所有日期必须基于输入中的 currentDate，不能使用训练数据中的旧日期。如果 maxTasks 存在，tasks 数量必须小于或等于 maxTasks；当输入里出现多个目标时，也要遵守 maxTasks。如果 contextEvidence 有内容，reason 必须引用其中至少一条真实依据。如果 memorySummary 中有用户偏好或规划提示，必须遵守。首条任务应该是 currentDate 当天或明天能启动的最小动作。`;
 
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
@@ -61,6 +59,7 @@ async function callPlan(aiCase) {
         {
           role: "user",
           content: JSON.stringify({
+            currentDate: new Date().toLocaleDateString("sv-SE"),
             content: aiCase.input,
             projectNames: projects.map((project) => project.name),
             projects,

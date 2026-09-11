@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { AuthCard } from "@/components/auth-card";
 import { BrandMark } from "@/components/brand-mark";
 
@@ -32,6 +34,14 @@ export default async function LoginPage({
           error={error}
           initialMode={initialMode}
         />
+
+        <Link
+          href="/landing"
+          className="zouzou-secondary-button inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 text-sm font-medium text-accent transition-colors hover:bg-surface-hover"
+        >
+          <ArrowLeft className="size-4" />
+          先看看走走是什么
+        </Link>
       </div>
     </div>
   );

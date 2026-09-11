@@ -67,3 +67,7 @@ prisma/dev.db
 .agents/
 .claude/
 .windsurf/
+
+# 竞品分析抓取的参考资料（本地保留，不提交）
+/.atypica/
+

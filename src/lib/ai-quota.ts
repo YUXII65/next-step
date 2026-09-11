@@ -14,6 +14,9 @@ export type AiUsageInput = {
   promptTokens: number;
   completionTokens: number;
   totalTokens: number;
+  promptCacheHitTokens?: number | null;
+  promptCacheMissTokens?: number | null;
+  model?: string | null;
 };
 
 function intEnv(name: string, fallback: number) {
@@ -51,8 +54,6 @@ export async function withAiQuota<T>(
   feature: string,
   fn: () => Promise<T>,
 ): Promise<T> {
-  if (!isAiQuotaEnabled()) return fn();
-
   const visitorId = await getVisitorId();
   return quotaStorage.run({ visitorId, feature }, fn);
 }
@@ -103,7 +104,7 @@ export async function hasAiQuota() {
 
 export async function recordAiUsage(usage: AiUsageInput) {
   const context = getAiQuotaContext();
-  if (!context || !isAiQuotaEnabled()) return;
+  if (!context) return;
 
   try {
     const user = await getCurrentUser();
@@ -117,6 +118,9 @@ export async function recordAiUsage(usage: AiUsageInput) {
         promptTokens: usage.promptTokens,
         completionTokens: usage.completionTokens,
         totalTokens: usage.totalTokens,
+        promptCacheHitTokens: usage.promptCacheHitTokens ?? null,
+        promptCacheMissTokens: usage.promptCacheMissTokens ?? null,
+        model: usage.model ?? null,
       },
     });
   } catch {

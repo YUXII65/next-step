@@ -118,7 +118,7 @@ export function AiTaskPlanner({
                     </p>
                     <span className="inline-flex animate-[zouzou-soft-pulse_1.6s_ease-in-out_infinite] items-center gap-1.5 text-xs font-medium text-ink-secondary">
                       <Sparkles className="size-3.5" />
-                      AI 正在梳理...
+                      正在梳理...
                     </span>
                   </div>
                 )}

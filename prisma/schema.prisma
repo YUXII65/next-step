@@ -273,6 +273,9 @@ model AiUsageLog {
   promptTokens     Int      @default(0)
   completionTokens Int      @default(0)
   totalTokens      Int      @default(0)
+  promptCacheHitTokens  Int?
+  promptCacheMissTokens Int?
+  model                 String?
   createdAt        DateTime @default(now())
 
   @@index([visitorId, createdAt])

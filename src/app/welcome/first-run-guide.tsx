@@ -7,20 +7,24 @@ import {
   Check,
   FolderKanban,
   ListTodo,
+  MessageSquareText,
   NotebookPen,
   Sparkles,
 } from "lucide-react";
 import {
+  clarifyOnboarding,
   completeFirstRun,
   planOnboarding,
   skipOnboarding,
 } from "@/app/actions";
 import { BrandMark } from "@/components/brand-mark";
+import { ChatClarify } from "@/components/chat-clarify";
 import { SubmitButton } from "@/components/submit-button";
-import type { FirstRunPlanResult } from "@/lib/ai";
+import type { InboxClarification } from "@/lib/ai";
 
 const steps = [
   { label: "写想法", icon: NotebookPen },
+  { label: "先问几句", icon: MessageSquareText },
   { label: "建项目", icon: FolderKanban },
   { label: "定今日", icon: ListTodo },
 ];
@@ -31,11 +35,13 @@ const inputClass =
 export function FirstRunGuide({ guest }: { guest?: boolean }) {
   const [step, setStep] = useState(0);
   const [idea, setIdea] = useState("");
+  const [clarification, setClarification] = useState<InboxClarification | null>(
+    null,
+  );
   const [projectName, setProjectName] = useState("");
   const [objective, setObjective] = useState("");
   const [milestone, setMilestone] = useState("");
   const [taskTitle, setTaskTitle] = useState("");
-  const [plan, setPlan] = useState<FirstRunPlanResult | null>(null);
   const [planSourceIdea, setPlanSourceIdea] = useState("");
   const [generating, setGenerating] = useState(false);
   const [aiFallback, setAiFallback] = useState(false);
@@ -52,36 +58,51 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
 
   function handleIdeaChange(value: string) {
     setIdea(value);
-    setPlan(null);
+    setClarification(null);
     setPlanSourceIdea("");
     setAiFallback(false);
   }
 
-  async function continueToProject() {
-    if (!trimmedIdea || generating) return;
-    if (plan && planSourceIdea === trimmedIdea) {
-      setStep(1);
-      return;
-    }
-
+  async function finishClarify(ideaValue: string, choices: string[]) {
     setGenerating(true);
+    const prompt = choices.length
+      ? `${ideaValue}\n方向倾向：${choices.join("、")}`
+      : ideaValue;
     try {
-      const nextPlan = await planOnboarding(trimmedIdea);
-      setPlan(nextPlan);
+      const nextPlan = await planOnboarding(prompt);
       setAiFallback(nextPlan.usedFallback);
-      setPlanSourceIdea(trimmedIdea);
+      setPlanSourceIdea(ideaValue);
       setProjectName(nextPlan.projectName);
       setObjective(nextPlan.objective);
       setMilestone(nextPlan.milestone);
       setTaskTitle(nextPlan.taskTitle);
-      setStep(1);
+      setStep(2);
     } catch {
       setAiFallback(true);
-      setProjectName(trimmedIdea.slice(0, 12) || "第一个项目");
-      setObjective(`把“${trimmedIdea}”推进成今天能做的一件事。`);
+      setPlanSourceIdea(ideaValue);
+      setProjectName(ideaValue.slice(0, 12) || "第一个项目");
+      setObjective(`把“${ideaValue}”推进成今天能做的一件事。`);
       setMilestone("开始推进");
-      setTaskTitle(`列出「${trimmedIdea}」今天能做的第一个最小动作`);
-      setStep(1);
+      setTaskTitle(`列出「${ideaValue}」今天能做的第一个最小动作`);
+      setStep(2);
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function startClarify() {
+    if (!trimmedIdea || generating) return;
+    setGenerating(true);
+    try {
+      const nextClarification = await clarifyOnboarding(trimmedIdea);
+      setClarification(nextClarification);
+      if (nextClarification.dimensions.length) {
+        setStep(1);
+      } else {
+        await finishClarify(trimmedIdea, []);
+      }
+    } catch {
+      await finishClarify(trimmedIdea, []);
     } finally {
       setGenerating(false);
     }
@@ -130,7 +151,7 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
             </form>
           </div>
 
-          <div className="mb-6 grid grid-cols-3 gap-2">
+          <div className="mb-6 grid grid-cols-4 gap-2">
             {steps.map((item, index) => {
               const Icon = item.icon;
               const active = index <= step;
@@ -168,18 +189,18 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
                 <div className="mt-4 flex justify-end">
                   <button
                     type="button"
-                    onClick={continueToProject}
+                    onClick={startClarify}
                     disabled={!trimmedIdea || generating}
                     className="zouzou-primary-button inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {generating ? (
                       <>
                         <Sparkles className="size-4 animate-pulse" />
-                        AI 正在整理...
+                        正在理解你...
                       </>
                     ) : (
                       <>
-                        让 AI 整理
+                        先问我几句
                         <ArrowRight className="size-4" />
                       </>
                     )}
@@ -188,20 +209,43 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
               </div>
             ) : null}
 
-            {step === 1 ? (
+            {step === 1 && clarification ? (
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-ink">
+                  我先搞清楚你真正想要什么
+                </p>
+                <p className="text-xs leading-5 text-ink-secondary">
+                  选一个最接近的，也可以自己输入。不用一次答完。
+                </p>
+                <ChatClarify
+                  dimensions={clarification.dimensions}
+                  supplementPlaceholder={clarification.supplementPlaceholder}
+                  busy={generating}
+                  submitLabel="就这样，帮我建项目"
+                  onSubmit={(payload) =>
+                    finishClarify(trimmedIdea, payload.answers.flat())
+                  }
+                />
+              </div>
+            ) : null}
+
+            {step === 2 ? (
               <div>
                 <p className="text-sm font-semibold text-ink">
                   把这个想法放进第一个项目
                 </p>
                 {aiFallback ? (
                   <div className="mt-2 rounded-lg border border-warning/25 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
-                    AI 暂时不可用，当前使用本地整理，结果可继续修改。
+                    暂时连不上，先用本地整理，结果可继续修改。
                   </div>
                 ) : (
                   <p className="mt-1 text-xs leading-5 text-ink-secondary">
-                    AI 已整理，可继续修改。
+                    已整理好，可继续修改。
                   </p>
                 )}
+                <div className="zouzou-ai-card mt-3 px-3 py-2.5 text-xs leading-5 text-accent-strong">
+                  你最初说：{planSourceIdea}
+                </div>
                 <label className="mt-4 block">
                   <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
                     项目名
@@ -239,14 +283,14 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
                 <div className="mt-5 flex items-center justify-between gap-3">
                   <button
                     type="button"
-                    onClick={() => setStep(0)}
+                    onClick={() => setStep(1)}
                     className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent"
                   >
                     上一步
                   </button>
                   <button
                     type="button"
-                    onClick={() => setStep(2)}
+                    onClick={() => setStep(3)}
                     disabled={!projectName.trim() || !objective.trim()}
                     className="zouzou-primary-button inline-flex h-10 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
                   >
@@ -257,11 +301,12 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
               </div>
             ) : null}
 
-            {step === 2 ? (
+            {step === 3 ? (
               <form action={completeFirstRun}>
                 <input type="hidden" name="projectName" value={projectName.trim()} />
                 <input type="hidden" name="objective" value={objective.trim()} />
                 <input type="hidden" name="milestone" value={milestone.trim()} />
+                <input type="hidden" name="sourceIdea" value={planSourceIdea} />
                 <p className="text-sm font-semibold text-ink">
                   今天先做这一件
                 </p>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>浏览器兼容检测</title>
+<style>
+  body { margin: 0; padding: 16px; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #edf4fb; color: #182238; font-size: 15px; line-height: 1.6; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .sub { color: #4d6d94; font-size: 13px; margin: 0 0 16px; }
+  .card { background: #fff; border: 1px solid #dce8f7; border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .card h2 { font-size: 14px; margin: 0 0 8px; }
+  .row { display: block; border-top: 1px solid #eef4fb; padding: 7px 0; font-size: 14px; }
+  .row:first-of-type { border-top: 0; }
+  .k { color: #4d6d94; }
+  .ok { color: #1c9d6a; font-weight: 700; }
+  .no { color: #d95050; font-weight: 700; }
+  code, .ua { font-family: Menlo, Consolas, monospace; font-size: 12px; word-break: break-all; color: #182238; }
+  .verdict { background: #e8f0ff; border: 1px solid #b9d2ff; border-radius: 10px; padding: 12px 14px; font-weight: 600; color: #1e45b4; }
+  .box { display: flex; gap: 8px; align-items: center; }
+  .pill { background: #2f63e6; color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>浏览器兼容检测</h1>
+  <p class="sub">这一页不使用 Tailwind，只用了最普通的 CSS。如果你看到它排版正常、有圆角卡片和蓝色按钮，说明这台手机能正常渲染普通 CSS。</p>
+
+  <div class="card">
+    <h2>1. 打开地址</h2>
+    <div class="ua" id="url">读取中…</div>
+  </div>
+
+  <div class="card">
+    <h2>2. 浏览器标识</h2>
+    <div class="ua" id="ua">读取中…</div>
+  </div>
+
+  <div class="card">
+    <h2>3. 关键能力</h2>
+    <div id="feats">检测中…</div>
+  </div>
+
+  <div class="card">
+    <h2>4. 普通 CSS 渲染自检</h2>
+    <div class="box"><span class="pill">蓝色按钮</span><span>圆角卡片 + 间距 + 配色</span></div>
+  </div>
+
+  <div class="verdict" id="verdict">正在给出结论…</div>
+
+<script>
+(function () {
+  var out = [];
+  function add(label, ok, detail) {
+    out.push('<div class="row"><span class="k">' + label + '：</span> <span class="' + (ok ? 'ok' : 'no') + '">' + (ok ? '支持' : '不支持') + '</span>' + (detail ? ' <span class="k">' + detail + '</span>' : '') + '</div>');
+  }
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = text;
+  }
+
+  var ua = navigator.userAgent || '未知';
+  setText('url', location.href);
+  setText('ua', ua);
+
+  var supports = (typeof CSS !== 'undefined' && CSS.supports) ? CSS.supports : null;
+  var hasVars = supports ? supports('--x', '1') : false;
+  var hasLayer = (typeof CSSLayerBlockRule !== 'undefined');
+  var hasOklch = supports ? supports('color', 'oklch(60% 0.15 200)') : false;
+  var hasColorMix = supports ? supports('color', 'color-mix(in oklab, red 50%, blue)') : false;
+  var hasGrid = supports ? supports('display', 'grid') : false;
+  var hasFlex = supports ? (supports('display', 'flex') || supports('display', '-webkit-flex')) : false;
+  var hasSticky = supports ? supports('position', 'sticky') : false;
+  var hasDvh = supports ? supports('height', '100dvh') : false;
+
+  add('CSS 变量 var()', hasVars);
+  add('CSS 级联层 @layer', hasLayer, 'Tailwind v4 全部规则都放在 @layer 里，这项不支持会整页无样式');
+  add('oklch() 颜色', hasOklch, 'Tailwind v4 主色值');
+  add('color-mix()', hasColorMix, 'Tailwind v4 透明色计算');
+  add('display: grid', hasGrid);
+  add('display: flex', hasFlex);
+  add('position: sticky', hasSticky);
+  add('dvh 单位', hasDvh);
+
+  setText('feats', out.join(''));
+
+  var verdict;
+  if (!hasLayer) {
+    verdict = '结论：这台手机的浏览器不支持 @layer，所以走走的样式会被整段忽略，页面只剩裸 HTML。需要换用较新的浏览器（Chrome / Edge / 三星浏览器最新版），或在更新的设备上打开。';
+  } else if (!hasVars || !hasOklch || !hasColorMix) {
+    verdict = '结论：支持 @layer，但缺少部分现代颜色/变量能力，可能有局部样式错乱。建议升级浏览器。';
+  } else {
+    verdict = '结论：这台手机的浏览器能力足够，走走应当能正常显示。如果仍然没有样式，请把这一页的截图发给开发者排查（可能是缓存或网络拦截）。';
+  }
+  setText('verdict', verdict);
+})();
+</script>
+</body>
+</html>

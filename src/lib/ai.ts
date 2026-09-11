@@ -38,6 +38,7 @@ export type InboxClarificationDimension = {
   key: string;
   question: string;
   options: string[];
+  multi?: boolean;
 };
 
 export type InboxClarification = {
@@ -83,6 +84,7 @@ export type TodaySuggestion = {
   projectName: string | null;
   priority: "low" | "medium" | "high" | "urgent";
   reason: string;
+  evidence: string[];
 };
 
 export type ReviewDraft = {
@@ -230,20 +232,23 @@ async function callModel(
           prompt_tokens?: number;
           completion_tokens?: number;
           total_tokens?: number;
+          prompt_cache_hit_tokens?: number;
+          prompt_cache_miss_tokens?: number;
         };
       };
       const content = data.choices?.[0]?.message?.content ?? null;
 
-      if (isAiQuotaEnabled()) {
-        const usage = data.usage
-          ? {
-              promptTokens: data.usage.prompt_tokens ?? 0,
-              completionTokens: data.usage.completion_tokens ?? 0,
-              totalTokens: data.usage.total_tokens ?? 0,
-            }
-          : await estimateAiUsage({ system, user }, content);
-        await recordAiUsage(usage);
-      }
+      const usage = data.usage
+        ? {
+            promptTokens: data.usage.prompt_tokens ?? 0,
+            completionTokens: data.usage.completion_tokens ?? 0,
+            totalTokens: data.usage.total_tokens ?? 0,
+            promptCacheHitTokens: data.usage.prompt_cache_hit_tokens ?? null,
+            promptCacheMissTokens: data.usage.prompt_cache_miss_tokens ?? null,
+            model,
+          }
+        : await estimateAiUsage({ system, user }, content);
+      await recordAiUsage(usage);
 
       return content;
     } catch (error) {
@@ -311,7 +316,7 @@ function heuristicFirstRun(content: string): FirstRunPlan {
       .replace(/^(?:我?想(?:做|要|把|开始|尝试|搞)?|做(?:个|一个)?|搞(?:个|一个)?)/, "")
       .split(/[，。！？,.!?\n]/)[0]
       .trim() || short;
-  const projectName = `${topic.slice(0, 10)}计划`;
+  const projectName = `${topic.slice(0, 10)}第一步`;
 
   return {
     projectName,
@@ -410,7 +415,7 @@ export async function clarifyInbox(
 ) {
   const fallback = heuristicClarification(content, projectNames);
   const text = await callModel(
-    `你是下一步的规划助手。用户会输入一个模糊想法，你需要先把想法拆成 2-4 个关键维度，每个维度给出 3 个用户能直接点击的选项，而不是直接生成计划。只返回 JSON，不要 Markdown。格式：{"dimensions":[{"key":"维度标识","question":"简短问题","options":["3个简单选项"]}],"supplementPlaceholder":"补充框提示语"}。`,
+    `你是走走里的推进伙伴，不是标准规划工具。用户会输入一个真实想法。你的任务是先理解他为什么想做、现在卡在哪、现实限制是什么，再把想法拆成 2-4 个关键维度，每个维度给出 3 个用户能直接点击的选项，而不是直接生成计划。问题要围绕人而不是只围绕任务，避免项目管理术语。只返回 JSON，不要 Markdown。格式：{"dimensions":[{"key":"维度标识","question":"简短问题","options":["3个简单选项"]}],"supplementPlaceholder":"补充框提示语"}。`,
     JSON.stringify({
       content,
       projectNames,
@@ -498,8 +503,9 @@ export async function planInbox(
   const fallback = heuristicPlan(clarifiedContent, projectNames);
 
   const text = await callModel(
-    `你是下一步的计划助手。今天是 ${toDateInputValue(new Date())}。用户会输入一个随意想法，你需要把它整理成一个可执行计划。只返回 JSON，不要 Markdown。字段：action 必须是 create_project、existing_project、single_task、ignore 之一；projectName 只能从给定项目中选择，若新建项目则给一个简洁名称；projectObjective 是项目目标；projectMilestone 是当前里程碑；tasks 是 1-5 条任务，每项包含 title、notes、priority、scheduledDate、dueDate；reason 用中文说明计划理由。日期格式是 YYYY-MM-DD 或 null。所有日期必须基于今天，不能使用训练数据中的旧日期。如果 maxTasks 存在，tasks 数量必须小于或等于 maxTasks；当输入里出现多个目标时，也要遵守 maxTasks。如果 contextEvidence 有内容，reason 必须引用其中至少一条真实依据。如果 memorySummary 中有用户偏好或规划提示，必须遵守。首条任务应该是今天或明天能启动的最小动作。`,
+    `你是走走里的推进伙伴，不是标准计划工具。用户会输入一个真实想法。先理解他为什么想做、现实限制和节奏，再把想法整理成一个可执行计划。不要堆满任务，不要用项目管理腔。只返回 JSON，不要 Markdown。字段：action 必须是 create_project、existing_project、single_task、ignore 之一；projectName 只能从给定项目中选择，若新建项目则给一个简洁名称，不要叫“XX计划”这类模板名；projectObjective 要保留用户想做这件事的真实意义；projectMilestone 是当前阶段能完成的最小成果；tasks 是 1-5 条任务，每项包含 title、notes、priority、scheduledDate、dueDate；首条任务的 notes 应保留一句用户原话或真实动机；reason 用中文说明为什么这样安排，必须引用用户原话或 contextEvidence 中的真实依据，体现尊重他的现状，而不是通用理由。日期格式是 YYYY-MM-DD 或 null。所有日期必须基于输入中的 currentDate，不能使用训练数据中的旧日期。如果 maxTasks 存在，tasks 数量必须小于或等于 maxTasks；当输入里出现多个目标时，也要遵守 maxTasks。如果 memorySummary 中有用户偏好或规划提示，必须遵守。首条任务应该是 currentDate 当天或明天能启动的最小动作。如果用户提到卡住、没时间或想法太多，优先降低任务数量、缩小第一步。`,
     JSON.stringify({
+      currentDate: toDateInputValue(new Date()),
       content: clarifiedContent,
       projectNames,
       projects: projectContext ?? [],
@@ -555,12 +561,13 @@ export async function generateFirstRunPlan(
     usedFallback: true,
   };
   const text = await callModel(
-    `你是“走走”的新人规划助手。用户会输入一个模糊想法。你的任务不是重复这句话，而是把它整理成一个清晰的新人引导计划。
+    `你是走走里的新人推进伙伴，不是计划工具。用户会输入一个真实想法。你的任务不是替他做一份大计划，而是理解他为什么想做，并帮他拆出第一个能启动的下一步。
 要求：
 - projectName 用 2-8 个字概括核心方向，不能照抄原句。
-- projectObjective 用一句话描述完成后会变成什么样，不能照抄原句。
-- projectMilestone 用一句话描述当前阶段要先完成的成果。
-- taskTitle 是今天就能开始的最小行动，必须具体，不能照抄原句。
+- projectName 不要用“计划”作为名称后缀。
+- projectObjective 用一句话保留用户想做这件事的真实意义，并描述完成后会变成什么样，不能照抄原句。
+- projectMilestone 用一句话描述当前阶段要先完成的最小成果。
+- taskTitle 是今天 10-30 分钟就能开始的最小行动，必须具体，不能照抄原句。
 - 只返回 JSON，不要 Markdown。
 格式：{"projectName":"","projectObjective":"","projectMilestone":"","taskTitle":""}`,
     JSON.stringify({ idea: content }),
@@ -622,7 +629,7 @@ export async function generateTaskEditSuggestion(input: {
   };
 
   const text = await callModel(
-    `你是下一步的任务修改助手。用户会输入一个修改想法，以及当前任务字段。你需要理解想法，并返回最合理的修改建议。只返回 JSON，不要 Markdown。格式：{"title":"新标题","notes":"备注","priority":"low|medium|high|urgent","scheduledDate":"YYYY-MM-DD或null","dueDate":"YYYY-MM-DD或null","focusDate":"YYYY-MM-DD或null","reason":"中文说明为什么这样改"}。只返回需要改的字段，reason 必须返回。`,
+    `你是走走里的任务推进伙伴，不是标准修改助手。用户会输入一个修改想法，以及当前任务字段。你需要理解用户真正想调整什么：可能是负担太重、方向变了、没时间或状态不佳。只返回 JSON，不要 Markdown。格式：{"title":"新标题","notes":"备注","priority":"low|medium|high|urgent","scheduledDate":"YYYY-MM-DD或null","dueDate":"YYYY-MM-DD或null","focusDate":"YYYY-MM-DD或null","reason":"中文说明为什么这样改"}。只返回需要改的字段，reason 必须返回，并且要引用用户原话中的真实理由。如果用户想缓一缓或缩小范围，优先降低负担、简化任务，不要强行排期。`,
     JSON.stringify({
       ...input,
       memorySummary: memorySummary ?? null,
@@ -684,7 +691,7 @@ export async function generateProjectEditSuggestion(input: {
   };
 
   const text = await callModel(
-    `你是下一步的项目修改助手。用户会输入一个修改想法，以及当前项目字段。你需要理解想法，并返回最合理的修改建议。只返回 JSON，不要 Markdown。格式：{"name":"项目名称","objective":"项目目标","currentMilestone":"当前里程碑","status":"active|paused|completed|archived","notes":"备注","reason":"中文说明为什么这样改"}。只返回需要改的字段，reason 必须返回。`,
+    `你是走走里的项目推进伙伴，不是标准修改助手。用户会输入一个修改想法，以及当前项目字段。你需要理解这个项目对用户来说为什么重要、当前卡在哪，并返回最合理的修改建议。只返回 JSON，不要 Markdown。格式：{"name":"项目名称","objective":"项目目标","currentMilestone":"当前里程碑","status":"active|paused|completed|archived","notes":"备注","reason":"中文说明为什么这样改"}。只返回需要改的字段，reason 必须返回，并且引用用户原话中的真实理由。如果用户提到暂停、缩小或换方向，优先让项目负担更轻，而不是增加新承诺。`,
     JSON.stringify({
       ...input,
       memorySummary: memorySummary ?? null,
@@ -738,13 +745,16 @@ export async function generateTaskCoachAdvice(input: {
   const fallback = buildLocalTaskCoachAdvice(input);
 
   const text = await callModel(
-    `你是下一步里的任务伙伴，不是标准助手。用户会给你一个任务标题和一段很随意的想法。你要像熟悉他的朋友一样，先接住他的话，再写一张便利贴。
+    `你是走走里的任务伙伴，不是标准助手。用户会给你一个任务标题和一段很随意的想法。你要像熟悉他的朋友一样，先接住他的话，再写一张便利贴。
 硬性要求：
 - 必须回应用户原话和任务标题，不能只讲通用道理。
 - 禁止使用“卡住很正常”“保持耐心”“一步一步来”“你可以尝试”这类模板句。
 - 禁止每次使用同一套结构；根据用户原话里的具体词改变标题、鼓励语、步骤和下一步。
 - 把用户原话中的细节直接带进内容，不要只替换任务名。
 - 步骤要具体到马上能做，不能抽象。
+- 如果用户说卡住、没时间、想法太多，先降低下一步的大小，而不是增加步骤。
+- nextStep 必须是 10 分钟内能开始的具体动作，不能是“思考一下”“整理思路”这类抽象指令。
+- 不要用“你只需要”“你应该”这类说教句式。
 - 语气像人写的，不像 AI 生成的。
 - 只返回 JSON，不要 Markdown。
 格式：{"title":"便利贴标题","encouragement":"一句鼓励","steps":["2-3个具体指导步骤"],"nextStep":"最小可执行的下一步"}
@@ -1003,8 +1013,9 @@ function heuristicToday(tasks: FocusTask[]): TodaySuggestion[] {
       projectName: task.projectName,
       priority: safePriority(task.priority),
       reason: task.dueDate
-        ? "本地规则：优先级较高且有截止时间"
-        : "本地规则：按优先级推荐",
+        ? "先处理临近截止的这件，避免拖延变成负担"
+        : "今天先推进这一件，不用给自己太多压力",
+      evidence: [],
     }));
 }
 
@@ -1021,7 +1032,7 @@ export async function suggestTodayFocus(
   if (!tasks.length) return fallback;
 
   const text = await callModel(
-    "你是下一步规划助手。根据任务列表选择最重要的 1-3 个任务作为今日重点。只返回 JSON，不要 Markdown。格式：{\"suggestions\":[{\"title\":\"任务标题\",\"reason\":\"中文理由\"}]}。",
+    "你是走走里的今日推进伙伴，不是标准排期助手。根据任务列表、最近复盘和用户反馈，选择今天最值得推进的 1-3 个任务。不要只按优先级和截止日期选；reason 要像朋友解释为什么今天做它，可以引用复盘、项目状态或用户原话。如果用户最近有延期或低质量反馈，优先选负担最小、能真正开始的任务。只返回 JSON，不要 Markdown。格式：{\"suggestions\":[{\"title\":\"任务标题\",\"reason\":\"中文理由\"}]}。",
     JSON.stringify({
       tasks: tasks.map((task) => ({
         title: task.title,
@@ -1046,13 +1057,14 @@ export async function suggestTodayFocus(
       .map((item) => {
         const task = tasks.find((candidate) => candidate.title === item.title);
         if (!task) return null;
-        return {
-          taskId: task.id,
-          title: task.title,
-          projectName: task.projectName,
-          priority: safePriority(task.priority),
-          reason: typeof item.reason === "string" ? item.reason : "AI 建议",
-        };
+    return {
+      taskId: task.id,
+      title: task.title,
+      projectName: task.projectName,
+      priority: safePriority(task.priority),
+      reason: typeof item.reason === "string" ? item.reason : "AI 建议",
+      evidence: evidence ?? [],
+    };
       })
       .filter((item): item is TodaySuggestion => item !== null)
       .slice(0, 3);
@@ -1126,7 +1138,7 @@ export async function generateReviewDraft(input: {
   );
 
   const text = await callModel(
-    "你是下一步的每日复盘助手。根据当天完成的任务、今日计划、未完成任务和项目状态生成复盘草稿。summary 要像给朋友讲今天最重要的进展，不要只报数量，要包含一句明确洞察或判断；nextActions 每行一个下一步行动。只返回 JSON，不要 Markdown。格式：{\"summary\":\"总结\",\"nextActions\":\"每行一个下一步行动\"}。",
+    "你是走走里的每日复盘伙伴，不是汇报生成器。根据当天完成的任务、今日计划、未完成任务和项目状态生成复盘草稿。summary 要像给朋友讲今天真正推进了什么、卡在哪、为什么，不要只报数量，要包含一句明确洞察或判断；如果今天没有推进，不要指责，而是帮用户理解卡住的原因。nextActions 每行一个下一步行动，优先把未完成或卡点转成明天能启动的最小动作。只返回 JSON，不要 Markdown。格式：{\"summary\":\"总结\",\"nextActions\":\"每行一个下一步行动\"}。",
     JSON.stringify({ ...input, contextEvidence: evidence ?? [] }),
   );
 

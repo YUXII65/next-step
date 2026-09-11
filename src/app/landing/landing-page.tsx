@@ -41,7 +41,7 @@ const comparisons = [
     gap: "帮你管理任务，但不知道你为什么做。",
   },
   {
-    name: "模板笔记工具",
+    name: "Notion",
     gap: "给你一堆模板，但不知道哪个适合你。",
   },
   {
@@ -139,9 +139,9 @@ export function LandingPage({ authed = false }: { authed?: boolean }) {
         </section>
 
         <section className="zouzou-panel mb-12 rounded-xl p-5 sm:p-8">
-          <p className="text-xs font-medium text-accent">交互演示</p>
+          <p className="text-xs font-medium text-accent">它是怎么运转的</p>
           <h2 className="mt-2 text-2xl font-semibold text-ink">
-            试试看，AI 怎么把你的想法变轻。
+            看看它怎么把你的一堆想法，走成今天的下一步。
           </h2>
           <LandingDemo />
         </section>

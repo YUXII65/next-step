@@ -59,6 +59,19 @@ export function TodayBrief({
                 <p className="mt-1 text-xs leading-5 text-ink-secondary">
                   {suggestion.reason}
                 </p>
+                {suggestion.evidence.length ? (
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {suggestion.evidence.map((item) => (
+                      <span
+                        key={item}
+                        className="inline-flex items-center gap-1 rounded-md bg-ai-soft px-2 py-1 text-[11px] font-medium leading-4 text-ai"
+                      >
+                        <Sparkles className="size-3" />
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
                 {suggestion.projectName ? (
                   <p className="mt-1 text-xs text-ink-muted">
                     {suggestion.projectName}
@@ -107,7 +120,7 @@ export function TodayBrief({
         onSubmit={() => trackEvent("home_brief_regenerate")}
       >
         <SubmitButton
-          pendingText="AI 简报生成中..."
+          pendingText="正在理解今天..."
           className="zouzou-secondary-button inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
         >
           <Sparkles className="size-4" />

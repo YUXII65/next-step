@@ -17,6 +17,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { TodayTaskActions } from "@/components/today-task-actions";
 import { TodayBrief } from "@/components/today-brief";
 import { AiTaskPlanner } from "@/components/ai-task-planner";
+import { LoopProgress } from "@/components/loop-progress";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import type { TodaySuggestion } from "@/lib/ai";
@@ -25,6 +26,7 @@ import {
   formatDate,
   isSameDay,
   startOfDay,
+  toDateInputValue,
 } from "@/lib/date";
 
 const priorityOrder: Record<string, number> = {
@@ -55,7 +57,7 @@ function taskSource(task: AgendaTask) {
     return `来自复盘 · ${formatDate(task.reviewNextAction.review.reviewDate)}`;
   }
   if (task.inboxItem) {
-    return "来自 AI";
+    return "来自整理";
   }
   return task.project?.name ?? "未关联项目";
 }
@@ -95,6 +97,38 @@ export default async function TodayPage() {
     }),
   ]);
 
+  const [recentReviews, projectCount] = await Promise.all([
+    prisma.review.findMany({
+      where: { userId: user.id },
+      select: { reviewDate: true },
+      orderBy: { reviewDate: "desc" },
+      take: 60,
+    }),
+    prisma.project.count({ where: { userId: user.id } }),
+  ]);
+
+  const activityDates = new Set<string>();
+  for (const task of tasks) {
+    if (task.completedAt) activityDates.add(toDateInputValue(task.completedAt));
+  }
+  for (const review of recentReviews) {
+    activityDates.add(toDateInputValue(review.reviewDate));
+  }
+
+  const streak = computeStreak(activityDates, now);
+  const reviewedToday = recentReviews.some((review) =>
+    isSameDay(review.reviewDate, now),
+  );
+  const weekStart = startOfDay(
+    new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000),
+  );
+  const weekDone = tasks.filter(
+    (task) =>
+      task.status === "done" &&
+      task.completedAt &&
+      task.completedAt >= weekStart,
+  ).length;
+
   const openTasks = tasks.filter(
     (task) => task.status !== "done" && task.status !== "cancelled",
   );
@@ -106,6 +140,13 @@ export default async function TodayPage() {
       task.completedAt <= dayEnd,
   ).length;
   const totalToday = completedToday + openTasks.length;
+  const loopStage = reviewedToday
+    ? 3
+    : openTasks.length
+      ? 2
+      : projectCount
+        ? 1
+        : 0;
 
   const agenda = [...openTasks].sort((a, b) => {
     function rank(task: AgendaTask) {
@@ -148,6 +189,7 @@ export default async function TodayPage() {
     projectName: task.project?.name ?? null,
     priority: task.priority as TodaySuggestion["priority"],
     reason: suggestionReason(task, now, dayStart),
+    evidence: [],
   }));
 
   return (
@@ -162,9 +204,18 @@ export default async function TodayPage() {
         totalToday={totalToday}
       />
 
+      <div className="mt-4">
+        <LoopProgress
+          stage={loopStage}
+          streak={streak}
+          weekDone={weekDone}
+          reviewedToday={reviewedToday}
+        />
+      </div>
+
       <Panel>
         <PanelHeader
-          title="AI 今日助手"
+          title="今日推进伙伴"
           icon={Sparkles}
           action={
             <span className="text-xs font-medium text-ink-muted">
@@ -206,7 +257,7 @@ export default async function TodayPage() {
           <EmptyState
             icon={Focus}
             title="今天还没有重点"
-            hint="先记录一个想法，AI 会帮你整理成今天能做的事。"
+            hint="先记录一个想法，会先听懂你，再帮你拆成今天能做的事。"
           />
         )}
       </Panel>
@@ -239,6 +290,19 @@ function suggestionReason(task: AgendaTask, now: Date, dayStart: Date) {
     return "今天计划内，适合现在推进。";
   }
   return "当前优先级较高，建议今天完成。";
+}
+
+function computeStreak(dates: Set<string>, now: Date) {
+  let cursor = startOfDay(now);
+  if (!dates.has(toDateInputValue(cursor))) {
+    cursor = new Date(cursor.getTime() - 24 * 60 * 60 * 1000);
+  }
+  let streak = 0;
+  while (dates.has(toDateInputValue(cursor))) {
+    streak += 1;
+    cursor = new Date(cursor.getTime() - 24 * 60 * 60 * 1000);
+  }
+  return streak;
 }
 
 function AgendaTaskRow({

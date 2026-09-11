@@ -4,22 +4,14 @@ import { useEffect, useState } from "react";
 import { CheckCircle2, KeyRound, Sparkles } from "lucide-react";
 
 const KEY_STORAGE = "ai-api-key";
-const MODEL_STORAGE = "ai-model";
-const BASE_URL_STORAGE = "ai-base-url";
 
 export function AiSettings() {
   const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("deepseek-v4-flash");
-  const [baseUrl, setBaseUrl] = useState("https://api.deepseek.com");
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
     function readStorage() {
       setApiKey(localStorage.getItem(KEY_STORAGE) ?? "");
-      setModel(localStorage.getItem(MODEL_STORAGE) ?? "deepseek-v4-flash");
-      setBaseUrl(
-        localStorage.getItem(BASE_URL_STORAGE) ?? "https://api.deepseek.com",
-      );
       setConnected(Boolean(localStorage.getItem(KEY_STORAGE)));
     }
 
@@ -39,15 +31,12 @@ export function AiSettings() {
     const key = apiKey.trim();
     if (key) {
       localStorage.setItem(KEY_STORAGE, key);
-      localStorage.setItem(MODEL_STORAGE, model.trim() || "deepseek-v4-flash");
-      localStorage.setItem(
-        BASE_URL_STORAGE,
-        baseUrl.trim() || "https://api.deepseek.com",
-      );
+      localStorage.removeItem("ai-model");
+      localStorage.removeItem("ai-base-url");
     } else {
       localStorage.removeItem(KEY_STORAGE);
-      localStorage.removeItem(MODEL_STORAGE);
-      localStorage.removeItem(BASE_URL_STORAGE);
+      localStorage.removeItem("ai-model");
+      localStorage.removeItem("ai-base-url");
     }
     setConnected(Boolean(key));
     window.dispatchEvent(new Event("ai-key-updated"));
@@ -90,28 +79,6 @@ export function AiSettings() {
             value={apiKey}
             onChange={(event) => setApiKey(event.target.value)}
             placeholder="sk-..."
-            className="zouzou-input w-full rounded-lg px-3 py-2 text-sm text-ink"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
-            模型
-          </span>
-          <input
-            value={model}
-            onChange={(event) => setModel(event.target.value)}
-            placeholder="deepseek-v4-flash"
-            className="zouzou-input w-full rounded-lg px-3 py-2 text-sm text-ink"
-          />
-        </label>
-        <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
-            API 地址
-          </span>
-          <input
-            value={baseUrl}
-            onChange={(event) => setBaseUrl(event.target.value)}
-            placeholder="https://api.deepseek.com"
             className="zouzou-input w-full rounded-lg px-3 py-2 text-sm text-ink"
           />
         </label>

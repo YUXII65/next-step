@@ -37,6 +37,7 @@ import {
   planInbox,
   suggestTodayFocus,
   type FirstRunPlanResult,
+  type InboxClarification,
   type InboxPlan,
   type TaskEditSuggestion,
   type TaskCoachAdvice,
@@ -76,8 +77,8 @@ function clientAiOverrides(formData: FormData) {
 
   return {
     apiKey: String(formData.get("apiKey") ?? "").trim() || undefined,
-    model: String(formData.get("model") ?? "").trim() || undefined,
-    baseUrl: String(formData.get("baseUrl") ?? "").trim() || undefined,
+    model: undefined,
+    baseUrl: undefined,
   };
 }
 
@@ -294,6 +295,7 @@ export async function completeFirstRun(formData: FormData) {
       objective,
       currentMilestone: milestone,
       status: "active",
+      notes: text(formData, "sourceIdea"),
     },
     select: { id: true },
   });
@@ -347,6 +349,34 @@ export async function planOnboarding(idea: string): Promise<FirstRunPlanResult> 
   return withAiQuota("onboarding_plan", () => generateFirstRunPlan(content));
 }
 
+export async function clarifyOnboarding(
+  idea: string,
+): Promise<InboxClarification> {
+  await requireUser();
+  const content = idea.trim();
+  if (!content) {
+    return { dimensions: [], supplementPlaceholder: "" };
+  }
+
+  const aiContext = await buildAiContext({
+    kind: "inbox_plan",
+    userId: (await requireUser()).id,
+  });
+
+  return withAiQuota("onboarding_clarify", () =>
+    clarifyInbox(
+      content,
+      [],
+      undefined,
+      undefined,
+      undefined,
+      [],
+      aiContext.summary,
+      aiContext.evidence,
+    ),
+  );
+}
+
 export async function recordPageView(page: string) {
   const user = await getCurrentUser();
   if (!user) return;
@@ -373,7 +403,7 @@ export async function loginUser(formData: FormData) {
 
 export async function logoutUser() {
   await destroyUserSession();
-  redirect("/login");
+  redirect("/landing");
 }
 
 export async function addInboxItem(formData: FormData) {
@@ -877,6 +907,7 @@ export async function confirmInboxPlan(formData: FormData) {
           objective: projectObjective ?? "由收件箱想法创建的项目",
           currentMilestone: projectMilestone,
           createdFromInboxItemId: item.id,
+          notes: item.content,
         },
       });
       projectId = project.id;
@@ -965,7 +996,7 @@ export async function generateTodaySuggestion(
         status: { in: ["todo", "in_progress"] },
       },
       include: { project: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
       take: 50,
     }),
     prisma.review.findFirst({
@@ -980,7 +1011,7 @@ export async function generateTodaySuggestion(
         objective: true,
         currentMilestone: true,
       },
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
       take: 10,
     }),
   ]);
@@ -1119,12 +1150,12 @@ export async function generateReviewDraftAction(formData: FormData) {
         status: "done",
       },
       select: { title: true, project: { select: { name: true } } },
-      orderBy: { completedAt: "desc" },
+      orderBy: [{ completedAt: "desc" }, { id: "asc" }],
     }),
     prisma.task.findMany({
       where: { status: { in: ["todo", "in_progress"] }, userId: user.id },
       select: { title: true, project: { select: { name: true } } },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
       take: 20,
     }),
     prisma.task.findMany({
@@ -1138,7 +1169,7 @@ export async function generateReviewDraftAction(formData: FormData) {
         ],
       },
       select: { title: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
       take: 20,
     }),
     prisma.project.findMany({
@@ -1148,7 +1179,7 @@ export async function generateReviewDraftAction(formData: FormData) {
         currentMilestone: true,
         _count: { select: { tasks: true } },
       },
-      orderBy: { updatedAt: "desc" },
+      orderBy: [{ updatedAt: "desc" }, { id: "asc" }],
     }),
   ]);
 

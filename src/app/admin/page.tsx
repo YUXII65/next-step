@@ -106,12 +106,20 @@ export default async function AdminPage() {
     prisma.aiUsageLog.aggregate({
       where: { createdAt: { gte: todayStart } },
       _count: { _all: true },
-      _sum: { totalTokens: true },
+      _sum: {
+        totalTokens: true,
+        promptCacheHitTokens: true,
+        promptCacheMissTokens: true,
+      },
     }),
     prisma.aiUsageLog.aggregate({
       where: { createdAt: { gte: monthStart } },
       _count: { _all: true },
-      _sum: { totalTokens: true },
+      _sum: {
+        totalTokens: true,
+        promptCacheHitTokens: true,
+        promptCacheMissTokens: true,
+      },
     }),
     prisma.user.findMany({
       orderBy: { createdAt: "desc" },
@@ -129,6 +137,15 @@ export default async function AdminPage() {
       include: { user: { select: { username: true } } },
     }),
   ]);
+
+  const todayHitTokens = aiToday._sum.promptCacheHitTokens ?? 0;
+  const todayMissTokens = aiToday._sum.promptCacheMissTokens ?? 0;
+  const todayCacheRate =
+    todayHitTokens + todayMissTokens > 0
+      ? Math.round(
+          (todayHitTokens / (todayHitTokens + todayMissTokens)) * 100,
+        )
+      : null;
 
   const [dauEvents, pageViewEvents] = await Promise.all([
     prisma.usageEvent.findMany({
@@ -287,6 +304,20 @@ export default async function AdminPage() {
               <p className="text-xs text-ink-secondary">今日 token</p>
               <p className="mt-1 text-2xl font-semibold text-ink">
                 {aiToday._sum.totalTokens ?? 0}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-ink-secondary">今日缓存命中</p>
+              <p className="mt-1 text-2xl font-semibold text-ink">
+                {todayHitTokens}
+                <span className="ml-2 text-sm font-normal text-ink-secondary">
+                  / 未命中 {todayMissTokens}
+                </span>
+              </p>
+              <p className="mt-1 text-xs text-ink-muted">
+                {todayCacheRate === null
+                  ? "暂无缓存数据"
+                  : `命中率 ${todayCacheRate}%`}
               </p>
             </div>
             <div>

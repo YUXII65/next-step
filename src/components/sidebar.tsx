@@ -8,12 +8,11 @@ import {
   Blocks,
   BookOpen,
   CalendarDays,
-  LogOut,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
+import { LogoutButton } from "@/components/logout-button";
 import { cx } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { logoutUser } from "@/app/actions";
 
 const navItems = [
   { href: "/", label: "日历", icon: CalendarDays },
@@ -56,16 +55,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
             </Link>
           ) : null}
           <ThemeToggle />
-          <form action={logoutUser}>
-            <button
-              type="submit"
-              aria-label="退出登录"
-              title="退出登录"
-              className="zouzou-icon-button flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
-            >
-              <LogOut className="size-[18px]" />
-            </button>
-          </form>
+          <LogoutButton className="zouzou-icon-button flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink" />
         </div>
       </header>
 
@@ -123,16 +113,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
             </Link>
           ) : null}
           <ThemeToggle />
-          <form action={logoutUser}>
-            <button
-              type="submit"
-              aria-label="退出登录"
-              title="退出登录"
-              className="zouzou-icon-button flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
-            >
-              <LogOut className="size-[18px]" />
-            </button>
-          </form>
+          <LogoutButton className="zouzou-icon-button flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink" />
         </div>
       </aside>
 

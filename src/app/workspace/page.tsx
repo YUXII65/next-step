@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { FolderKanban, FolderPlus, ListTodo, PencilLine } from "lucide-react";
+import {
+  ArrowRight,
+  FolderKanban,
+  FolderPlus,
+  ListTodo,
+  PencilLine,
+} from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { PageHint } from "@/components/page-hint";
 import { Panel, PanelHeader } from "@/components/panel";
@@ -145,7 +151,16 @@ export default async function ProjectsPage({
               <EmptyState
                 icon={FolderKanban}
                 title="还没有项目"
-                hint="在左侧新建第一个项目，再把想法整理成任务。"
+                hint="先别急着建。去记一个真实想法，AI 会先听懂你，再帮你拆成可推进的项目。"
+                action={
+                  <Link
+                    href="/"
+                    className="zouzou-primary-button inline-flex h-9 items-center gap-1.5 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+                  >
+                    去收件箱记一个想法
+                    <ArrowRight className="size-4" />
+                  </Link>
+                }
               />
             )}
 
@@ -271,9 +286,14 @@ export default async function ProjectsPage({
                 </div>
 
                 {selectedProject.notes ? (
-                  <p className="mt-4 text-sm leading-6 text-ink-secondary">
-                    {selectedProject.notes}
-                  </p>
+                  <div className="mt-4 rounded-lg bg-accent-soft/60 px-3 py-3">
+                    <p className="text-xs font-medium text-ink-secondary">
+                      你最初说
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-ink">
+                      {selectedProject.notes}
+                    </p>
+                  </div>
                 ) : null}
 
                 <details className="zouzou-panel mt-4 rounded-xl bg-surface">
@@ -324,7 +344,7 @@ export default async function ProjectsPage({
                     <EmptyState
                       icon={ListTodo}
                       title="项目下还没有任务"
-                      hint="新增第一条任务，或从 AI 想法整理里生成。"
+                      hint="新增第一条任务，或从 AI 想法梳理里生成。"
                     />
                   )}
                 </div>
