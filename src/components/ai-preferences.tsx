@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { SlidersHorizontal, X } from "lucide-react";
+import { X } from "lucide-react";
 import { getUserPreferences, saveUserPreferences } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -104,15 +104,10 @@ export function AiPreferences() {
 
   return (
     <div className="relative">
-      <details className="zouzou-panel rounded-xl bg-surface">
-        <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
-          <SlidersHorizontal className="size-3.5" />
-          执行偏好
-        </summary>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-3 border-t border-border p-3"
-        >
+      <form
+        onSubmit={handleSubmit}
+        className="zouzou-panel space-y-3 rounded-xl bg-surface p-3"
+      >
           <label className="block">
             <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
               计划规模
@@ -197,14 +192,13 @@ export function AiPreferences() {
               保存偏好
             </SubmitButton>
           </div>
-        </form>
-      </details>
+      </form>
 
       {showHint ? (
         <div
           ref={hintRef}
           role="note"
-          className="zouzou-panel absolute left-0 top-10 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-xl p-3 shadow-pop animate-[zouzou-fade-in_240ms_ease-out]"
+          className="zouzou-panel absolute left-0 top-0 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-xl p-3 shadow-pop animate-[zouzou-fade-in_240ms_ease-out]"
         >
           <div className="flex items-start justify-between gap-2">
             <p className="text-xs font-semibold text-ink">

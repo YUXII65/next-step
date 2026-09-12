@@ -210,6 +210,7 @@ export async function registerUser(formData: FormData) {
   await createUserSession(user.id);
   await recordUsageEvent({ userId: user.id, event: "register" });
   await setOnboardingCompleted(user.id, false);
+  await persistFirstRunTourStep(user.id, "1");
 
   redirect("/welcome");
 }
@@ -230,6 +231,7 @@ export async function startGuestExperience() {
 
   await createUserSession(user.id);
   await setOnboardingCompleted(user.id, false);
+  await persistFirstRunTourStep(user.id, "1");
   await recordUsageEvent({ userId: user.id, event: "guest_start" });
   redirect("/welcome?guest=1");
 }
@@ -240,7 +242,7 @@ export async function claimGuestAccount(formData: FormData) {
 
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = safeNext(String(formData.get("next") ?? "/welcome"));
+  const next = safeNext(String(formData.get("next") ?? "/"));
 
   if (
     username.length < 2 ||
@@ -265,6 +267,7 @@ export async function claimGuestAccount(formData: FormData) {
       passwordHash: hashPassword(password),
     },
   });
+  await setOnboardingCompleted(user.id, true);
   await recordUsageEvent({ userId: user.id, event: "guest_claimed" });
   redirect(next);
 }
@@ -287,6 +290,7 @@ export async function completeFirstRun(formData: FormData) {
   });
   if (existingProject) {
     await setOnboardingCompleted(user.id, true);
+    await persistFirstRunTourStep(user.id, "2");
     redirect("/workspace");
   }
 
@@ -320,6 +324,7 @@ export async function completeFirstRun(formData: FormData) {
     detail: "onboarding",
   });
   await setOnboardingCompleted(user.id, true);
+  await persistFirstRunTourStep(user.id, "2");
   await recordUsageEvent({ userId: user.id, event: "onboarding_complete" });
   revalidatePath("/");
   revalidatePath("/workspace");
@@ -392,7 +397,7 @@ export async function setFirstRunTourStep(step: string) {
   const user = await getCurrentUser();
   if (!user) return { ok: false };
 
-  const allowed = new Set(["1", "2", "3", "done"]);
+  const allowed = new Set(["1", "2", "3", "4", "done"]);
   await persistFirstRunTourStep(user.id, allowed.has(step) ? step : "done");
   return { ok: true };
 }
@@ -401,6 +406,7 @@ export async function skipOnboarding(_formData?: FormData) {
   void _formData;
   const user = await requireUser();
   await setOnboardingCompleted(user.id, true);
+  await persistFirstRunTourStep(user.id, "1");
   await recordUsageEvent({ userId: user.id, event: "onboarding_skipped" });
   revalidatePath("/");
   redirect("/");

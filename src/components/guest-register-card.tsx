@@ -14,10 +14,10 @@ export function GuestRegisterCard({ error }: { error: string }) {
       action={claimGuestAccount}
       className="zouzou-panel rounded-xl p-6 sm:p-7"
     >
-      <input type="hidden" name="next" value="/welcome" />
-      <h2 className="text-sm font-semibold text-ink">注册保存</h2>
+      <input type="hidden" name="next" value="/" />
+      <h2 className="text-sm font-semibold text-ink">注册账号</h2>
       <p className="mt-2 text-sm leading-6 text-ink-secondary">
-        你现在是游客体验，注册正式账号后，这个体验里的内容可以继续保存。
+        注册后，这次体验里的项目、任务和复盘会继续保留。
       </p>
       <input
         name="username"
@@ -42,7 +42,7 @@ export function GuestRegisterCard({ error }: { error: string }) {
           注册失败，请检查用户名和密码，或账号可能已存在。
         </p>
       ) : null}
-      <SubmitButton className={submitClass}>注册并保存</SubmitButton>
+      <SubmitButton className={submitClass}>注册并继续</SubmitButton>
     </form>
   );
 }

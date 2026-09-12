@@ -105,7 +105,12 @@ export default async function ProjectsPage({
       <PageHeader title="书桌" />
 
       {firstRun.isFirstRun ? (
-        <FirstRunTour initialStep={firstRun.tourStep} guest={isGuestUser(user)} />
+        <FirstRunTour
+          initialStep={firstRun.tourStep}
+          guest={isGuestUser(user)}
+          context="workspace"
+          hasTasks={tasks.length > 0}
+        />
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">

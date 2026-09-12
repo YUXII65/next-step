@@ -11,8 +11,8 @@ import {
   Target,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
+import { GuestStartButton } from "@/components/guest-start-button";
 import { LandingDemo } from "./landing-demo";
-import { startGuestExperience } from "@/app/actions";
 
 const outcomes = [
   {
@@ -71,12 +71,29 @@ export function LandingPage({ authed = false }: { authed?: boolean }) {
             <BrandMark className="size-8" />
             <span className="text-sm font-semibold text-ink">走走</span>
           </div>
-          <Link
-            href={authed ? "/" : "/login"}
-            className="zouzou-secondary-button inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
-          >
-            {authed ? "返回走走" : "登录"}
-          </Link>
+          {authed ? (
+            <Link
+              href="/"
+              className="zouzou-secondary-button inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+            >
+              返回走走
+            </Link>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent"
+              >
+                登录
+              </Link>
+              <Link
+                href="/login?mode=register"
+                className="zouzou-primary-button inline-flex h-9 items-center justify-center rounded-lg bg-accent px-3 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+              >
+                注册
+              </Link>
+            </div>
+          )}
         </header>
 
         <section className="mb-12">
@@ -92,24 +109,23 @@ export function LandingPage({ authed = false }: { authed?: boolean }) {
             不用自学 AI 工作流，也不用自己拆任务，AI 帮你把想法变成下一步。
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <form action={startGuestExperience}>
-              <button
-                type="submit"
-                className="zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
-              >
-                立即体验 · 免注册
-                <ArrowRight className="size-4" />
-              </button>
-            </form>
+            <Link
+              href="/login?mode=register"
+              className="zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+            >
+              注册开始
+              <ArrowRight className="size-4" />
+            </Link>
             <Link
               href="/onboarding"
               className="zouzou-secondary-button inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
             >
               看 30 秒演示
             </Link>
+            <GuestStartButton className="text-sm font-medium text-ink-muted transition-colors hover:text-accent" />
           </div>
           <p className="mt-3 text-sm text-ink-secondary">
-            体验中的内容，注册后可以保存。
+            游客体验只保存在本机，注册后内容才能长期保存。
             <Link
               href="/login"
               className="ml-2 font-medium text-accent transition-colors hover:text-accent-strong"
@@ -204,15 +220,13 @@ export function LandingPage({ authed = false }: { authed?: boolean }) {
             不用整理，不用选模板，先把你脑子里转的东西说出来。
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <form action={startGuestExperience}>
-              <button
-                type="submit"
-                className="zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
-              >
-                立即体验 · 免注册
-                <ArrowRight className="size-4" />
-              </button>
-            </form>
+            <Link
+              href="/login?mode=register"
+              className="zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+            >
+              注册开始
+              <ArrowRight className="size-4" />
+            </Link>
             <Link
               href="/onboarding"
               className="zouzou-secondary-button inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"

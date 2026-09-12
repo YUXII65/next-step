@@ -120,7 +120,7 @@ export function TaskRow({
             onSubmit={() => {
               const next = nextStatus(optimisticStatus);
               // 引导第 1 步：用户真的点了"下一步"，才进入第 2 步
-              if (next === "in_progress") notifyTourStep("2");
+              if (next === "in_progress") notifyTourStep("3");
               if (next === "done") markFirstTaskDone();
             }}
           >

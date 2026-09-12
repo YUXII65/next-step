@@ -9,8 +9,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { CalendarDatePanel } from "@/components/calendar-date-panel";
+import { FirstRunTour } from "@/components/first-run-tour";
 import { FirstTaskReviewHint } from "@/components/first-task-review-hint";
-import { PageHint } from "@/components/page-hint";
 import { Panel, PanelHeader } from "@/components/panel";
 import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/status-badge";
@@ -18,7 +18,7 @@ import { TodayTaskActions } from "@/components/today-task-actions";
 import { TodayBrief } from "@/components/today-brief";
 import { AiTaskPlanner } from "@/components/ai-task-planner";
 import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, isGuestUser } from "@/lib/auth";
 import { getFirstRunState } from "@/lib/first-run";
 import type { TodaySuggestion } from "@/lib/ai";
 import {
@@ -181,10 +181,15 @@ export default async function TodayPage() {
 
   return (
     <>
-      <PageHint id="today" title="提示" enabled={firstRun.isFirstRun}>
-        先记一个想法，今天只推进最重要的 1-3 件事。
-      </PageHint>
       <FirstTaskReviewHint />
+      {firstRun.isFirstRun ? (
+        <FirstRunTour
+          initialStep={firstRun.tourStep}
+          guest={isGuestUser(user)}
+          context="home"
+          hasTasks={tasks.length > 0}
+        />
+      ) : null}
       <CalendarDatePanel
         now={now}
         completedToday={completedToday}

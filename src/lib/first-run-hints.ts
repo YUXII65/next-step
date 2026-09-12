@@ -7,7 +7,9 @@ const AI_QUESTION_KEY = "next_step_ai_question_asked";
 function tourIsActive() {
   try {
     const value = localStorage.getItem(TOUR_STORAGE_KEY);
-    return value === "1" || value === "2" || value === "3";
+    return (
+      value === "1" || value === "2" || value === "3" || value === "4"
+    );
   } catch {
     return false;
   }
@@ -44,7 +46,7 @@ export function markFirstTaskDone() {
 
     // 新手期由三步引导负责讲"完成之后去哪"，不再叠一张角落卡片
     if (tourIsActive()) {
-      notifyTourStep("3");
+      notifyTourStep("4");
       return;
     }
 

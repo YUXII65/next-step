@@ -83,6 +83,7 @@ export function Sidebar({
                 key={item.href}
                 href={item.href}
                 prefetch
+                data-tour={item.href === "/" ? "home-nav" : undefined}
                 aria-label={item.label}
                 title={item.label}
                 aria-current={active ? "page" : undefined}
@@ -132,6 +133,7 @@ export function Sidebar({
               key={item.href}
               href={item.href}
               prefetch
+              data-tour={item.href === "/" ? "home-nav" : undefined}
               aria-current={active ? "page" : undefined}
               className={cx(
                 "flex min-h-14 flex-col items-center justify-center gap-1 px-1 text-[11px] font-medium",

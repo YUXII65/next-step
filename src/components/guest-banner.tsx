@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 
 /**
  * 游客态在应用内的常驻提示。
@@ -10,18 +10,18 @@ export function GuestBanner() {
   return (
     <div
       data-tour="guest-banner"
-      className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-accent/25 bg-accent-soft px-4 py-2 text-xs leading-5 text-ink-secondary lg:px-8"
+      className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-warning/25 bg-warning/10 px-4 py-2 text-xs leading-5 text-ink-secondary lg:px-8"
     >
-      <Sparkles className="size-3.5 shrink-0 text-accent" />
+      <ShieldAlert className="size-3.5 shrink-0 text-warning" />
       <span className="min-w-0">
-        你正在游客体验：内容只保存在这台浏览器，
-        <span className="font-medium text-ink">注册后可长期保存</span>。
+        游客模式：内容只保存在这台浏览器，
+        <span className="font-medium text-ink">注册后才能长期保存</span>。
       </span>
       <Link
         href="/guest/register"
         className="zouzou-primary-button ml-auto inline-flex h-7 shrink-0 items-center rounded-md bg-accent px-2.5 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
       >
-        注册保存
+        注册并保存
       </Link>
     </div>
   );

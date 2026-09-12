@@ -584,7 +584,7 @@ export function OnboardingDemo() {
                 onSubmit={() => savePendingIdea(userThought)}
               >
                 <button type="submit" className={ghostButtonClass}>
-                  用这句话开始
+                  先游客体验
                 </button>
               </form>
               <Link
@@ -597,7 +597,7 @@ export function OnboardingDemo() {
               </Link>
             </div>
             <p className="mt-3 text-right text-xs leading-5 text-ink-secondary">
-              点「用这句话开始」会带着你刚写的内容进入正式体验，不用重写。
+              游客内容只保存在本机；注册后会长期保存，也不用重写。
             </p>
           </section>
         ) : null}
@@ -700,7 +700,7 @@ export function OnboardingDemo() {
                 onSubmit={() => savePendingIdea(userThought)}
               >
                 <button type="submit" className={ghostButtonClass}>
-                  用这句话开始
+                  先游客体验
                 </button>
               </form>
               <Link
@@ -713,7 +713,7 @@ export function OnboardingDemo() {
               </Link>
             </div>
             <p className="mt-3 text-xs leading-5 text-ink-secondary">
-              点「用这句话开始」会带着你刚写的内容进入正式体验，不用重写。
+              游客内容只保存在本机；注册后会长期保存，也不用重写。
             </p>
           </section>
         ) : null}

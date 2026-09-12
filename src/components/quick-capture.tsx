@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { RefreshCw, Sparkles } from "lucide-react";
 import { addInboxItemAndClarify } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
-import { markFirstAiQuestionAsked } from "@/lib/first-run-hints";
+import {
+  markFirstAiQuestionAsked,
+  notifyTourStep,
+} from "@/lib/first-run-hints";
 import { trackEvent } from "@/lib/track";
 import { sampleIdeas } from "@/lib/sample-ideas";
 
@@ -62,9 +65,11 @@ export function QuickCapture({ compact = false }: { compact?: boolean }) {
   return (
     <form
       action={addInboxItemAndClarify}
+      data-tour="quick-capture"
       className="relative overflow-hidden rounded-xl border border-accent/15 bg-gradient-to-br from-accent-soft/80 via-surface to-ai-soft/60 p-4 sm:p-5"
       onSubmit={() => {
         markFirstAiQuestionAsked();
+        notifyTourStep("2");
         trackEvent("home_ai_input_submit");
       }}
     >
