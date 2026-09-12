@@ -44,20 +44,12 @@ export function CalendarDatePanel({
             </span>
           </div>
 
-          <div className="text-sm text-ink-secondary">
+          <div className="text-base font-semibold tabular-nums text-ink">
             <CurrentTime initial={initialTime} />
           </div>
         </div>
 
         <div className="ml-auto flex flex-wrap items-center gap-3">
-          <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-warning/10 px-3 text-xs font-medium text-warning">
-            <Flame className="size-3.5" />
-            连续 {streak} 天
-            {weekDone > 0 ? (
-              <span className="text-ink-muted">· 近 7 天 {weekDone} 件</span>
-            ) : null}
-          </span>
-
           <div className="w-32">
             <div className="flex items-center justify-between text-xs text-ink-secondary">
               <span>今日</span>
@@ -73,6 +65,14 @@ export function CalendarDatePanel({
               />
             </div>
           </div>
+
+          <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-warning/10 px-3 text-xs font-medium text-warning">
+            <Flame className="size-3.5" />
+            连续 {streak} 天
+            {weekDone > 0 ? (
+              <span className="text-ink-muted">· 近 7 天 {weekDone} 件</span>
+            ) : null}
+          </span>
         </div>
       </div>
     </section>

@@ -93,7 +93,10 @@ export default async function ReviewPage({
 
   return (
     <>
-      <PageHeader title="抽屉" />
+      <PageHeader
+        title="抽屉"
+        description="每日复盘，并给出明天的执行建议。"
+      />
 
       <PageHint id="review" title="提示" enabled={firstRun.isFirstRun}>
         每天收尾时记一句今天推进了什么，明天要做的会从这里长出来。

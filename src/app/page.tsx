@@ -15,12 +15,10 @@ import { Panel, PanelHeader } from "@/components/panel";
 import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/status-badge";
 import { TodayTaskActions } from "@/components/today-task-actions";
-import { TodayBrief } from "@/components/today-brief";
 import { AiTaskPlanner } from "@/components/ai-task-planner";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser, isGuestUser } from "@/lib/auth";
 import { getFirstRunState } from "@/lib/first-run";
-import type { TodaySuggestion } from "@/lib/ai";
 import {
   endOfDay,
   formatDate,
@@ -170,14 +168,6 @@ export default async function TodayPage() {
   });
 
   const todayTasks = (todayRelevant.length ? todayRelevant : agenda).slice(0, 3);
-  const initialSuggestions: TodaySuggestion[] = todayTasks.map((task) => ({
-    taskId: task.id,
-    title: task.title,
-    projectName: task.project?.name ?? null,
-    priority: task.priority as TodaySuggestion["priority"],
-    reason: suggestionReason(task, now, dayStart),
-    evidence: [],
-  }));
 
   return (
     <>
@@ -212,9 +202,6 @@ export default async function TodayPage() {
           pending={pendingInbox}
           quotaManaged={process.env.AI_QUOTA_ENABLED === "true"}
         />
-        <div className="border-t border-border p-4">
-          <TodayBrief initialSuggestions={initialSuggestions} />
-        </div>
       </Panel>
 
       <Panel className="mt-6">
@@ -267,23 +254,6 @@ export default async function TodayPage() {
       </div>
     </>
   );
-}
-
-function suggestionReason(task: AgendaTask, now: Date, dayStart: Date) {
-  if (task.focusDate && isSameDay(task.focusDate, now)) {
-    return "今天被标记为重点，建议优先完成。";
-  }
-  if (task.dueDate && task.dueDate < dayStart) {
-    return "已逾期，继续推迟会增加压力。";
-  }
-  if (
-    task.scheduledDate &&
-    task.scheduledDate >= dayStart &&
-    task.scheduledDate <= endOfDay(now)
-  ) {
-    return "今天计划内，适合现在推进。";
-  }
-  return "当前优先级较高，建议今天完成。";
 }
 
 function computeStreak(dates: Set<string>, now: Date) {

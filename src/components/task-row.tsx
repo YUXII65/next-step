@@ -90,11 +90,14 @@ export function TaskRow({
     <div className="zouzou-row-hover flex flex-col gap-3 px-4 py-3 transition-colors lg:flex-row lg:items-center">
       <div className="min-w-0 flex-1">
         <div className="group/task-title relative min-w-0">
-          <p className="truncate font-medium text-ink" title={task.title}>
+          <p
+            className="truncate font-medium text-ink"
+            title={task.notes || task.title}
+          >
             {taskHeadline(task.title)}
           </p>
           <p className="pointer-events-none invisible absolute left-0 top-full z-50 mt-1 w-max max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-surface px-3 py-2 text-xs font-normal leading-5 text-ink-secondary opacity-0 shadow-pop transition-opacity group-hover/task-title:visible group-hover/task-title:opacity-100 sm:max-w-[32rem]">
-            {task.title}
+            {task.notes || task.title}
           </p>
         </div>
         <p className="mt-1 truncate text-xs text-ink-secondary">
