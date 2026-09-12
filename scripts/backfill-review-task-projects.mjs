@@ -10,6 +10,7 @@ const tasks = await prisma.task.findMany({
   },
   select: {
     id: true,
+    userId: true,
     title: true,
     reviewNextAction: {
       select: {
@@ -26,6 +27,20 @@ const tasks = await prisma.task.findMany({
   },
 });
 
+const userIds = [...new Set(tasks.map((task) => task.userId))];
+const projects = await prisma.project.findMany({
+  where: { userId: { in: userIds } },
+  select: { id: true, userId: true },
+});
+const singleProjectByUser = new Map();
+
+for (const userId of userIds) {
+  const userProjects = projects.filter((project) => project.userId === userId);
+  if (userProjects.length === 1) {
+    singleProjectByUser.set(userId, userProjects[0].id);
+  }
+}
+
 let updated = 0;
 let skipped = 0;
 
@@ -40,9 +55,9 @@ for (const task of tasks) {
     );
   }
 
-  const projectId = [...projectCounts.entries()].sort(
-    (a, b) => b[1] - a[1],
-  )[0]?.[0];
+  const projectId =
+    [...projectCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ??
+    singleProjectByUser.get(task.userId);
 
   if (!projectId) {
     skipped += 1;
