@@ -98,7 +98,11 @@ export default async function ReviewPage({
         description="每日复盘，并给出明天的执行建议。"
       />
 
-      <PageHint id="review-v2" title="每日复盘" enabled={firstRun.isFirstRun}>
+      <PageHint
+        id="review-v2"
+        title="每日复盘"
+        enabled={firstRun.isFirstRun || reviews.length === 0}
+      >
         并给出明天的执行建议。
       </PageHint>
 
