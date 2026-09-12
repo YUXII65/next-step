@@ -6,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
 
 const RETRYABLE_PRISMA_CODES = new Set(["P1001", "P1017", "P2024", "P2034"]);
 const RETRYABLE_MESSAGE_PATTERN =
-  /terminating connection due to administrator command|connection.*(?:closed|reset)|ECONNRESET|server closed the connection/i;
+  /terminating connection due to administrator command|can't reach database server|please make sure the database server is running|connection.*(?:closed|reset)|ECONNRESET|server closed the connection/i;
 
 function errorCode(error: unknown) {
   if (!error || typeof error !== "object" || !("code" in error)) return "";
