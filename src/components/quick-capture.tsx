@@ -62,12 +62,16 @@ export function QuickCapture({ compact = false }: { compact?: boolean }) {
   return (
     <form
       action={addInboxItemAndClarify}
-      className="p-4"
+      className="relative overflow-hidden rounded-xl border border-accent/15 bg-gradient-to-br from-accent-soft/80 via-surface to-ai-soft/60 p-4 sm:p-5"
       onSubmit={() => {
         markFirstAiQuestionAsked();
         trackEvent("home_ai_input_submit");
       }}
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-12 -top-14 size-44 rounded-full bg-accent/10 blur-3xl"
+      />
       <input type="hidden" name="apiKey" value={apiKey} />
       <input type="hidden" name="model" value={model} />
       <input type="hidden" name="baseUrl" value={baseUrl} />
@@ -80,40 +84,39 @@ export function QuickCapture({ compact = false }: { compact?: boolean }) {
         required
         value={content}
         onChange={(event) => setContent(event.target.value)}
-        rows={compact ? 3 : 4}
+        rows={compact ? 4 : 6}
         placeholder="今天脑子里在转什么？直接倒出来"
-        className="zouzou-input min-h-28 w-full resize-none px-3 py-2.5 text-sm leading-6 text-ink"
+        className="zouzou-input relative min-h-40 w-full resize-none border-accent/20 bg-surface/90 px-4 py-3 text-base leading-7 text-ink shadow-sm"
       />
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="relative mt-3 flex flex-wrap gap-2">
         {samples.map((sample) => (
           <button
             key={sample}
             type="button"
             onClick={() => setContent(sample)}
-            className="max-w-full truncate rounded-md bg-surface px-2 py-1 text-xs font-medium text-ink-secondary transition-colors hover:bg-accent-soft hover:text-accent-strong"
+            className="max-w-full truncate rounded-full border border-border/80 bg-surface/90 px-3 py-1.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent/30 hover:bg-accent-soft hover:text-accent-strong"
           >
             {sample}
           </button>
         ))}
       </div>
-      <div className="mt-2 flex items-center justify-start">
+      <div className="relative mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button
           type="button"
           onClick={refreshSamples}
           aria-label="换一批示例想法"
           title="换一批示例想法"
-          className="flex size-7 shrink-0 items-center justify-center rounded-md bg-surface text-ink-muted transition-colors hover:bg-accent-soft hover:text-accent-strong"
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-border/80 bg-surface/90 px-3 text-xs font-medium text-ink-secondary transition-colors hover:border-accent/30 hover:text-accent-strong"
         >
           <RefreshCw className="size-3.5" />
+          换一批
         </button>
-      </div>
-      <div className="mt-3 flex justify-end">
         <SubmitButton
-          pendingText="AI 梳理中..."
-          className="zouzou-primary-button inline-flex h-9 items-center gap-2 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+          pendingText="正在梳理..."
+          className="zouzou-primary-button inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-accent px-6 text-sm font-medium text-white shadow-lg shadow-accent/20 transition-colors hover:bg-accent-strong sm:w-auto"
         >
           <Sparkles className="size-4" />
-          让 AI 梳理
+          下一步
         </SubmitButton>
       </div>
     </form>

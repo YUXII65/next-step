@@ -69,7 +69,7 @@ const modules = [
     id: "ai-execute",
     name: "AI 执行接入",
     description: "以后把可执行任务交给 Codex / WorkBuddy 等外部 Agent。",
-    badge: "以后再做",
+    badge: "暂不开放",
     icon: Wand2,
     available: false,
   },
@@ -250,7 +250,6 @@ export function ToolboxDemo({
     <>
       <PageHeader
         title="工具匣"
-        description="按需启用小工具，核心闭环保持简单。"
       />
 
       <PageHint id="tools" title="提示" enabled={showHint}>
@@ -260,8 +259,8 @@ export function ToolboxDemo({
       <Panel className="mb-6">
         <PanelHeader title="现状速览" icon={Sparkles} />
         <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="zouzou-panel rounded-xl bg-surface-muted p-3">
-            <p className="flex items-center gap-1.5 text-xs text-ink-secondary">
+          <div className="rounded-xl border border-warning/20 bg-warning/5 p-3">
+            <p className="flex items-center gap-1.5 text-xs font-medium text-warning">
               <Inbox className="size-3.5" />
               未整理想法
             </p>
@@ -269,8 +268,8 @@ export function ToolboxDemo({
               {initialData.pendingInbox}
             </p>
           </div>
-          <div className="zouzou-panel rounded-xl bg-surface-muted p-3">
-            <p className="flex items-center gap-1.5 text-xs text-ink-secondary">
+          <div className="rounded-xl border border-accent/20 bg-accent-soft/70 p-3">
+            <p className="flex items-center gap-1.5 text-xs font-medium text-accent-strong">
               <ListChecks className="size-3.5" />
               未完成任务
             </p>
@@ -278,8 +277,8 @@ export function ToolboxDemo({
               {initialData.openTasks}
             </p>
           </div>
-          <div className="zouzou-panel rounded-xl bg-surface-muted p-3">
-            <p className="flex items-center gap-1.5 text-xs text-ink-secondary">
+          <div className="rounded-xl border border-success/20 bg-success/5 p-3">
+            <p className="flex items-center gap-1.5 text-xs font-medium text-success">
               <Check className="size-3.5" />
               已完成任务
             </p>
@@ -287,8 +286,8 @@ export function ToolboxDemo({
               {initialData.doneTasks}
             </p>
           </div>
-          <div className="zouzou-panel rounded-xl bg-surface-muted p-3">
-            <p className="flex items-center gap-1.5 text-xs text-ink-secondary">
+          <div className="rounded-xl border border-ai/20 bg-ai-soft/80 p-3">
+            <p className="flex items-center gap-1.5 text-xs font-medium text-ai">
               <FolderKanban className="size-3.5" />
               本周复盘
             </p>

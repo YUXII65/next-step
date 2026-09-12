@@ -1,13 +1,18 @@
 import { CurrentTime } from "@/components/current-time";
+import { Flame } from "lucide-react";
 
 export function CalendarDatePanel({
   now,
   completedToday,
   totalToday,
+  streak,
+  weekDone,
 }: {
   now: Date;
   completedToday: number;
   totalToday: number;
+  streak: number;
+  weekDone: number;
 }) {
   const progress = totalToday
     ? Math.round((completedToday / totalToday) * 100)
@@ -37,6 +42,14 @@ export function CalendarDatePanel({
             {now.getMonth() + 1}月 {weekday}
           </span>
         </div>
+
+        <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-warning/10 px-3 text-xs font-medium text-warning">
+          <Flame className="size-3.5" />
+          连续 {streak} 天
+          {weekDone > 0 ? (
+            <span className="text-ink-muted">· 近 7 天 {weekDone} 件</span>
+          ) : null}
+        </span>
 
         <div className="min-w-0 flex-1 text-sm text-ink-secondary sm:flex-none">
           <CurrentTime initial={initialTime} />

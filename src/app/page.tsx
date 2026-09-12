@@ -17,7 +17,6 @@ import { StatusBadge } from "@/components/status-badge";
 import { TodayTaskActions } from "@/components/today-task-actions";
 import { TodayBrief } from "@/components/today-brief";
 import { AiTaskPlanner } from "@/components/ai-task-planner";
-import { LoopProgress } from "@/components/loop-progress";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { getFirstRunState } from "@/lib/first-run";
@@ -99,15 +98,12 @@ export default async function TodayPage() {
     }),
   ]);
 
-  const [recentReviews, projectCount] = await Promise.all([
-    prisma.review.findMany({
-      where: { userId: user.id },
-      select: { reviewDate: true },
-      orderBy: { reviewDate: "desc" },
-      take: 60,
-    }),
-    prisma.project.count({ where: { userId: user.id } }),
-  ]);
+  const recentReviews = await prisma.review.findMany({
+    where: { userId: user.id },
+    select: { reviewDate: true },
+    orderBy: { reviewDate: "desc" },
+    take: 60,
+  });
 
   const activityDates = new Set<string>();
   for (const task of tasks) {
@@ -118,9 +114,6 @@ export default async function TodayPage() {
   }
 
   const streak = computeStreak(activityDates, now);
-  const reviewedToday = recentReviews.some((review) =>
-    isSameDay(review.reviewDate, now),
-  );
   const weekStart = startOfDay(
     new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000),
   );
@@ -142,14 +135,6 @@ export default async function TodayPage() {
       task.completedAt <= dayEnd,
   ).length;
   const totalToday = completedToday + openTasks.length;
-  const loopStage = reviewedToday
-    ? 3
-    : openTasks.length
-      ? 2
-      : projectCount
-        ? 1
-        : 0;
-
   const agenda = [...openTasks].sort((a, b) => {
     function rank(task: AgendaTask) {
       if (task.focusDate && isSameDay(task.focusDate, now)) return 0;
@@ -204,16 +189,9 @@ export default async function TodayPage() {
         now={now}
         completedToday={completedToday}
         totalToday={totalToday}
+        streak={streak}
+        weekDone={weekDone}
       />
-
-      <div className="mt-4">
-        <LoopProgress
-          stage={loopStage}
-          streak={streak}
-          weekDone={weekDone}
-          reviewedToday={reviewedToday}
-        />
-      </div>
 
       <Panel>
         <PanelHeader

@@ -6,7 +6,6 @@ import { getFirstRunState } from "@/lib/first-run";
 
 export const metadata: Metadata = {
   title: "工具匣",
-  description: "按需启用小工具，保持核心闭环简单。",
 };
 
 export const dynamic = "force-dynamic";

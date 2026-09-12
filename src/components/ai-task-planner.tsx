@@ -141,7 +141,7 @@ export function AiTaskPlanner({
       <details id="ai-settings" className="zouzou-panel rounded-xl bg-surface">
         <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
           <Sparkles className="size-3.5" />
-          设置（可选）：API 连接与执行偏好
+          偏好设置
         </summary>
         <div className="space-y-3 border-t border-border p-3">
           {quotaManaged ? null : <AiSettings />}
