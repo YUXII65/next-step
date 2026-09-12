@@ -62,3 +62,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - **落点统一**：注册、游客转正、跳过引导后都落 `/workspace`（`welcome/page.tsx` 的 redirect 已改）。
 - **首页取舍**：AI 设置（API 连接 / 执行偏好）收进「今日推进伙伴」面板底部的折叠区，第一屏留给"记想法 + 今天做什么"。
 - **待办（未做）**：日历/抽屉/工具页的锚定气泡目前仍是 PageHint 角落卡片（已由服务端新手态 gate）；若要继续收敛，按同一套 `data-tour` + AnchoredHint 改造。
+
+# 账号资料与页面框架（2026-09-12，跨会话记忆，勿删）
+
+- **角落的账号资料**：`src/components/profile-card.tsx`（头像 + 昵称 + 改/取消）。桌面在左侧栏底部、移动端在顶栏右侧，由 `Sidebar` 的 `user` prop 传入（来源是 `layout.tsx` 的 `getCurrentUser()`）。
+- **头像存储方式**：不做对象存储。浏览器端用 canvas 压成 192×192 JPEG 的 data URL（约 10-30KB）存进 `users.avatarUrl`；服务端 `updateUserProfile` 只接受 `data:image/` 且 ≤400KB，否则丢弃。换头像的入口就是那张资料卡（无需新页面）。
+- **营销页必须隔离应用框架**：`/landing`、`/login`、`/onboarding`、`/welcome`、`/guest/register` 通过 `src/components/app-chrome.tsx` 的 `FULLSCREEN_ROUTES` 完全不渲染 Sidebar / CommandPalette。历史坑：这些页面用 `fixed inset-0 z-40` 覆盖，但容器是透明的，z-30 的侧栏/底部导航会透出来，落地页左上角出现两个 logo 重叠。
+- **改这些页面的路径时**：新增整屏页面记得同时加进 `FULLSCREEN_ROUTES`，否则又会露出侧栏。
