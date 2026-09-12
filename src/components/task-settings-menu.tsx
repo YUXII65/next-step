@@ -17,10 +17,12 @@ export function TaskSettingsMenu({
   taskId,
   projectId,
   title,
+  showLabel = false,
 }: {
   taskId: string;
   projectId: string | null;
   title: string;
+  showLabel?: boolean;
 }) {
   const { ref, open, setOpen } = useClickOutside<HTMLDivElement>();
 
@@ -31,9 +33,14 @@ export function TaskSettingsMenu({
         onClick={() => setOpen((value) => !value)}
         aria-label="任务设置"
         title="任务设置"
-        className="flex size-8 items-center justify-center rounded-md border border-border bg-surface text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+        className={
+          showLabel
+            ? "flex h-8 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+            : "flex size-8 items-center justify-center rounded-md border border-border bg-surface text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+        }
       >
         <Settings2 className="size-3.5" />
+        {showLabel ? <span>设置</span> : null}
       </button>
 
       {open ? (

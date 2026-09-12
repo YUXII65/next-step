@@ -75,8 +75,6 @@ export function AiTaskPlanner({
 }) {
   return (
     <div className="space-y-4">
-      {quotaManaged ? null : <AiSettings />}
-      <AiPreferences />
       <QuickCapture />
 
       {pending.length ? (
@@ -140,6 +138,16 @@ export function AiTaskPlanner({
           })}
         </div>
       ) : null}
+      <details id="ai-settings" className="zouzou-panel rounded-xl bg-surface">
+        <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
+          <Sparkles className="size-3.5" />
+          设置（可选）：API 连接与执行偏好
+        </summary>
+        <div className="space-y-3 border-t border-border p-3">
+          {quotaManaged ? null : <AiSettings />}
+          <AiPreferences />
+        </div>
+      </details>
     </div>
   );
 }

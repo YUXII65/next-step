@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 import { LandingDemo } from "./landing-demo";
+import { startGuestExperience } from "@/app/actions";
 
 const outcomes = [
   {
@@ -90,28 +91,30 @@ export function LandingPage({ authed = false }: { authed?: boolean }) {
           <p className="mt-5 max-w-2xl text-base leading-7 text-ink-secondary">
             不用自学 AI 工作流，也不用自己拆任务，AI 帮你把想法变成下一步。
           </p>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <form action={startGuestExperience}>
+              <button
+                type="submit"
+                className="zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+              >
+                立即体验 · 免注册
+                <ArrowRight className="size-4" />
+              </button>
+            </form>
             <Link
               href="/onboarding"
-              className="zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
-            >
-              立即体验
-              <ArrowRight className="size-4" />
-            </Link>
-            <Link
-              href="/login"
               className="zouzou-secondary-button inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
             >
-              登录
+              看 30 秒演示
             </Link>
           </div>
           <p className="mt-3 text-sm text-ink-secondary">
-            还没有账号？
+            体验中的内容，注册后可以保存。
             <Link
-              href="/login?mode=register&next=/welcome"
-              className="ml-1 font-medium text-accent transition-colors hover:text-accent-strong"
+              href="/login"
+              className="ml-2 font-medium text-accent transition-colors hover:text-accent-strong"
             >
-              注册
+              已有账号？登录
             </Link>
           </p>
         </section>
@@ -200,13 +203,23 @@ export function LandingPage({ authed = false }: { authed?: boolean }) {
           <p className="mt-2 text-sm leading-6 text-ink-secondary">
             不用整理，不用选模板，先把你脑子里转的东西说出来。
           </p>
-          <Link
-            href="/onboarding"
-            className="zouzou-primary-button mt-6 inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
-          >
-            立即体验
-            <ArrowRight className="size-4" />
-          </Link>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <form action={startGuestExperience}>
+              <button
+                type="submit"
+                className="zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+              >
+                立即体验 · 免注册
+                <ArrowRight className="size-4" />
+              </button>
+            </form>
+            <Link
+              href="/onboarding"
+              className="zouzou-secondary-button inline-flex h-11 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+            >
+              看 30 秒演示
+            </Link>
+          </div>
         </section>
       </div>
     </div>

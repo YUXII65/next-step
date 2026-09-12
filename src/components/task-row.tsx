@@ -12,7 +12,7 @@ import { AiTaskCoach } from "@/components/ai-task-coach";
 import { AiTaskSticky } from "@/components/ai-task-sticky";
 import { TaskSettingsMenu } from "@/components/task-settings-menu";
 import { FirstTaskReviewHint } from "@/components/first-task-review-hint";
-import { markFirstTaskDone } from "@/lib/first-run-hints";
+import { markFirstTaskDone, notifyTourStep } from "@/lib/first-run-hints";
 import { setTaskStatus } from "@/app/actions";
 import { formatDate } from "@/lib/date";
 
@@ -55,6 +55,7 @@ function statusIcon(status: string) {
 export function TaskRow({
   task,
   projectId,
+  showLabels = false,
 }: {
   task: {
     id: string;
@@ -66,6 +67,8 @@ export function TaskRow({
     dueDate: Date | null;
   };
   projectId: string | null;
+  /** 新手期：任务行右侧图标展开成"图标 + 文字" */
+  showLabels?: boolean;
 }) {
   return (
     <div className="zouzou-row-hover flex flex-col gap-3 px-4 py-3 transition-colors lg:flex-row lg:items-center">
@@ -89,8 +92,12 @@ export function TaskRow({
       <div className="flex items-center gap-2">
         <form
           action={setTaskStatus}
+          data-tour="task-next"
           onSubmit={() => {
-            if (nextStatus(task.status) === "done") markFirstTaskDone();
+            const next = nextStatus(task.status);
+            // 引导第 1 步：用户真的点了"下一步"，才进入第 2 步
+            if (next === "in_progress") notifyTourStep("2");
+            if (next === "done") markFirstTaskDone();
           }}
         >
           <input type="hidden" name="id" value={task.id} />
@@ -104,28 +111,33 @@ export function TaskRow({
           </SubmitButton>
         </form>
 
-        <AiTaskSticky
-          taskId={task.id}
-          title={task.title}
-          notes={task.notes}
-          projectName={null}
-          status={task.status}
-          firstUse
-        />
+        <div data-tour="task-tools" className="flex items-center gap-2">
+          <AiTaskSticky
+            taskId={task.id}
+            title={task.title}
+            notes={task.notes}
+            projectName={null}
+            status={task.status}
+            firstUse
+            showLabel={showLabels}
+          />
 
-        <TaskSettingsMenu
-          taskId={task.id}
-          projectId={projectId}
-          title={task.title}
-        />
+          <TaskSettingsMenu
+            taskId={task.id}
+            projectId={projectId}
+            title={task.title}
+            showLabel={showLabels}
+          />
 
-        <AiTaskCoach
-          taskId={task.id}
-          title={task.title}
-          notes={task.notes}
-          projectName={null}
-          status={task.status}
-        />
+          <AiTaskCoach
+            taskId={task.id}
+            title={task.title}
+            notes={task.notes}
+            projectName={null}
+            status={task.status}
+            showLabel={showLabels}
+          />
+        </div>
 
         <FirstTaskReviewHint />
       </div>

@@ -27,6 +27,7 @@ import {
   isOnboardingCompleted,
   setOnboardingCompleted,
 } from "@/lib/onboarding";
+import { setFirstRunTourStep as persistFirstRunTourStep } from "@/lib/first-run";
 import {
   clarifyInbox,
   generateFirstRunPlan,
@@ -322,6 +323,45 @@ export async function completeFirstRun(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/workspace");
   redirect("/workspace");
+}
+
+/**
+ * 保存用户资料：昵称 + 头像。
+ * 头像用客户端压缩后的 data URL 存库（不引入对象存储，保持部署简单），
+ * 这里做大小与类型兜底，避免被塞进超大字段。
+ */
+export async function updateUserProfile(formData: FormData) {
+  const user = await requireUser();
+  const displayName = String(formData.get("displayName") ?? "").trim().slice(0, 24);
+  const rawAvatar = String(formData.get("avatarUrl") ?? "");
+  const avatarUrl =
+    rawAvatar.startsWith("data:image/") && rawAvatar.length <= 400_000
+      ? rawAvatar
+      : null;
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      displayName: displayName || null,
+      avatarUrl,
+    },
+  });
+
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+/**
+ * 新手引导进度（1 / 2 / 3 / done）。
+ * 客户端会在切换步骤时调用，失败不影响使用。
+ */
+export async function setFirstRunTourStep(step: string) {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false };
+
+  const allowed = new Set(["1", "2", "3", "done"]);
+  await persistFirstRunTourStep(user.id, allowed.has(step) ? step : "done");
+  return { ok: true };
 }
 
 export async function skipOnboarding(_formData?: FormData) {

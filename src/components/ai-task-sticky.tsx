@@ -20,6 +20,7 @@ export function AiTaskSticky({
   projectName,
   status,
   firstUse = false,
+  showLabel = false,
 }: {
   taskId: string;
   title: string;
@@ -27,6 +28,8 @@ export function AiTaskSticky({
   projectName?: string | null;
   status?: string;
   firstUse?: boolean;
+  /** 新手期把图标展开成"图标 + 文字"，第二次访问自动收起 */
+  showLabel?: boolean;
 }) {
   const { ref, open, setOpen } = useClickOutside<HTMLDivElement>();
   const tipRef = useRef<HTMLDivElement>(null);
@@ -104,9 +107,14 @@ export function AiTaskSticky({
         onClick={toggle}
         aria-label="行动便利贴"
         title="行动便利贴"
-        className="zouzou-icon-button flex size-8 items-center justify-center rounded-md border border-ai/30 bg-ai-soft text-ai transition-colors hover:bg-ai/20"
+        className={
+          showLabel
+            ? "zouzou-icon-button flex h-8 items-center gap-1.5 rounded-md border border-ai/30 bg-ai-soft px-2.5 text-xs font-medium text-ai transition-colors hover:bg-ai/20"
+            : "zouzou-icon-button flex size-8 items-center justify-center rounded-md border border-ai/30 bg-ai-soft text-ai transition-colors hover:bg-ai/20"
+        }
       >
         <StickyNote className="size-3.5" />
+        {showLabel ? <span>拆成小步</span> : null}
       </button>
 
       {showTip ? (

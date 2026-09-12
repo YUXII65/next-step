@@ -16,12 +16,15 @@ export function AiTaskCoach({
   notes,
   projectName,
   status,
+  showLabel = false,
 }: {
   taskId: string;
   title: string;
   notes?: string | null;
   projectName?: string | null;
   status?: string;
+  /** 新手期把图标展开成"图标 + 文字" */
+  showLabel?: boolean;
 }) {
   const { ref, open, setOpen } = useClickOutside<HTMLDivElement>();
   const [message, setMessage] = useState("");
@@ -52,9 +55,14 @@ export function AiTaskCoach({
         onClick={() => setOpen((value) => !value)}
         aria-label="和 AI 聊聊"
         title="和 AI 聊聊"
-        className="flex size-8 items-center justify-center rounded-md border border-accent/30 bg-accent-soft text-accent-strong transition-colors hover:bg-accent/20"
+        className={
+          showLabel
+            ? "flex h-8 items-center gap-1.5 rounded-md border border-accent/30 bg-accent-soft px-2.5 text-xs font-medium text-accent-strong transition-colors hover:bg-accent/20"
+            : "flex size-8 items-center justify-center rounded-md border border-accent/30 bg-accent-soft text-accent-strong transition-colors hover:bg-accent/20"
+        }
       >
         <MessageCircle className="size-3.5" />
+        {showLabel ? <span>问 AI</span> : null}
       </button>
 
       {open ? (

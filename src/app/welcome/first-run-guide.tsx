@@ -19,6 +19,7 @@ import {
 } from "@/app/actions";
 import { BrandMark } from "@/components/brand-mark";
 import { ChatClarify } from "@/components/chat-clarify";
+import { takePendingIdea } from "@/lib/pending-idea";
 import { SubmitButton } from "@/components/submit-button";
 import type { InboxClarification } from "@/lib/ai";
 
@@ -51,6 +52,12 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
       localStorage.setItem("next_step_new_user", "1");
     } catch {
       // Ignore storage errors and continue the setup flow.
+    }
+
+    // 演示页/落地页里写过的那句话，直接带过来预填，避免用户重写一遍
+    const pending = takePendingIdea();
+    if (pending) {
+      setIdea((current) => (current.trim() ? current : pending));
     }
   }, []);
 
@@ -177,6 +184,9 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
               <div>
                 <p className="text-sm font-semibold text-ink">
                   今天最想推进什么？
+                </p>
+                <p className="mt-1 text-xs leading-5 text-ink-secondary">
+                  这一步会真的建项目和任务，不是演示。完成后直接去书桌看第一件事。
                 </p>
                 <textarea
                   autoFocus

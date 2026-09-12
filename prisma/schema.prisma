@@ -58,6 +58,10 @@ model User {
   id                String              @id @default(cuid())
   username          String              @unique
   passwordHash      String
+  /// 展示用昵称（为空时回退到 username）
+  displayName       String?
+  /// 头像：客户端压缩后的 data URL（不做对象存储，保持部署简单）
+  avatarUrl         String?
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
   projects          Project[]

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { startGuestExperience } from "@/app/actions";
+import { savePendingIdea } from "@/lib/pending-idea";
 import { ChatClarify } from "@/components/chat-clarify";
 
 type Stage = "capture" | "ask" | "planning" | "prompt" | "received";
@@ -578,13 +579,17 @@ export function OnboardingDemo() {
             </div>
 
             <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
-              <form action={startGuestExperience}>
+              <form
+                action={startGuestExperience}
+                onSubmit={() => savePendingIdea(userThought)}
+              >
                 <button type="submit" className={ghostButtonClass}>
-                  先游客体验
+                  用这句话开始
                 </button>
               </form>
               <Link
                 href="/login?mode=register&next=/welcome"
+                onClick={() => savePendingIdea(userThought)}
                 className={primaryButtonClass}
               >
                 注册并保存
@@ -592,7 +597,7 @@ export function OnboardingDemo() {
               </Link>
             </div>
             <p className="mt-3 text-right text-xs leading-5 text-ink-secondary">
-              注册后可保存这次结果；只想先看看，也可以游客体验。
+              点「用这句话开始」会带着你刚写的内容进入正式体验，不用重写。
             </p>
           </section>
         ) : null}
@@ -690,13 +695,17 @@ export function OnboardingDemo() {
               >
                 重新演示一次
               </button>
-              <form action={startGuestExperience}>
+              <form
+                action={startGuestExperience}
+                onSubmit={() => savePendingIdea(userThought)}
+              >
                 <button type="submit" className={ghostButtonClass}>
-                  先游客体验
+                  用这句话开始
                 </button>
               </form>
               <Link
                 href="/login?mode=register&next=/welcome"
+                onClick={() => savePendingIdea(userThought)}
                 className={primaryButtonClass}
               >
                 注册并保存
@@ -704,7 +713,7 @@ export function OnboardingDemo() {
               </Link>
             </div>
             <p className="mt-3 text-xs leading-5 text-ink-secondary">
-              注册后可保存这次结果；只想先看看，也可以游客体验。
+              点「用这句话开始」会带着你刚写的内容进入正式体验，不用重写。
             </p>
           </section>
         ) : null}

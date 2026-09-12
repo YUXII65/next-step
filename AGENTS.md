@@ -50,3 +50,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   3. BrandMark 的内联 SVG 改成「固有尺寸 64 + `h-[58%] w-[58%]`」，不再用内联百分比 `style`；样式表挂掉时它只会是一枚小图标，而不是撑爆整屏的色块。
 - **验证方式**（复现脚本在 `%TEMP%\asset-guard-check`）：用带 immutable 头的 404 模拟发布窗口，无头 Chrome 对照——无守卫时第二次打开仍然是无样式，带守卫时自动恢复成有样式。
 - **发布后自检**：抓首页 HTML 里的 CSS 地址并带任意查询串请求一次（例如 `...css?asset-retry=1`），返回 `200 + text/css` 即为资源就绪；若仍是 404，说明还在发布窗口内，等十几秒再看。
+
+# 新人引导设计（2026-09-12 定稿，跨会话记忆，勿删）
+
+- **入口原则**：落地页主 CTA「立即体验 · 免注册」直接触发 `startGuestExperience` 进真产品；`/onboarding` 只是演示，降级为次级按钮「看 30 秒演示」。用户在哪写过想法，就往哪继续，不要把演示和真流程串成"写两遍"。
+- **想法传递**：演示页/落地页写的那句话用 `src/lib/pending-idea.ts`（localStorage `next_step_pending_idea`）带到 `/welcome` 预填。
+- **新手态必须服务端判定**：`src/lib/first-run.ts` 用 `UserPreference(first_run_tour)` + 「注册 14 天内 + 项目 ≤ 1 + 任务 ≤ 3」判定，别再依赖 localStorage `next_step_new_user`（那条路径极脆：只在 /welcome 挂载时写一次）。
+- **三步锚定引导**：`src/components/first-run-tour.tsx` + `anchored-hint.tsx`。目标元素用 `data-tour` 标记（`task-next` / `task-tools` / `bottom-nav` / `side-nav` / `guest-banner`）。第 1 步点「下一步」后进入第 2 步，完成首个任务进入第 3 步；不做全屏蒙层聚光灯（滚动/移动端易错位）。
+- **游客态必须常驻可见**：`GuestBanner`（layout 渲染）说明"内容只保存在这台浏览器，注册后可长期保存"。游客账号是随机用户名 + 随机密码且从不展示，会话 30 天，不提醒就是无声数据丢失。
+- **新手期图标展开文字**：任务行三个图标（拆成小步 / 设置 / 问 AI）通过 `showLabels` 在新手期展开，引导结束后自动收起。
+- **落点统一**：注册、游客转正、跳过引导后都落 `/workspace`（`welcome/page.tsx` 的 redirect 已改）。
+- **首页取舍**：AI 设置（API 连接 / 执行偏好）收进「今日推进伙伴」面板底部的折叠区，第一屏留给"记想法 + 今天做什么"。
+- **待办（未做）**：日历/抽屉/工具页的锚定气泡目前仍是 PageHint 角落卡片（已由服务端新手态 gate）；若要继续收敛，按同一套 `data-tour` + AnchoredHint 改造。

@@ -9,21 +9,29 @@ const HINTS_KEY = "next_step_hints";
 export function PageHint({
   id,
   title,
+  enabled,
   children,
 }: {
   id: string;
   title: string;
+  /**
+   * 是否展示由服务端决定（新手期内才展示）。
+   * 不传时退回旧的 localStorage 判断，保持兼容。
+   */
+  enabled?: boolean;
   children: ReactNode;
 }) {
   const [visible, setVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let isNewUser = false;
+    let active = enabled ?? false;
     let dismissed = false;
 
     try {
-      isNewUser = localStorage.getItem("next_step_new_user") === "1";
+      if (enabled === undefined) {
+        active = localStorage.getItem("next_step_new_user") === "1";
+      }
       const stored = JSON.parse(
         localStorage.getItem(HINTS_KEY) ?? "{}",
       ) as Record<string, boolean>;
@@ -32,10 +40,10 @@ export function PageHint({
       // localStorage can be unavailable in private or restricted contexts.
     }
 
-    if (isNewUser && !dismissed) {
+    if (active && !dismissed) {
       setVisible(true);
     }
-  }, [id]);
+  }, [enabled, id]);
 
   useEffect(() => {
     if (!visible) return;

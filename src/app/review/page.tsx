@@ -16,6 +16,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { generateReviewDraftAction, saveReview } from "@/app/actions";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { getFirstRunState } from "@/lib/first-run";
 import { cx } from "@/lib/utils";
 import { formatDate, toDateInputValue } from "@/lib/date";
 
@@ -38,6 +39,7 @@ export default async function ReviewPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await requireUser();
+  const firstRun = await getFirstRunState(user.id, user.createdAt);
   const params = await searchParams;
   const dateParam =
     typeof params.date === "string" &&
@@ -96,7 +98,7 @@ export default async function ReviewPage({
         description="把每天复盘收进抽屉，回看真正推进了什么。"
       />
 
-      <PageHint id="review" title="提示">
+      <PageHint id="review" title="提示" enabled={firstRun.isFirstRun}>
         每天收尾时记一句今天推进了什么，明天要做的会从这里长出来。
       </PageHint>
 

@@ -231,8 +231,10 @@ function WeeklySummary({ data }: { data: ToolboxInitialData }) {
 
 export function ToolboxDemo({
   initialData,
+  showHint = false,
 }: {
   initialData: ToolboxInitialData;
+  showHint?: boolean;
 }) {
   const [enabled, setEnabled] = useState<string[]>([]);
 
@@ -251,7 +253,7 @@ export function ToolboxDemo({
         description="按需启用小工具，核心闭环保持简单。"
       />
 
-      <PageHint id="tools" title="提示">
+      <PageHint id="tools" title="提示" enabled={showHint}>
         需要什么再打开什么，核心流程保持简单。
       </PageHint>
 

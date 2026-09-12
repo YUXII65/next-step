@@ -13,6 +13,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { LogoutButton } from "@/components/logout-button";
 import { cx } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ProfileCard, type ProfileUser } from "@/components/profile-card";
 
 const navItems = [
   { href: "/", label: "日历", icon: CalendarDays },
@@ -20,7 +21,13 @@ const navItems = [
   { href: "/review", label: "抽屉", icon: Archive },
 ];
 
-export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
+export function Sidebar({
+  isAdmin = false,
+  user = null,
+}: {
+  isAdmin?: boolean;
+  user?: ProfileUser | null;
+}) {
   const pathname = usePathname();
 
   function isActive(href: string) {
@@ -36,6 +43,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
           <span className="text-sm font-semibold">走走</span>
         </div>
         <div className="flex items-center gap-1">
+          {user ? <ProfileCard user={user} placement="header" /> : null}
           <Link
             href="/tools"
             aria-label="工具匣"
@@ -68,7 +76,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
           <BrandMark className="size-10 rounded-xl" />
         </Link>
 
-        <nav className="mt-6 flex flex-1 flex-col items-center gap-1.5">
+        <nav data-tour="side-nav" className="mt-6 flex flex-1 flex-col items-center gap-1.5">
           {navItems.map((item) => {
             const active = isActive(item.href);
             const Icon = item.icon;
@@ -94,6 +102,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
         </nav>
 
         <div className="flex flex-col items-center gap-1.5">
+          {user ? <ProfileCard user={user} placement="rail" /> : null}
           <Link
             href="/tools"
             aria-label="工具匣"
@@ -117,7 +126,7 @@ export function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
         </div>
       </aside>
 
-      <nav className="zouzou-glass fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border/70 lg:hidden">
+      <nav data-tour="bottom-nav" className="zouzou-glass fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-border/70 lg:hidden">
         {navItems.map((item) => {
           const active = isActive(item.href);
           const Icon = item.icon;

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/sidebar";
-import { CommandPalette } from "@/components/command-palette";
+import { AppChrome } from "@/components/app-chrome";
 import { UsageTracker } from "@/components/usage-tracker";
-import { getAdminUser } from "@/lib/admin";
+import { isAdminUsername } from "@/lib/admin";
 import { ASSET_GUARD_CSS, ASSET_GUARD_SCRIPT } from "@/lib/asset-guard";
+import { getCurrentUser, isGuestUser } from "@/lib/auth";
+import { GuestBanner } from "@/components/guest-banner";
 
 export const metadata: Metadata = {
   title: {
@@ -25,7 +26,18 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const admin = await getAdminUser();
+  // 只查一次用户：管理员入口、游客提示条、角落的账号资料都从这里来
+  const user = await getCurrentUser();
+  const isAdmin = user ? isAdminUsername(user.username) : false;
+  const isGuest = user ? isGuestUser(user) : false;
+  const profileUser = user
+    ? {
+        username: user.username,
+        displayName: user.displayName,
+        avatarUrl: user.avatarUrl,
+        isGuest,
+      }
+    : null;
 
   return (
     <html lang="zh-CN" className="h-full antialiased">
@@ -37,10 +49,10 @@ export default async function RootLayout({
         */}
         <style dangerouslySetInnerHTML={{ __html: ASSET_GUARD_CSS }} />
         <script dangerouslySetInnerHTML={{ __html: ASSET_GUARD_SCRIPT }} />
-        <Sidebar isAdmin={Boolean(admin)} />
-        <CommandPalette isAdmin={Boolean(admin)} />
+        <AppChrome isAdmin={isAdmin} user={profileUser} />
         <UsageTracker />
         <div className="lg:pl-[72px]">
+          {isGuest ? <GuestBanner /> : null}
           <main className="mx-auto w-full max-w-5xl px-4 py-5 pb-28 sm:px-6 lg:px-8 lg:py-8 lg:pb-12">
             {children}
           </main>

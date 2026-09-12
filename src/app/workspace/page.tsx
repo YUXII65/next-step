@@ -7,7 +7,7 @@ import {
   PencilLine,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
-import { PageHint } from "@/components/page-hint";
+import { FirstRunTour } from "@/components/first-run-tour";
 import { Panel, PanelHeader } from "@/components/panel";
 import { EmptyState } from "@/components/empty-state";
 import { ProjectForm } from "@/components/project-form";
@@ -24,7 +24,8 @@ import {
 } from "@/app/actions";
 import { cx } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
-import { requireUser } from "@/lib/auth";
+import { isGuestUser, requireUser } from "@/lib/auth";
+import { getFirstRunState } from "@/lib/first-run";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +53,7 @@ export default async function ProjectsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const user = await requireUser();
+  const firstRun = await getFirstRunState(user.id, user.createdAt);
   const params = await searchParams;
   const projectParam =
     typeof params.project === "string" ? params.project : "";
@@ -102,9 +104,9 @@ export default async function ProjectsPage({
     <>
       <PageHeader title="书桌" description="管理项目、任务和待办来源。" />
 
-      <PageHint id="workspace" title="提示">
-        任务已经放进书桌了。点任务右侧的“下一步”推进进度。
-      </PageHint>
+      {firstRun.isFirstRun ? (
+        <FirstRunTour initialStep={firstRun.tourStep} guest={isGuestUser(user)} />
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
         <Panel className="min-w-0 self-start">
@@ -246,6 +248,7 @@ export default async function ProjectsPage({
                         key={task.id}
                         task={task}
                         projectId={null}
+                        showLabels={firstRun.isFirstRun}
                       />
                     ))}
                   </div>
@@ -337,6 +340,7 @@ export default async function ProjectsPage({
                           key={task.id}
                           task={task}
                           projectId={selectedProject.id}
+                          showLabels={firstRun.isFirstRun}
                         />
                       ))}
                     </div>

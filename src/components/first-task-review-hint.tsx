@@ -16,10 +16,13 @@ export function FirstTaskReviewHint() {
     if (claimed) return;
 
     try {
-      const isNewUser = localStorage.getItem("next_step_new_user") === "1";
+      const tourStep = localStorage.getItem("next_step_tour") ?? "";
+      const tourActive =
+        tourStep === "1" || tourStep === "2" || tourStep === "3";
       const done = localStorage.getItem(DONE_KEY) === "1";
       const shouldShow = localStorage.getItem(SHOW_KEY) === "1";
-      if (isNewUser && done && shouldShow) {
+      // 新手三步引导会讲"完成之后去哪"，这里只服务没走引导的用户
+      if (!tourActive && done && shouldShow) {
         claimed = true;
         setVisible(true);
       }

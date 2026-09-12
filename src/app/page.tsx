@@ -20,6 +20,7 @@ import { AiTaskPlanner } from "@/components/ai-task-planner";
 import { LoopProgress } from "@/components/loop-progress";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { getFirstRunState } from "@/lib/first-run";
 import type { TodaySuggestion } from "@/lib/ai";
 import {
   endOfDay,
@@ -67,6 +68,7 @@ export const dynamic = "force-dynamic";
 export default async function TodayPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/landing");
+  const firstRun = await getFirstRunState(user.id, user.createdAt);
   const now = new Date();
   const dayStart = startOfDay(now);
   const dayEnd = endOfDay(now);
@@ -194,7 +196,7 @@ export default async function TodayPage() {
 
   return (
     <>
-      <PageHint id="today" title="提示">
+      <PageHint id="today" title="提示" enabled={firstRun.isFirstRun}>
         先记一个想法，今天只推进最重要的 1-3 件事。
       </PageHint>
       <FirstTaskReviewHint />
@@ -258,6 +260,15 @@ export default async function TodayPage() {
             icon={Focus}
             title="今天还没有重点"
             hint="先记录一个想法，会先听懂你，再帮你拆成今天能做的事。"
+            action={
+              <a
+                href="#quick-capture"
+                className="zouzou-primary-button inline-flex h-9 items-center gap-1.5 rounded-lg bg-accent px-3.5 text-sm font-medium text-white transition-colors hover:bg-accent-strong"
+              >
+                记一个想法
+                <ArrowRight className="size-4" />
+              </a>
+            }
           />
         )}
       </Panel>

@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export default async function WelcomePage() {
   const user = await requireUser();
   if (await isOnboardingCompleted(user.id)) {
-    redirect("/");
+    redirect("/workspace");
   }
 
   return <FirstRunGuide guest={isGuestUser(user)} />;

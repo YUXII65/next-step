@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ToolboxDemo } from "./toolbox-demo";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/auth";
+import { getFirstRunState } from "@/lib/first-run";
 
 export const metadata: Metadata = {
   title: "工具匣",
@@ -22,6 +23,7 @@ function startOfWeek(date: Date) {
 
 export default async function ToolsPage() {
   const user = await requireUser();
+  const firstRun = await getFirstRunState(user.id, user.createdAt);
   const now = new Date();
   const [tasks, activeProjects, reviews, pendingInbox, feedbackCount] =
     await Promise.all([
@@ -118,6 +120,7 @@ export default async function ToolsPage() {
 
   return (
     <ToolboxDemo
+      showHint={firstRun.isFirstRun}
       initialData={{
         pendingInbox,
         openTasks,
