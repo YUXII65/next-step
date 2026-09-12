@@ -53,7 +53,7 @@ export function TaskForm({
             htmlFor={`task-title-${id}`}
             className="mb-1.5 block text-xs font-medium text-ink-secondary"
           >
-            任务标题
+            任务内容
           </label>
           <input
             id={`task-title-${id}`}

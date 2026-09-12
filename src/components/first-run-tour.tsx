@@ -94,7 +94,7 @@ export function FirstRunTour({
     return (
       <AnchoredHint
         target={TOUR_TARGETS.taskTools}
-        title="这三个按钮，卡住的时候用"
+        title="这两个按钮，卡住的时候用"
         onDismiss={finish}
         footer={
           <div className="flex items-center justify-between gap-3 text-xs text-ink-muted">
@@ -106,14 +106,11 @@ export function FirstRunTour({
         }
       >
         <span className="block">
-          <span className="font-medium text-ink">拆成小步</span>：没头绪时让 AI
-          拆成能直接开始的动作
+          <span className="font-medium text-ink">便利贴</span>
+          ：补充想法，或让 AI 拆成能直接开始的动作
         </span>
         <span className="mt-1 block">
           <span className="font-medium text-ink">设置</span>：改标题、日期、优先级
-        </span>
-        <span className="mt-1 block">
-          <span className="font-medium text-ink">问 AI</span>：就这条任务继续聊
         </span>
       </AnchoredHint>
     );

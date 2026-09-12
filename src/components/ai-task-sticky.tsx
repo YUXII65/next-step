@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { RefreshCw, StickyNote, X } from "lucide-react";
 import { getTaskCoachAdvice } from "@/app/actions";
 import { trackEvent } from "@/lib/track";
@@ -36,8 +36,11 @@ export function AiTaskSticky({
   const [advice, setAdvice] = useState<TaskCoachAdvice | null>(null);
   const [loading, setLoading] = useState(false);
   const [showTip, setShowTip] = useState(false);
+  const [message, setMessage] = useState("");
+  const [supplementOpen, setSupplementOpen] = useState(false);
 
-  async function generate() {
+  async function generate(customMessage = DEFAULT_MESSAGE) {
+    const nextMessage = customMessage.trim() || DEFAULT_MESSAGE;
     setLoading(true);
     const next = await getTaskCoachAdvice({
       taskId,
@@ -45,11 +48,22 @@ export function AiTaskSticky({
       notes,
       projectName,
       status,
-      message: DEFAULT_MESSAGE,
+      message: nextMessage,
     });
     setAdvice(next);
     setLoading(false);
-    trackEvent("task_sticky_generate", { taskId });
+    trackEvent(
+      nextMessage === DEFAULT_MESSAGE ? "task_sticky_generate" : "task_coach_ask",
+      { taskId },
+    );
+  }
+
+  function submitSupplement(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const nextMessage = message.trim();
+    if (!nextMessage || loading) return;
+    setOpen(true);
+    void generate(nextMessage);
   }
 
   useEffect(() => {
@@ -101,21 +115,48 @@ export function AiTaskSticky({
   }
 
   return (
-    <div className="relative" ref={ref}>
+    <div
+      className="group relative"
+      ref={ref}
+      onMouseEnter={() => setSupplementOpen(true)}
+      onMouseLeave={() => setSupplementOpen(false)}
+    >
       <button
         type="button"
         onClick={toggle}
-        aria-label="行动便利贴"
-        title="行动便利贴"
+        aria-label="便利贴"
+        title="便利贴"
         className={
           showLabel
             ? "zouzou-icon-button flex h-8 items-center gap-1.5 rounded-md border border-ai/30 bg-ai-soft px-2.5 text-xs font-medium text-ai transition-colors hover:bg-ai/20"
             : "zouzou-icon-button flex size-8 items-center justify-center rounded-md border border-ai/30 bg-ai-soft text-ai transition-colors hover:bg-ai/20"
         }
       >
-        <StickyNote className="size-3.5" />
-        {showLabel ? <span>拆成小步</span> : null}
+        <StickyNote className="size-3.5 transition-transform duration-200 group-hover:-rotate-6" />
+        {showLabel ? <span>便利贴</span> : null}
       </button>
+
+      {!open && !showTip && supplementOpen ? (
+        <div className="absolute right-0 top-8 z-40 w-72 max-w-[calc(100vw-2rem)] pt-2">
+          <div className="rounded-xl border border-ai/25 bg-surface p-3 shadow-pop animate-[zouzou-fade-in_180ms_ease-out]">
+            <form onSubmit={submitSupplement}>
+              <div className="flex items-center gap-2">
+                <span className="flex size-7 items-center justify-center rounded-md bg-ai-soft text-ai">
+                  <StickyNote className="size-3.5 -rotate-6" />
+                </span>
+                <p className="text-xs font-medium text-ink">便利贴</p>
+              </div>
+              <input
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+                placeholder="你有什么想法补充？"
+                aria-label="你有什么想法补充？"
+                className="zouzou-input mt-2 w-full rounded-lg px-3 py-2 text-sm text-ink"
+              />
+            </form>
+          </div>
+        </div>
+      ) : null}
 
       {showTip ? (
         <div
@@ -124,7 +165,7 @@ export function AiTaskSticky({
         >
           <div className="flex items-start justify-between gap-2">
             <p className="text-xs font-semibold text-ink">
-              首次用行动便利贴
+              首次用便利贴
             </p>
             <button
               type="button"
@@ -137,7 +178,7 @@ export function AiTaskSticky({
             </button>
           </div>
           <p className="mt-1 text-xs leading-5 text-ink-secondary">
-            卡住时点这里，AI 会把任务拆成能直接开始的小步。
+            卡住时点这里，写下想法，AI 会帮你拆成能直接开始的小步。
           </p>
         </div>
       ) : null}
@@ -145,7 +186,7 @@ export function AiTaskSticky({
       {open ? (
         <div className="zouzou-panel absolute right-0 top-10 z-30 w-80 max-w-[calc(100vw-2rem)] rounded-xl p-3 shadow-pop animate-[zouzou-fade-in_240ms_ease-out]">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs font-medium text-ink-secondary">行动便利贴</p>
+            <p className="text-xs font-medium text-ink-secondary">便利贴</p>
             <button
               type="button"
               onClick={() => setOpen(false)}

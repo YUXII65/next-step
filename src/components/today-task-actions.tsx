@@ -1,5 +1,6 @@
 "use client";
 
+import { useOptimistic } from "react";
 import Link from "next/link";
 import {
   CalendarOff,
@@ -20,7 +21,6 @@ import {
 } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
 import { ConfirmActionButton } from "@/components/confirm-action-button";
-import { AiTaskCoach } from "@/components/ai-task-coach";
 import { AiTaskSticky } from "@/components/ai-task-sticky";
 import { markFirstTaskDone } from "@/lib/first-run-hints";
 import { trackEvent } from "@/lib/track";
@@ -78,23 +78,44 @@ export function TodayTaskActions({
   projectName?: string | null;
 }) {
   const { ref, open, setOpen } = useClickOutside<HTMLDivElement>();
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic(status);
+  const canChangeStatus =
+    optimisticStatus !== "done" && optimisticStatus !== "cancelled";
+
+  async function changeStatus(formData: FormData) {
+    const next = nextStatus(optimisticStatus);
+    formData.set("status", next);
+    setOptimisticStatus(next);
+    await setTaskStatus(formData);
+  }
 
   return (
     <div className="flex items-center gap-2">
-      <form
-        action={setTaskStatus}
-        onSubmit={() => {
-          trackEvent("home_task_status", { status: nextStatus(status) });
-          if (nextStatus(status) === "done") markFirstTaskDone();
-        }}
-      >
-        <input type="hidden" name="id" value={taskId} />
-        <input type="hidden" name="status" value={nextStatus(status)} />
-        <SubmitButton pendingText="..." className={statusButtonClass(status)}>
-          {statusIcon(status)}
-          {actionLabel(status)}
-        </SubmitButton>
-      </form>
+      {canChangeStatus ? (
+        <form
+          action={changeStatus}
+          onSubmit={() => {
+            trackEvent("home_task_status", {
+              status: nextStatus(optimisticStatus),
+            });
+            if (nextStatus(optimisticStatus) === "done") markFirstTaskDone();
+          }}
+        >
+          <input type="hidden" name="id" value={taskId} />
+          <input
+            type="hidden"
+            name="status"
+            value={nextStatus(optimisticStatus)}
+          />
+          <SubmitButton
+            pendingText={null}
+            className={statusButtonClass(optimisticStatus)}
+          >
+            {statusIcon(optimisticStatus)}
+            {actionLabel(optimisticStatus)}
+          </SubmitButton>
+        </form>
+      ) : null}
 
       <AiTaskSticky
         taskId={taskId}
@@ -155,13 +176,6 @@ export function TodayTaskActions({
         ) : null}
       </div>
 
-      <AiTaskCoach
-        taskId={taskId}
-        title={title}
-        notes={notes}
-        projectName={projectName}
-        status={status}
-      />
     </div>
   );
 }

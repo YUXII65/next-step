@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   CircleDashed,
   NotebookPen,
-  Sparkles,
 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { PageHint } from "@/components/page-hint";
@@ -12,6 +11,7 @@ import { Panel, PanelHeader } from "@/components/panel";
 import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/status-badge";
 import { ReviewDraftFeedback } from "@/components/review-draft-feedback";
+import { ReviewDateField } from "@/components/review-date-field";
 import { SubmitButton } from "@/components/submit-button";
 import { generateReviewDraftAction, saveReview } from "@/app/actions";
 import { prisma } from "@/lib/prisma";
@@ -93,10 +93,7 @@ export default async function ReviewPage({
 
   return (
     <>
-      <PageHeader
-        title="抽屉"
-        description="把每天复盘收进抽屉，回看真正推进了什么。"
-      />
+      <PageHeader title="抽屉" />
 
       <PageHint id="review" title="提示" enabled={firstRun.isFirstRun}>
         每天收尾时记一句今天推进了什么，明天要做的会从这里长出来。
@@ -184,23 +181,6 @@ export default async function ReviewPage({
             {selectedReview ? (
               <>
                 <ReviewDraftFeedback reviewId={selectedReview.id} />
-                <form
-                  action={generateReviewDraftAction}
-                  className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4"
-                >
-                  <input
-                    type="hidden"
-                    name="reviewDate"
-                    value={toDateInputValue(selectedReview.reviewDate)}
-                  />
-                  <p className="text-sm text-ink-secondary">
-                    可以重新生成草稿，然后手动修改。
-                  </p>
-                  <SubmitButton className="zouzou-secondary-button inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent">
-                    <Sparkles className="size-4" />
-                    重新生成草稿
-                  </SubmitButton>
-                </form>
 
                 <form action={saveReview} className="space-y-3 p-4">
                   <input type="hidden" name="id" value={selectedReview.id} />
@@ -236,20 +216,7 @@ export default async function ReviewPage({
               </>
             ) : (
               <form action={generateReviewDraftAction} className="space-y-4 p-4">
-                <label className="block">
-                  <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
-                    日期
-                  </span>
-                  <input
-                    name="reviewDate"
-                    type="date"
-                    defaultValue={dateParam}
-                    className={inputClass}
-                  />
-                </label>
-                <div className="zouzou-ai-card p-3 text-xs leading-5 text-accent-strong">
-                  未配置服务端 AI 时使用本地规则生成草稿；配置后由服务端统一调用。
-                </div>
+                <ReviewDateField defaultValue={dateParam} />
                 <SubmitButton className="zouzou-primary-button inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-60">
                   <CalendarDays className="size-4" />
                   生成复盘

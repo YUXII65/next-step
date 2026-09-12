@@ -1,5 +1,6 @@
 "use client";
 
+import { useOptimistic } from "react";
 import {
   CheckCircle2,
   Loader2,
@@ -8,7 +9,6 @@ import {
 } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { SubmitButton } from "@/components/submit-button";
-import { AiTaskCoach } from "@/components/ai-task-coach";
 import { AiTaskSticky } from "@/components/ai-task-sticky";
 import { TaskSettingsMenu } from "@/components/task-settings-menu";
 import { FirstTaskReviewHint } from "@/components/first-task-review-hint";
@@ -52,6 +52,11 @@ function statusIcon(status: string) {
   return <Play className="size-3.5" />;
 }
 
+function taskHeadline(title: string) {
+  const headline = title.split(/[，,。；;！？!\n]/)[0]?.trim() || title;
+  return headline.length > 24 ? `${headline.slice(0, 24).trim()}…` : headline;
+}
+
 export function TaskRow({
   task,
   projectId,
@@ -70,16 +75,34 @@ export function TaskRow({
   /** 新手期：任务行右侧图标展开成"图标 + 文字" */
   showLabels?: boolean;
 }) {
+  const [optimisticStatus, setOptimisticStatus] = useOptimistic(task.status);
+  const canChangeStatus =
+    optimisticStatus !== "done" && optimisticStatus !== "cancelled";
+
+  async function changeStatus(formData: FormData) {
+    const next = nextStatus(optimisticStatus);
+    formData.set("status", next);
+    setOptimisticStatus(next);
+    await setTaskStatus(formData);
+  }
+
   return (
     <div className="zouzou-row-hover flex flex-col gap-3 px-4 py-3 transition-colors lg:flex-row lg:items-center">
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-ink">{task.title}</p>
+        <div className="group/task-title relative min-w-0">
+          <p className="truncate font-medium text-ink" title={task.title}>
+            {taskHeadline(task.title)}
+          </p>
+          <p className="pointer-events-none invisible absolute left-0 top-full z-50 mt-1 w-max max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-surface px-3 py-2 text-xs font-normal leading-5 text-ink-secondary opacity-0 shadow-pop transition-opacity group-hover/task-title:visible group-hover/task-title:opacity-100 sm:max-w-[32rem]">
+            {task.title}
+          </p>
+        </div>
         <p className="mt-1 truncate text-xs text-ink-secondary">
           {task.notes || "无备注"}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-ink-secondary">
           <StatusBadge status={task.priority} />
-          <StatusBadge status={task.status} />
+          <StatusBadge status={optimisticStatus} />
           {task.scheduledDate ? (
             <span>计划 {formatDate(task.scheduledDate)}</span>
           ) : null}
@@ -90,26 +113,32 @@ export function TaskRow({
       </div>
 
       <div className="flex items-center gap-2">
-        <form
-          action={setTaskStatus}
-          data-tour="task-next"
-          onSubmit={() => {
-            const next = nextStatus(task.status);
-            // 引导第 1 步：用户真的点了"下一步"，才进入第 2 步
-            if (next === "in_progress") notifyTourStep("2");
-            if (next === "done") markFirstTaskDone();
-          }}
-        >
-          <input type="hidden" name="id" value={task.id} />
-          <input type="hidden" name="status" value={nextStatus(task.status)} />
-          <SubmitButton
-            pendingText="..."
-            className={statusButtonClass(task.status)}
+        {canChangeStatus ? (
+          <form
+            action={changeStatus}
+            data-tour="task-next"
+            onSubmit={() => {
+              const next = nextStatus(optimisticStatus);
+              // 引导第 1 步：用户真的点了"下一步"，才进入第 2 步
+              if (next === "in_progress") notifyTourStep("2");
+              if (next === "done") markFirstTaskDone();
+            }}
           >
-            {statusIcon(task.status)}
-            {actionLabel(task.status)}
-          </SubmitButton>
-        </form>
+            <input type="hidden" name="id" value={task.id} />
+            <input
+              type="hidden"
+              name="status"
+              value={nextStatus(optimisticStatus)}
+            />
+            <SubmitButton
+              pendingText={null}
+              className={statusButtonClass(optimisticStatus)}
+            >
+              {statusIcon(optimisticStatus)}
+              {actionLabel(optimisticStatus)}
+            </SubmitButton>
+          </form>
+        ) : null}
 
         <div data-tour="task-tools" className="flex items-center gap-2">
           <AiTaskSticky
@@ -126,15 +155,6 @@ export function TaskRow({
             taskId={task.id}
             projectId={projectId}
             title={task.title}
-            showLabel={showLabels}
-          />
-
-          <AiTaskCoach
-            taskId={task.id}
-            title={task.title}
-            notes={task.notes}
-            projectName={null}
-            status={task.status}
             showLabel={showLabels}
           />
         </div>

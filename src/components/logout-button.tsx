@@ -4,7 +4,13 @@ import { useRef, useState } from "react";
 import { LogOut } from "lucide-react";
 import { logoutUser } from "@/app/actions";
 
-export function LogoutButton({ className }: { className?: string }) {
+export function LogoutButton({
+  className,
+  showLabel = false,
+}: {
+  className?: string;
+  showLabel?: boolean;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const [confirming, setConfirming] = useState(false);
 
@@ -19,7 +25,8 @@ export function LogoutButton({ className }: { className?: string }) {
           aria-haspopup="dialog"
           className={className}
         >
-          <LogOut className="size-[18px]" />
+          <LogOut className={showLabel ? "size-4" : "size-[18px]"} />
+          {showLabel ? <span>退出登录</span> : null}
         </button>
       </form>
 

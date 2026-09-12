@@ -10,7 +10,6 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
-import { LogoutButton } from "@/components/logout-button";
 import { cx } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ProfileCard, type ProfileUser } from "@/components/profile-card";
@@ -43,15 +42,6 @@ export function Sidebar({
           <span className="text-sm font-semibold">走走</span>
         </div>
         <div className="flex items-center gap-1">
-          {user ? <ProfileCard user={user} placement="header" /> : null}
-          <Link
-            href="/tools"
-            aria-label="工具匣"
-            title="工具匣"
-            className="zouzou-icon-button flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
-          >
-            <Blocks className="size-[18px]" />
-          </Link>
           {isAdmin ? (
             <Link
               href="/admin"
@@ -62,8 +52,16 @@ export function Sidebar({
               <BarChart3 className="size-[18px]" />
             </Link>
           ) : null}
+          <Link
+            href="/tools"
+            aria-label="工具匣"
+            title="工具匣"
+            className="zouzou-icon-button flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+          >
+            <Blocks className="size-[18px]" />
+          </Link>
           <ThemeToggle />
-          <LogoutButton className="zouzou-icon-button flex size-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink" />
+          {user ? <ProfileCard user={user} placement="header" /> : null}
         </div>
       </header>
 
@@ -102,15 +100,6 @@ export function Sidebar({
         </nav>
 
         <div className="flex flex-col items-center gap-1.5">
-          {user ? <ProfileCard user={user} placement="rail" /> : null}
-          <Link
-            href="/tools"
-            aria-label="工具匣"
-            title="工具匣"
-            className="zouzou-icon-button flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
-          >
-            <Blocks className="size-[18px]" />
-          </Link>
           {isAdmin ? (
             <Link
               href="/admin"
@@ -121,8 +110,16 @@ export function Sidebar({
               <BarChart3 className="size-[18px]" />
             </Link>
           ) : null}
+          <Link
+            href="/tools"
+            aria-label="工具匣"
+            title="工具匣"
+            className="zouzou-icon-button flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink"
+          >
+            <Blocks className="size-[18px]" />
+          </Link>
           <ThemeToggle />
-          <LogoutButton className="zouzou-icon-button flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink" />
+          {user ? <ProfileCard user={user} placement="rail" /> : null}
         </div>
       </aside>
 

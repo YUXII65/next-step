@@ -1318,10 +1318,44 @@ async function syncReviewRelations(
       ],
     },
     include: {
-      project: { select: { id: true } },
+      project: { select: { id: true, name: true, updatedAt: true } },
     },
     orderBy: { createdAt: "desc" },
   });
+
+  const projectStats = new Map<
+    string,
+    { id: string; name: string; count: number; updatedAt: Date }
+  >();
+
+  for (const task of tasks) {
+    if (!task.project) continue;
+    const current = projectStats.get(task.project.id);
+    projectStats.set(task.project.id, {
+      id: task.project.id,
+      name: task.project.name,
+      count: (current?.count ?? 0) + 1,
+      updatedAt:
+        current && current.updatedAt > task.project.updatedAt
+          ? current.updatedAt
+          : task.project.updatedAt,
+    });
+  }
+
+  const projectCandidates = [...projectStats.values()].sort(
+    (a, b) =>
+      b.count - a.count || b.updatedAt.getTime() - a.updatedAt.getTime(),
+  );
+  const defaultProjectId = projectCandidates[0]?.id ?? null;
+
+  function projectIdForNextAction(title: string) {
+    const normalized = title.trim().toLowerCase();
+    const namedProject = projectCandidates.find((project) => {
+      const name = project.name.trim().toLowerCase();
+      return name.length > 0 && normalized.includes(name);
+    });
+    return namedProject?.id ?? defaultProjectId;
+  }
 
   for (const task of tasks) {
     await prisma.reviewTask.upsert({
@@ -1357,6 +1391,7 @@ async function syncReviewRelations(
   await prisma.$transaction(async (tx) => {
     for (const [index, title] of nextActionTitles.entries()) {
       const existing = existingActions[index];
+      const projectId = projectIdForNextAction(title);
       if (existing) {
         await tx.reviewNextAction.update({
           where: { id: existing.id, userId },
@@ -1365,7 +1400,7 @@ async function syncReviewRelations(
         if (existing.taskId) {
           await tx.task.update({
             where: { id: existing.taskId, userId },
-            data: { title },
+            data: { title, projectId },
           });
         }
       } else {
@@ -1375,6 +1410,7 @@ async function syncReviewRelations(
           data: {
             userId,
             title,
+            projectId,
             priority: "medium",
             scheduledDate,
           },

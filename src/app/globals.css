@@ -269,6 +269,19 @@ details > summary::-webkit-details-marker {
   }
 }
 
+@keyframes zouzou-attention {
+  0%,
+  100% {
+    opacity: 0.78;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

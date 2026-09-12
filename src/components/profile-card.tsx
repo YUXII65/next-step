@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import type { ChangeEvent } from "react";
 import { Loader2, PencilLine, Upload } from "lucide-react";
 import { updateUserProfile } from "@/app/actions";
+import { LogoutButton } from "@/components/logout-button";
 import { useClickOutside } from "@/lib/use-click-outside";
 import { cx } from "@/lib/utils";
 
@@ -59,6 +60,13 @@ export function ProfileCard({
   const fileRef = useRef<HTMLInputElement>(null);
 
   const displayName = user.displayName || user.username;
+
+  useEffect(() => {
+    if (!open) {
+      setAvatarMenu(false);
+      setError("");
+    }
+  }, [open]);
 
   function resetForm() {
     setName(user.displayName ?? user.username);
@@ -144,6 +152,13 @@ export function ProfileCard({
             "zouzou-panel absolute z-40 w-64 rounded-xl p-3 shadow-pop animate-[zouzou-fade-in_240ms_ease-out]",
             placement === "rail" ? "bottom-0 left-12" : "right-0 top-11",
           )}
+          onPointerDown={(event) => {
+            if (!avatarMenu) return;
+            const target = event.target as HTMLElement;
+            if (!target.closest("[data-avatar-actions]")) {
+              setAvatarMenu(false);
+            }
+          }}
         >
           <div className="flex items-start justify-between gap-2">
             <p className="text-xs font-semibold text-ink">账号资料</p>
@@ -172,7 +187,10 @@ export function ProfileCard({
               )}
             </span>
             {avatarMenu ? (
-              <div className="flex flex-wrap items-center gap-2">
+              <div
+                data-avatar-actions
+                className="flex flex-wrap items-center gap-2"
+              >
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
@@ -224,12 +242,6 @@ export function ProfileCard({
             />
           </label>
 
-          <p className="mt-2 text-xs leading-5 text-ink-muted">
-            {user.isGuest
-              ? "游客账号名在注册时设置，这里改的是显示昵称。"
-              : "改完请用新名字登录，旧名字将无法登录。"}
-          </p>
-
           {error ? <p className="mt-2 text-xs text-danger">{error}</p> : null}
 
           <div className="mt-3 flex items-center justify-end gap-2">
@@ -256,6 +268,13 @@ export function ProfileCard({
               )}
               保存
             </button>
+          </div>
+
+          <div className="mt-3 border-t border-border pt-2">
+            <LogoutButton
+              showLabel
+              className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-ink-secondary transition-colors hover:bg-danger/10 hover:text-danger"
+            />
           </div>
         </div>
       ) : null}

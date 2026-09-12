@@ -25,7 +25,7 @@ import type { InboxClarification } from "@/lib/ai";
 
 const steps = [
   { label: "写想法", icon: NotebookPen },
-  { label: "先问几句", icon: MessageSquareText },
+  { label: "谈感受", icon: MessageSquareText },
   { label: "建项目", icon: FolderKanban },
   { label: "定今日", icon: ListTodo },
 ];
@@ -183,10 +183,7 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
             {step === 0 ? (
               <div>
                 <p className="text-sm font-semibold text-ink">
-                  今天最想推进什么？
-                </p>
-                <p className="mt-1 text-xs leading-5 text-ink-secondary">
-                  这一步会真的建项目和任务，不是演示。完成后直接去书桌看第一件事。
+                  写想法
                 </p>
                 <textarea
                   autoFocus
@@ -222,16 +219,13 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
             {step === 1 && clarification ? (
               <div className="space-y-3">
                 <p className="text-sm font-semibold text-ink">
-                  我先搞清楚你真正想要什么
-                </p>
-                <p className="text-xs leading-5 text-ink-secondary">
-                  选一个最接近的，也可以自己输入。不用一次答完。
+                  谈感受
                 </p>
                 <ChatClarify
                   dimensions={clarification.dimensions}
                   supplementPlaceholder={clarification.supplementPlaceholder}
                   busy={generating}
-                  submitLabel="就这样，帮我建项目"
+                  submitLabel="下一步"
                   onSubmit={(payload) =>
                     finishClarify(trimmedIdea, payload.answers.flat())
                   }
@@ -242,17 +236,13 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
             {step === 2 ? (
               <div>
                 <p className="text-sm font-semibold text-ink">
-                  把这个想法放进第一个项目
+                  建项目
                 </p>
                 {aiFallback ? (
                   <div className="mt-2 rounded-lg border border-warning/25 bg-warning/10 px-3 py-2 text-xs leading-5 text-warning">
                     暂时连不上，先用本地整理，结果可继续修改。
                   </div>
-                ) : (
-                  <p className="mt-1 text-xs leading-5 text-ink-secondary">
-                    已整理好，可继续修改。
-                  </p>
-                )}
+                ) : null}
                 <div className="zouzou-ai-card mt-3 px-3 py-2.5 text-xs leading-5 text-accent-strong">
                   你最初说：{planSourceIdea}
                 </div>
@@ -281,7 +271,7 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
                 </label>
                 <label className="mt-4 block">
                   <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
-                    当前里程碑
+                    里程碑
                   </span>
                   <input
                     value={milestone}
@@ -290,14 +280,7 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
                     className={inputClass}
                   />
                 </label>
-                <div className="mt-5 flex items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="text-sm font-medium text-ink-secondary transition-colors hover:text-accent"
-                  >
-                    上一步
-                  </button>
+                <div className="mt-5 flex items-center justify-end">
                   <button
                     type="button"
                     onClick={() => setStep(3)}
@@ -318,7 +301,7 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
                 <input type="hidden" name="milestone" value={milestone.trim()} />
                 <input type="hidden" name="sourceIdea" value={planSourceIdea} />
                 <p className="text-sm font-semibold text-ink">
-                  今天先做这一件
+                  定今日
                 </p>
                 <label className="mt-3 block">
                   <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
@@ -332,9 +315,6 @@ export function FirstRunGuide({ guest }: { guest?: boolean }) {
                     className={inputClass}
                   />
                 </label>
-                <p className="mt-2 text-xs leading-5 text-ink-secondary">
-                  已放入 {projectName}，安排在今日
-                </p>
                 <div className="mt-5 flex justify-end">
                   <SubmitButton
                     pendingText="正在创建..."

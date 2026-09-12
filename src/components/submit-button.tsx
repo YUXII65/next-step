@@ -10,7 +10,7 @@ export function SubmitButton({
   disabled = false,
 }: {
   children: ReactNode;
-  pendingText?: string;
+  pendingText?: string | null;
   className?: string;
   disabled?: boolean;
 }) {
@@ -22,7 +22,7 @@ export function SubmitButton({
       disabled={pending || disabled}
       className={className}
     >
-      {pending ? pendingText : children}
+      {pending && pendingText ? pendingText : children}
     </button>
   );
 }

@@ -259,7 +259,11 @@ export function ChatClarify({
               type="button"
               onClick={submitAll}
               disabled={busy}
-              className="zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+              className={`zouzou-primary-button inline-flex h-11 items-center gap-2 rounded-lg bg-accent px-5 text-sm font-medium text-white transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50 ${
+                busy
+                  ? ""
+                  : "animate-[zouzou-attention_1.8s_ease-in-out_infinite]"
+              }`}
             >
               {busy ? (
                 <span className="inline-flex items-center gap-1.5">

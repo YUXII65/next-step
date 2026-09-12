@@ -102,7 +102,7 @@ export default async function ProjectsPage({
 
   return (
     <>
-      <PageHeader title="书桌" description="管理项目、任务和待办来源。" />
+      <PageHeader title="书桌" />
 
       {firstRun.isFirstRun ? (
         <FirstRunTour initialStep={firstRun.tourStep} guest={isGuestUser(user)} />
@@ -272,7 +272,7 @@ export default async function ProjectsPage({
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="rounded-lg bg-surface-muted p-4">
                     <p className="text-xs font-medium text-ink-secondary">
-                      项目目标
+                      目标
                     </p>
                     <p className="mt-2 text-sm leading-6 text-ink">
                       {selectedProject.objective}
@@ -280,24 +280,13 @@ export default async function ProjectsPage({
                   </div>
                   <div className="rounded-lg bg-surface-muted p-4">
                     <p className="text-xs font-medium text-ink-secondary">
-                      当前里程碑
+                      里程碑
                     </p>
                     <p className="mt-2 text-sm leading-6 text-ink">
                       {selectedProject.currentMilestone || "暂无"}
                     </p>
                   </div>
                 </div>
-
-                {selectedProject.notes ? (
-                  <div className="mt-4 rounded-lg bg-accent-soft/60 px-3 py-3">
-                    <p className="text-xs font-medium text-ink-secondary">
-                      你最初说
-                    </p>
-                    <p className="mt-1 text-sm leading-6 text-ink">
-                      {selectedProject.notes}
-                    </p>
-                  </div>
-                ) : null}
 
                 <details className="zouzou-panel mt-4 rounded-xl bg-surface">
                   <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
