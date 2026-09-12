@@ -154,7 +154,7 @@ export function FirstRunTour({
           </div>
         }
       >
-        点<span className="font-medium text-ink">「下一步」</span>＝开始做；做完再点一下＝完成。只需要先推进这一件。
+        点击推进任务，今天先做这一小步。
       </AnchoredHint>
     );
   }
