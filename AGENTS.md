@@ -39,3 +39,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 部署期间会短暂出现「新 HTML 已生效、`/_next/static/*` 还没就绪」的无样式窗口（页面只剩裸 HTML + 巨大的 BrandMark SVG）。这是部署中间态，不是代码或浏览器问题；刷新即可恢复。
 - 判断是否仍处于中间态：抓页面 HTML 里 `href` 的 CSS 地址，再请求它，看是否 `200 + text/css`；同时用 `匹配关键文案` 确认线上是否已是新版。
 - 生产 CSS 由 EdgeOne 构建产出（Tailwind v4，`@layer` 仍在，但 `oklch()` 会被降级为 rgb/hex），因此桌面现代浏览器正常；只有不支持 `@layer` 的极老浏览器才会整页无样式。
+
+# 掉链子根因（2026-09-12 实测，跨会话记忆，勿删）
+
+- **现象**：新版本上线后打开网站，页面完全没有样式（只剩裸 HTML + 巨大的 BrandMark 箭头色块），刷新也不好。
+- **机制**：EdgeOne Pages 发布时先切 HTML、后补 `/_next/static/*`。发布窗口内请求这些资源会拿到 **404**，而这个 404 带着 `Cache-Control: public, max-age=31536000, immutable`，会被浏览器缓存住。等资源补齐后，普通刷新仍命中那份缓存的 404 —— 所以页面会“坏很久”，只有强刷（Ctrl+Shift+R）或换无痕窗口才恢复。
+- **已做的三层防御**（`src/lib/asset-guard.ts` + `src/app/layout.tsx` + `src/components/brand-mark.tsx`）：
+  1. 内联守卫脚本（不依赖 `/_next/static/*`，所以它是发布窗口里唯一一定能跑起来的 JS）：检测样式表是否真的生效，没生效就用 `?asset-retry=<时间戳>` 重新拉取，绕开被缓存的 404；对 404 的 `/_next/static/*` 脚本同样补拉。
+  2. 兜底样式：失败期间给 `<html>` 打 `data-asset-degraded="1"`，启用一份极简可读样式，不参与正常加载。
+  3. BrandMark 的内联 SVG 改成「固有尺寸 64 + `h-[58%] w-[58%]`」，不再用内联百分比 `style`；样式表挂掉时它只会是一枚小图标，而不是撑爆整屏的色块。
+- **验证方式**（复现脚本在 `%TEMP%\asset-guard-check`）：用带 immutable 头的 404 模拟发布窗口，无头 Chrome 对照——无守卫时第二次打开仍然是无样式，带守卫时自动恢复成有样式。
+- **发布后自检**：抓首页 HTML 里的 CSS 地址并带任意查询串请求一次（例如 `...css?asset-retry=1`），返回 `200 + text/css` 即为资源就绪；若仍是 404，说明还在发布窗口内，等十几秒再看。

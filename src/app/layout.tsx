@@ -4,6 +4,7 @@ import { Sidebar } from "@/components/sidebar";
 import { CommandPalette } from "@/components/command-palette";
 import { UsageTracker } from "@/components/usage-tracker";
 import { getAdminUser } from "@/lib/admin";
+import { ASSET_GUARD_CSS, ASSET_GUARD_SCRIPT } from "@/lib/asset-guard";
 
 export const metadata: Metadata = {
   title: {
@@ -29,6 +30,13 @@ export default async function RootLayout({
   return (
     <html lang="zh-CN" className="h-full antialiased">
       <body className="min-h-dvh text-ink">
+        {/*
+          静态资源守卫：EdgeOne 发布窗口内 /_next/static/* 可能 404，且这些 404 带
+          immutable 缓存头，普通刷新救不回来。这段内联脚本会检测样式是否生效、
+          用带缓存击穿参数的 URL 重试，并在失败期间启用一份极简兜底样式。
+        */}
+        <style dangerouslySetInnerHTML={{ __html: ASSET_GUARD_CSS }} />
+        <script dangerouslySetInnerHTML={{ __html: ASSET_GUARD_SCRIPT }} />
         <Sidebar isAdmin={Boolean(admin)} />
         <CommandPalette isAdmin={Boolean(admin)} />
         <UsageTracker />
