@@ -98,8 +98,8 @@ export default async function ReviewPage({
         description="每日复盘，并给出明天的执行建议。"
       />
 
-      <PageHint id="review" title="提示" enabled={firstRun.isFirstRun}>
-        每天收尾时记一句今天推进了什么，明天要做的会从这里长出来。
+      <PageHint id="review-v2" title="每日复盘" enabled={firstRun.isFirstRun}>
+        并给出明天的执行建议。
       </PageHint>
 
       <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">

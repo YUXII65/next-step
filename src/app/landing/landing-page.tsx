@@ -65,7 +65,7 @@ const audiences = [
 export function LandingPage({ authed = false }: { authed?: boolean }) {
   return (
     <div
-      data-release="guided-onboarding-2026-09-12"
+      data-release="guided-onboarding-2026-09-12-r2"
       className="fixed inset-0 z-40 overflow-y-auto"
     >
       <div className="mx-auto min-h-dvh w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
