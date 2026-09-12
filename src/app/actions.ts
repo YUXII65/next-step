@@ -9,6 +9,7 @@ import type {
   TaskStatus,
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { isAdminUsername } from "@/lib/admin";
 import {
   createUserSession,
   destroyUserSession,
@@ -332,23 +333,55 @@ export async function completeFirstRun(formData: FormData) {
  */
 export async function updateUserProfile(formData: FormData) {
   const user = await requireUser();
-  const displayName = String(formData.get("displayName") ?? "").trim().slice(0, 24);
+  const name = String(formData.get("name") ?? "").trim();
   const rawAvatar = String(formData.get("avatarUrl") ?? "");
   const avatarUrl =
     rawAvatar.startsWith("data:image/") && rawAvatar.length <= 400_000
       ? rawAvatar
       : null;
 
+  // 已注册用户：昵称与登录名合并成一个字段（数据归属靠不可变的 user.id，改名不影响任何数据）
+  if (!isGuestUser(user)) {
+    if (name && name !== user.username) {
+      if (name.length < 2 || name.length > 20) {
+        return { ok: false as const, error: "昵称需要 2-20 个字符。" };
+      }
+      if (isAdminUsername(user.username)) {
+        return { ok: false as const, error: "管理员账号名不能修改。" };
+      }
+      const taken = await prisma.user.findFirst({
+        where: { username: name, NOT: { id: user.id } },
+        select: { id: true },
+      });
+      if (taken) {
+        return { ok: false as const, error: "这个名字已经被占用了，换一个。" };
+      }
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { username: name, displayName: null, avatarUrl },
+      });
+      revalidatePath("/", "layout");
+      return { ok: true as const };
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { displayName: null, avatarUrl },
+    });
+    revalidatePath("/", "layout");
+    return { ok: true as const };
+  }
+
+  // 游客：只能改显示昵称。账号名保持 guest_ 前缀，否则会破坏游客识别与"注册保存"流程
   await prisma.user.update({
     where: { id: user.id },
     data: {
-      displayName: displayName || null,
+      displayName: name.slice(0, 24) || null,
       avatarUrl,
     },
   });
-
   revalidatePath("/", "layout");
-  return { ok: true };
+  return { ok: true as const };
 }
 
 /**

@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import type { ChangeEvent } from "react";
-import { Loader2, PencilLine, Trash2, Upload } from "lucide-react";
+import { Loader2, PencilLine, Upload } from "lucide-react";
 import { updateUserProfile } from "@/app/actions";
 import { useClickOutside } from "@/lib/use-click-outside";
 import { cx } from "@/lib/utils";
@@ -51,13 +51,21 @@ export function ProfileCard({
   placement?: "rail" | "header";
 }) {
   const { ref, open, setOpen } = useClickOutside<HTMLDivElement>();
-  const [name, setName] = useState(user.displayName ?? "");
+  const [name, setName] = useState(user.displayName ?? user.username);
   const [avatar, setAvatar] = useState(user.avatarUrl ?? "");
+  const [avatarMenu, setAvatarMenu] = useState(false);
   const [error, setError] = useState("");
   const [saving, startSaving] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const displayName = user.displayName || user.username;
+
+  function resetForm() {
+    setName(user.displayName ?? user.username);
+    setAvatar(user.avatarUrl ?? "");
+    setAvatarMenu(false);
+    setError("");
+  }
 
   async function onPickFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -72,6 +80,7 @@ export function ProfileCard({
         return;
       }
       setAvatar(dataUrl);
+      setAvatarMenu(false);
     } catch {
       setError("这张图片读不出来，换一张试试。");
     }
@@ -80,12 +89,17 @@ export function ProfileCard({
   function save() {
     setError("");
     const formData = new FormData();
-    formData.set("displayName", name.trim());
+    formData.set("name", name.trim());
     formData.set("avatarUrl", avatar);
     startSaving(async () => {
       try {
-        await updateUserProfile(formData);
+        const result = await updateUserProfile(formData);
+        if (result && !result.ok) {
+          setError(result.error);
+          return;
+        }
         setOpen(false);
+        setAvatarMenu(false);
       } catch {
         setError("保存失败，请重试。");
       }
@@ -96,7 +110,10 @@ export function ProfileCard({
     <div className="relative" ref={ref}>
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          setOpen(!open);
+          if (open) resetForm();
+        }}
         aria-label="账号资料"
         title={displayName}
         className={cx(
@@ -132,7 +149,10 @@ export function ProfileCard({
             <p className="text-xs font-semibold text-ink">账号资料</p>
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                resetForm();
+              }}
               className="flex size-6 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink"
               aria-label="关闭"
               title="关闭"
@@ -141,6 +161,7 @@ export function ProfileCard({
             </button>
           </div>
 
+          {/* 头像：默认只有一个入口，点开后才是「上传图片 / 恢复默认」 */}
           <div className="mt-3 flex items-center gap-3">
             <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent-soft text-sm font-semibold text-accent-strong">
               {avatar ? (
@@ -150,26 +171,37 @@ export function ProfileCard({
                 (name.trim() || user.username).slice(0, 1).toUpperCase()
               )}
             </span>
-            <div className="flex flex-col gap-1.5">
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="zouzou-secondary-button inline-flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
-              >
-                <Upload className="size-3.5" />
-                上传头像
-              </button>
-              {avatar ? (
+            {avatarMenu ? (
+              <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setAvatar("")}
-                  className="inline-flex items-center gap-1.5 text-xs text-ink-muted transition-colors hover:text-danger"
+                  onClick={() => fileRef.current?.click()}
+                  className="zouzou-secondary-button inline-flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
                 >
-                  <Trash2 className="size-3.5" />
-                  移除头像
+                  <Upload className="size-3.5" />
+                  上传图片
                 </button>
-              ) : null}
-            </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAvatar("");
+                    setAvatarMenu(false);
+                  }}
+                  className="inline-flex h-7 items-center rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-danger hover:text-danger"
+                >
+                  恢复默认
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAvatarMenu(true)}
+                className="zouzou-secondary-button inline-flex h-7 items-center gap-1.5 rounded-md border border-border bg-surface px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:border-accent hover:text-accent"
+              >
+                <PencilLine className="size-3.5" />
+                修改头像
+              </button>
+            )}
           </div>
           <input
             ref={fileRef}
@@ -181,7 +213,7 @@ export function ProfileCard({
 
           <label className="mt-3 block">
             <span className="mb-1.5 block text-xs font-medium text-ink-secondary">
-              昵称
+              {user.isGuest ? "显示昵称" : "昵称（也是登录名）"}
             </span>
             <input
               value={name}
@@ -192,22 +224,19 @@ export function ProfileCard({
             />
           </label>
 
-          <p className="mt-2 text-xs text-ink-muted">
-            账号：{user.username}
-            {user.isGuest ? "（游客体验，注册后可长期保存）" : ""}
+          <p className="mt-2 text-xs leading-5 text-ink-muted">
+            {user.isGuest
+              ? "游客账号名在注册时设置，这里改的是显示昵称。"
+              : "改完请用新名字登录，旧名字将无法登录。"}
           </p>
 
-          {error ? (
-            <p className="mt-2 text-xs text-danger">{error}</p>
-          ) : null}
+          {error ? <p className="mt-2 text-xs text-danger">{error}</p> : null}
 
           <div className="mt-3 flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => {
-                setName(user.displayName ?? "");
-                setAvatar(user.avatarUrl ?? "");
-                setError("");
+                resetForm();
                 setOpen(false);
               }}
               className="zouzou-secondary-button inline-flex h-8 items-center rounded-lg border border-border bg-surface px-3 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
