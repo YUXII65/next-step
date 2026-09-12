@@ -47,7 +47,7 @@ export function AiSettings() {
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
         <span className="flex items-center gap-1.5">
           <KeyRound className="size-3.5" />
-          AI 连接
+          API 连接
         </span>
         <span
           className={

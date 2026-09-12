@@ -251,7 +251,7 @@ export function ToolboxDemo({
         description="按需启用小工具，核心闭环保持简单。"
       />
 
-      <PageHint id="tools" title="工具提示">
+      <PageHint id="tools" title="提示">
         需要什么再打开什么，核心流程保持简单。
       </PageHint>
 

@@ -107,7 +107,7 @@ export function AiPreferences() {
       <details className="zouzou-panel rounded-xl bg-surface">
         <summary className="flex cursor-pointer list-none items-center gap-1.5 px-3 py-2 text-xs font-medium text-ink-secondary transition-colors hover:text-accent">
           <SlidersHorizontal className="size-3.5" />
-          AI 偏好
+          执行偏好
         </summary>
         <form
           onSubmit={handleSubmit}

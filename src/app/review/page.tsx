@@ -96,7 +96,7 @@ export default async function ReviewPage({
         description="把每天复盘收进抽屉，回看真正推进了什么。"
       />
 
-      <PageHint id="review" title="复盘提示">
+      <PageHint id="review" title="提示">
         每天收尾时记一句今天推进了什么，明天要做的会从这里长出来。
       </PageHint>
 
